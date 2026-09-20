@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>鱼缸壁面清洁机器人 — 吸附单元结构设计</title>
+<link rel="stylesheet" href="assets/notion.css">
+</head>
+<body>
+<nav class="side" id="side">
+  <div class="side-doc"><span class="side-icon">🧲</span><span class="side-name">吸附单元设计</span></div>
+  <div class="side-label">目录</div>
+  <ul class="side-list">
+    <li><a href="#s1" title="1 · 单吸盘执行单元 · 剖面详图">1 · 单吸盘执行单元 · 剖面详图</a></li>
+    <li><a href="#s2" title="2 · 吸附 / 释放 双状态对比">2 · 吸附 / 释放 双状态对比</a></li>
+    <li><a href="#s3" title="3 · 面积解耦 — 为什么可以&quot;大吸盘 + 小膜片&quot;">3 · 面积解耦 — 为什么可以&quot;大吸盘 + 小膜片&quot;</a></li>
+    <li><a href="#s4" title="4 · 关键参数与吸力核算">4 · 关键参数与吸力核算</a></li>
+    <li><a href="#s5" title="5 · 设计要点与风险">5 · 设计要点与风险</a></li>
+  </ul>
+</nav>
+<button class="side-btn" type="button" aria-label="目录">&#9776;</button>
+<main class="page">
+<div class="page-inner">
+
+
+<header>
+  <div class="page-icon">🧲</div>
+  <h1>鱼缸壁面清洁机器人 — 吸附单元结构设计</h1>
+  <p class="sub">空心杯电机 + 丝杆驱动膜片形变产生负压 · 结构剖面示意（非比例，形变幅度已放大）</p>
+</header>
+
+<!-- ══════ 推荐配置 ══════ -->
+<div class="keybox">
+  <h3>推荐配置（已与 <a href="motion.html">运动单元设计</a> 对齐）</h3>
+  <p>
+    <b>吸盘开口 ∅25 mm</b>（吸力 12.3 N @ −25 kPa）＋ <b>驱动膜片 ∅20 mm</b>（电机只需 7.85 N）＋
+    <b>丝杆导程 0.3 mm</b>（电机扭矩约 1.25 mN·m）。
+  </p>
+  <p>
+    <b>为什么吸盘这么大：</b>运动单元的分析表明，吸盘的<b>抗剥离力矩 ∝ R³</b>。从 ∅15 加到 ∅25，允许的重心离壁距离提高 4.6 倍。这是唯一一条"花钱就能买到安全"的途径。
+    <br><b>为什么膜片不必跟着大：</b>吸力由<b>吸盘开口面积</b>决定，电机拉力由<b>膜片面积</b>决定，两者解耦。让吸盘大于膜片是免费的杠杆（见第 4 节）。
+    <br><b>配套条件：</b>整机必须调到近中性浮力（有效重量 0.3–0.5 N），详见 <a href="motion.html">motion.html</a> 第 3、7 节。
+  </p>
+</div>
+
+<!-- ══════ 图 1 ══════ -->
+<div class="card">
+  <h2 id="s1"><span class="n">1</span>单吸盘执行单元 · 剖面详图<span class="tag">吸附状态</span></h2>
+  <p class="cap">电机正转 → 丝杆把旋转变成几毫米的直线行程 → 连接杆向上拉动膜片中心 → 腔体容积增大、气压下降 → 外部水压把单元压紧在玻璃上。</p>
+
+  <div class="figrow">
+  <svg viewBox="0 0 470 690" role="img" aria-label="单吸盘执行单元剖面图">
+    <defs>
+      <linearGradient id="f1Glass" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#c3e5f4"/><stop offset=".5" stop-color="#a6d6ed"/><stop offset="1" stop-color="#8cc6e2"/>
+      </linearGradient>
+      <linearGradient id="f1Motor" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#525d6b"/><stop offset=".34" stop-color="#939fac"/>
+        <stop offset=".62" stop-color="#6c7787"/><stop offset="1" stop-color="#414b58"/>
+      </linearGradient>
+      <linearGradient id="f1Rigid" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#95a1ad"/><stop offset=".36" stop-color="#c8d1da"/><stop offset="1" stop-color="#86929f"/>
+      </linearGradient>
+      <pattern id="f1Vac" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <rect width="9" height="9" fill="#fbe4e7"/>
+        <line x1="0" y1="0" x2="0" y2="9" stroke="#f0b8c0" stroke-width="2.2"/>
+      </pattern>
+      <marker id="f1Blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#2b7fd4"/>
+      </marker>
+      <marker id="f1Orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#e07a5f"/>
+      </marker>
+      <marker id="f1Teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#14786e"/>
+      </marker>
+    </defs>
+
+    <!-- 水体 -->
+    <rect x="15" y="15" width="440" height="585" rx="9" fill="#e8f4fb"/>
+    <text x="34" y="42" class="s-sub" fill="#7fa8c4">H₂O · 整体浸没</text>
+
+    <!-- 外部水压 -->
+    <text x="235" y="14" text-anchor="middle" class="s-lbl" fill="#2b7fd4">外部水压 + 大气压</text>
+    <g stroke="#2b7fd4" stroke-width="2.4" marker-end="url(#f1Blue)">
+      <line x1="70"  y1="26" x2="70"  y2="50"/>
+      <line x1="130" y1="26" x2="130" y2="50"/>
+      <line x1="190" y1="26" x2="190" y2="50"/>
+      <line x1="250" y1="26" x2="250" y2="50"/>
+      <line x1="310" y1="26" x2="310" y2="50"/>
+      <line x1="370" y1="26" x2="370" y2="50"/>
+    </g>
+
+    <!-- 玻璃 -->
+    <rect x="15" y="600" width="440" height="54" rx="7" fill="url(#f1Glass)" stroke="#7cb6d3" stroke-width="1.5"/>
+    <line x1="15" y1="612" x2="455" y2="612" stroke="#fff" stroke-width="2.5" opacity=".65"/>
+    <text x="235" y="634" text-anchor="middle" class="s-lbl" fill="#2b5f7d">鱼缸玻璃 / 亚克力壁</text>
+
+    <!-- ① 刚性外壳 -->
+    <path d="M130,238 L130,478 Q130,500 152,500 L288,500 Q310,500 310,478 L310,238 Z"
+          fill="url(#f1Rigid)" stroke="#68747f" stroke-width="1.6"/>
+    <rect x="126" y="494" width="188" height="10" rx="5" fill="#5f6b78" opacity=".55"/>
+
+    <!-- ② 柔性吸盘碗 / 唇边 -->
+    <path d="M130,496 L130,556 Q130,600 174,600 L266,600 Q310,600 310,556 L310,496
+             L290,496 L290,556 Q290,580 264,580 L176,580 Q150,580 150,556 L150,496 Z"
+          fill="#4a938a" stroke="#25665f" stroke-width="1.6"/>
+    <path d="M130,556 Q130,600 174,600 L174,592 Q136,592 136,556 Z" fill="#6fc0b4" opacity=".85"/>
+    <path d="M310,556 Q310,600 266,600 L266,592 Q304,592 304,556 Z" fill="#6fc0b4" opacity=".85"/>
+
+    <!-- ③ 负压腔 -->
+    <path d="M150,430 Q220,352 290,430 L290,556 Q290,600 266,600 L174,600 Q150,600 150,556 Z"
+          fill="url(#f1Vac)" stroke="#e0909e" stroke-width="1.6"/>
+    <text x="220" y="486" text-anchor="middle" class="s-lbl" fill="#b4522f">负压腔</text>
+    <text x="220" y="506" text-anchor="middle" font-size="12.5" font-weight="700" fill="#c2521f">−25 kPa</text>
+
+    <!-- ④ 驱动膜片 -->
+    <path d="M150,430 Q220,352 290,430" fill="none" stroke="#12b9a6" stroke-width="7" stroke-linecap="round"/>
+    <path d="M150,430 Q220,352 290,430" fill="none" stroke="#7ce8da" stroke-width="2" stroke-linecap="round" opacity=".8"/>
+
+    <!-- 压差把膜片向下压 -->
+    <g stroke="#e07a5f" stroke-width="2.2" marker-end="url(#f1Orange)">
+      <line x1="192" y1="412" x2="192" y2="430"/>
+      <line x1="248" y1="412" x2="248" y2="430"/>
+    </g>
+    <text x="220" y="406" text-anchor="middle" class="s-sub" fill="#c2521f">膜片受力 7.85 N</text>
+
+    <!-- ⑤ 顶盖 / 联轴座 -->
+    <rect x="172" y="164" width="96" height="76" rx="9" fill="url(#f1Rigid)" stroke="#68747f" stroke-width="1.6"/>
+    <circle cx="188" cy="182" r="3.4" fill="#5f6b78"/>
+    <circle cx="252" cy="182" r="3.4" fill="#5f6b78"/>
+
+    <!-- ⑥ 丝杆 -->
+    <rect x="214" y="178" width="12" height="124" fill="#8e9aa8" stroke="#5f6b78" stroke-width="1.2"/>
+    <g stroke="#69757f" stroke-width="1.2">
+      <line x1="214" y1="194" x2="226" y2="187"/><line x1="214" y1="202" x2="226" y2="195"/>
+      <line x1="214" y1="210" x2="226" y2="203"/><line x1="214" y1="218" x2="226" y2="211"/>
+      <line x1="214" y1="226" x2="226" y2="219"/><line x1="214" y1="234" x2="226" y2="227"/>
+      <line x1="214" y1="242" x2="226" y2="235"/><line x1="214" y1="250" x2="226" y2="243"/>
+      <line x1="214" y1="258" x2="226" y2="251"/><line x1="214" y1="266" x2="226" y2="259"/>
+      <line x1="214" y1="274" x2="226" y2="267"/><line x1="214" y1="282" x2="226" y2="275"/>
+      <line x1="214" y1="290" x2="226" y2="283"/><line x1="214" y1="298" x2="226" y2="291"/>
+    </g>
+
+    <!-- ⑦ 螺母滑块 -->
+    <rect x="199" y="248" width="42" height="44" rx="6" fill="#aeb8c4" stroke="#5f6b78" stroke-width="1.6"/>
+    <line x1="204" y1="258" x2="236" y2="258" stroke="#a5a29b" stroke-width="1.4"/>
+    <line x1="204" y1="282" x2="236" y2="282" stroke="#a5a29b" stroke-width="1.4"/>
+
+    <!-- ⑧ 连接杆 -->
+    <rect x="216.5" y="290" width="7" height="104" fill="#cfccc4" stroke="#7c8794" stroke-width="1.2"/>
+
+    <!-- ⑨ 空心杯电机 -->
+    <rect x="208" y="160" width="24" height="12" rx="3" fill="#6c7787"/>
+    <rect x="165" y="52" width="110" height="112" rx="13" fill="url(#f1Motor)" stroke="#39424f" stroke-width="1.7"/>
+    <line x1="165" y1="70" x2="275" y2="70" stroke="#b9c4d0" stroke-width="1.4" opacity=".55"/>
+    <line x1="165" y1="146" x2="275" y2="146" stroke="#b9c4d0" stroke-width="1.4" opacity=".55"/>
+    <rect x="182" y="84" width="76" height="46" rx="5" fill="#2f3844" opacity=".35"/>
+    <text x="220" y="113" text-anchor="middle" font-size="11.5" font-weight="700" fill="#dfe7ef">M</text>
+
+    <!-- 编号 -->
+    <g font-size="11.5" font-weight="700" text-anchor="middle">
+      <circle cx="288" cy="80" r="11" fill="#37352f"/><text x="288" y="84" fill="#fff">1</text>
+      <circle cx="255" cy="262" r="11" fill="#37352f"/><text x="255" y="266" fill="#fff">2</text>
+      <circle cx="240" cy="345" r="11" fill="#37352f"/><text x="240" y="349" fill="#fff">3</text>
+      <circle cx="146" cy="300" r="11" fill="#37352f"/><text x="146" y="304" fill="#fff">4</text>
+      <circle cx="258" cy="372" r="11" fill="#37352f"/><text x="258" y="376" fill="#fff">5</text>
+      <circle cx="186" cy="545" r="11" fill="#37352f"/><text x="186" y="549" fill="#fff">6</text>
+      <circle cx="299" cy="572" r="11" fill="#37352f"/><text x="299" y="576" fill="#fff">7</text>
+      <circle cx="405" cy="627" r="11" fill="#37352f"/><text x="405" y="631" fill="#fff">8</text>
+      <circle cx="66"  cy="40"  r="11" fill="#37352f"/><text x="66"  y="44"  fill="#fff">9</text>
+    </g>
+  </svg>
+
+  <div class="legend">
+    <ol>
+      <li><b>空心杯电机</b><span>∅12×24 mm，6–12 V，带霍尔编码器。正反转即吸附／释放，无需额外气路。</span></li>
+      <li><b>微型丝杆 + 螺母滑块</b><span><b>导程 p = 0.3 mm</b>（不是 0.5 —— 吸盘加大后膜片拉力升到 7.85 N，必须用更小导程把扭矩压回 1.25 mN·m）。行程 3–5 mm。</span></li>
+      <li><b>连接杆</b><span>把螺母的直线运动传给膜片中心。穿过顶盖处需 O 型圈或波纹管动密封。</span></li>
+      <li><b>刚性外壳</b><span>承压件。内腔<b>上半部分</b>（膜片以上）必须与外部水体连通或充硅油，否则会形成第二个真空腔把膜片往下顶。</span></li>
+      <li><b>驱动膜片 ∅20 mm</b><span>PDMS 或铂金硅胶，厚度 <b>0.2–0.3 mm</b>，Shore A 10–30。膜片变大后必须相应减薄，否则电机拉不动。四周用压环固定，不要纯粘接。</span></li>
+      <li><b>负压腔</b><span>膜片与玻璃之间的密闭容积。膜片上拱 → 容积增大 → 压力下降。目标 −25 kPa。</span></li>
+      <li><b>柔性吸盘唇边 ∅25 mm</b><span>比主体更软的裙边（Shore A 5–15）。负压产生后唇边被大气压自动压紧。唇边必须能长期承受<b>静态剪切</b>——本方案的吸盘不允许滑动。</span></li>
+      <li><b>鱼缸玻璃</b><span>密封面需洁净无藻膜；划痕与硬水垢是主要漏气源。</span></li>
+      <li><b>外部水压 + 大气压</b><span>约 100 kPa + 水深压力。这是吸附力的唯一来源，机器人本身不产生"吸力"。</span></li>
+    </ol>
+  </div>
+  </div>
+</div>
+
+<!-- ══════ 图 2 ══════ -->
+<div class="card">
+  <h2 id="s2"><span class="n">2</span>吸附 / 释放 双状态对比</h2>
+  <p class="cap">两个状态的差别只有一处：螺母滑块的位置。行程 3–5 mm 即可把腔体压差从 0 拉到 −25 kPa。</p>
+
+  <svg viewBox="0 0 640 400" role="img" aria-label="吸附与释放状态对比" style="width:100%;height:auto">
+    <defs>
+      <linearGradient id="f2Rigid" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#95a1ad"/><stop offset=".36" stop-color="#c8d1da"/><stop offset="1" stop-color="#86929f"/>
+      </linearGradient>
+      <linearGradient id="f2Motor" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#525d6b"/><stop offset=".4" stop-color="#939fac"/><stop offset="1" stop-color="#414b58"/>
+      </linearGradient>
+      <linearGradient id="f2Glass" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#c3e5f4"/><stop offset="1" stop-color="#8cc6e2"/>
+      </linearGradient>
+      <pattern id="f2Vac" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <rect width="9" height="9" fill="#fbe4e7"/><line x1="0" y1="0" x2="0" y2="9" stroke="#f0b8c0" stroke-width="2.2"/>
+      </pattern>
+      <marker id="f2Arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#14786e"/>
+      </marker>
+      <g id="f2Unit">
+        <rect x="-30" y="18" width="60" height="60" rx="9" fill="url(#f2Motor)" stroke="#39424f" stroke-width="1.5"/>
+        <text x="0" y="53" text-anchor="middle" font-size="10.5" font-weight="700" fill="#dfe7ef">M</text>
+        <path d="M-56,110 L-56,238 Q-56,252 -42,252 L42,252 Q56,252 56,238 L56,110 Z"
+              fill="url(#f2Rigid)" stroke="#68747f" stroke-width="1.5"/>
+        <path d="M-56,248 L-56,278 Q-56,300 -32,300 L32,300 Q56,300 56,278 L56,248
+                 L42,248 L42,278 Q42,290 28,290 L-28,290 Q-42,290 -42,278 L-42,248 Z"
+              fill="#4a938a" stroke="#25665f" stroke-width="1.5"/>
+        <rect x="-70" y="300" width="140" height="18" fill="url(#f2Glass)" stroke="#7cb6d3" stroke-width="1.2"/>
+      </g>
+    </defs>
+
+    <!-- 左：释放 -->
+    <text x="160" y="26" text-anchor="middle" font-size="14" font-weight="700" fill="#6b6862">释放态</text>
+    <rect x="20" y="40" width="280" height="330" rx="12" fill="#fbfbfa"/>
+    <g transform="translate(160,60)">
+      <use href="#f2Unit"/>
+      <path d="M-42,224 Q0,240 42,224 L42,278 Q42,290 28,290 L-28,290 Q-42,290 -42,278 Z"
+            fill="#e9eef3" stroke="#b6c1cc" stroke-width="1.5"/>
+      <path d="M-42,224 Q0,240 42,224" fill="none" stroke="#8f9aa6" stroke-width="6" stroke-linecap="round"/>
+      <rect x="-6" y="76" width="12" height="110" fill="#8e9aa8" stroke="#5f6b78" stroke-width="1.1"/>
+      <rect x="-21" y="146" width="42" height="30" rx="5" fill="#aeb8c4" stroke="#5f6b78" stroke-width="1.5"/>
+      <rect x="-3.5" y="176" width="7" height="50" fill="#cfccc4" stroke="#7c8794" stroke-width="1.1"/>
+      <text x="0" y="246" text-anchor="middle" font-size="11" font-weight="700" fill="#5f6b78">常压</text>
+    </g>
+    <text x="160" y="356" text-anchor="middle" font-size="11.5" fill="#9b9891">膜片松弛微下垂 · 无压差 · 可自由移动</text>
+
+    <!-- 右：吸附 -->
+    <text x="470" y="26" text-anchor="middle" font-size="14" font-weight="700" fill="#14786e">吸附态</text>
+    <rect x="330" y="40" width="280" height="330" rx="12" fill="#f2fbf9"/>
+    <g transform="translate(470,60)">
+      <use href="#f2Unit"/>
+      <path d="M-42,224 Q0,190 42,224 L42,278 Q42,290 28,290 L-28,290 Q-42,290 -42,278 Z"
+            fill="url(#f2Vac)" stroke="#e0909e" stroke-width="1.5"/>
+      <path d="M-42,224 Q0,190 42,224" fill="none" stroke="#12b9a6" stroke-width="6" stroke-linecap="round"/>
+      <text x="0" y="258" text-anchor="middle" font-size="11" font-weight="700" fill="#c2521f">−25 kPa</text>
+      <rect x="-6" y="76" width="12" height="110" fill="#8e9aa8" stroke="#5f6b78" stroke-width="1.1"/>
+      <rect x="-21" y="112" width="42" height="30" rx="5" fill="#aeb8c4" stroke="#5f6b78" stroke-width="1.5"/>
+      <rect x="-3.5" y="142" width="7" height="50" fill="#cfccc4" stroke="#7c8794" stroke-width="1.1"/>
+      <line x1="34" y1="160" x2="34" y2="124" stroke="#14786e" stroke-width="2.4" marker-end="url(#f2Arr)"/>
+      <line x1="-34" y1="160" x2="-34" y2="124" stroke="#14786e" stroke-width="2.4" marker-end="url(#f2Arr)"/>
+    </g>
+    <text x="470" y="356" text-anchor="middle" font-size="11.5" fill="#14786e">膜片上拱 · 容积↑ 压力↓ · 外部水压压紧整机</text>
+
+    <line x1="300" y1="200" x2="330" y2="200" stroke="#c6d0d9" stroke-width="2" stroke-dasharray="4 4"/>
+    <line x1="300" y1="240" x2="330" y2="240" stroke="#c6d0d9" stroke-width="2" stroke-dasharray="4 4"/>
+    <text x="315" y="188" text-anchor="middle" font-size="11" fill="#9b9891" transform="rotate(90 315,220)">行程 3–5 mm</text>
+  </svg>
+</div>
+
+<!-- ══════ 图 3 面积解耦 ══════ -->
+<div class="card">
+  <h2 id="s3"><span class="n">3</span>面积解耦 — 为什么可以"大吸盘 + 小膜片"</h2>
+  <p class="cap">这是整个方案里最容易被忽略、但对微型化贡献最大的一条：<b>吸力和电机拉力不是同一个面积上的力</b>。</p>
+
+  <svg viewBox="0 0 640 380" role="img" aria-label="吸盘面积与膜片面积的解耦关系" style="width:100%;height:auto">
+    <defs>
+      <pattern id="f3CupA" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <rect width="8" height="8" fill="#d9f2ef"/><line x1="0" y1="0" x2="0" y2="8" stroke="#8fd8ce" stroke-width="2"/>
+      </pattern>
+      <pattern id="f3MemA" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+        <rect width="8" height="8" fill="#c9ecf8"/><line x1="0" y1="0" x2="0" y2="8" stroke="#7fc4e4" stroke-width="2"/>
+      </pattern>
+      <marker id="f3D" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#9b9891"/>
+      </marker>
+    </defs>
+
+    <!-- 左：正视图 -->
+    <rect x="16" y="16" width="300" height="348" rx="12" fill="#fbfbfa"/>
+    <text x="166" y="44" text-anchor="middle" class="s-lbl">正视图 · 面积对比</text>
+    <circle cx="166" cy="196" r="98" fill="url(#f3CupA)" stroke="#2f9d90" stroke-width="2"/>
+    <circle cx="166" cy="196" r="78" fill="url(#f3MemA)" stroke="#2b7fd4" stroke-width="2"/>
+    <line x1="68" y1="196" x2="264" y2="196" stroke="#9b9891" stroke-width="1.2" marker-start="url(#f3D)" marker-end="url(#f3D)"/>
+    <text x="166" y="212" text-anchor="middle" font-size="11" font-weight="700" fill="#2b5f7d">∅25 吸盘开口</text>
+    <line x1="88" y1="130" x2="244" y2="130" stroke="#9b9891" stroke-width="1.2" marker-start="url(#f3D)" marker-end="url(#f3D)"/>
+    <text x="166" y="122" text-anchor="middle" font-size="11" font-weight="700" fill="#2b5f7d">∅20 驱动膜片</text>
+    <text x="166" y="300" text-anchor="middle" font-size="11.5" fill="#6b6862">面积比 =(25/20)² = <tspan font-weight="700" fill="#14786e">1.56</tspan></text>
+    <text x="166" y="322" text-anchor="middle" font-size="11" fill="#9b9891">吸力与膜片拉力之比 = 面积比</text>
+    <text x="166" y="344" text-anchor="middle" font-size="11" fill="#9b9891">缩小膜片到 ∅15 可把比值提到 2.78</text>
+
+    <!-- 右：力的对比 -->
+    <rect x="336" y="16" width="288" height="348" rx="12" fill="#fbfbfa"/>
+    <text x="480" y="44" text-anchor="middle" class="s-lbl">同样的压差，两个完全不同的力</text>
+
+    <text x="360" y="96" font-size="12" font-weight="600" fill="#14786e">吸盘承受的压差力</text>
+    <rect x="360" y="106" width="230" height="30" rx="6" fill="#12b9a6"/>
+    <text x="600" y="126" text-anchor="end" font-size="12.5" font-weight="700" fill="#fff">12.27 N</text>
+    <text x="360" y="156" font-size="11" fill="#9b9891">= 25 kPa × ∅25 面积 · 由玻璃和水压承担</text>
+
+    <text x="360" y="212" font-size="12" font-weight="600" fill="#2b5f7d">电机需要提供的拉力</text>
+    <rect x="360" y="222" width="147" height="30" rx="6" fill="#2b7fd4"/>
+    <text x="513" y="242" font-size="12.5" font-weight="700" fill="#fff"> 7.85 N</text>
+    <text x="360" y="272" font-size="11" fill="#9b9891">= 25 kPa × ∅20 面积 · 由丝杆和电机承担</text>
+
+    <line x1="360" y1="304" x2="590" y2="304" stroke="#e3e2dd" stroke-width="1.5"/>
+    <text x="360" y="330" font-size="11.5" fill="#6b6862">电机扭矩 <tspan font-weight="700" fill="#14786e">T = F·p/(2πη) = 1.25 mN·m</tspan></text>
+    <text x="360" y="350" font-size="11" fill="#9b9891">取 p = 0.3 mm、η = 0.3，∅12 空心杯电机可以轻松驱动</text>
+  </svg>
+
+  <div class="formula">
+    <b>杠杆从哪来</b><br>
+    <code>F_吸力 = P · A_吸盘</code>　决定机器人贴得多牢；<br>
+    <code>F_电机 = P · A_膜片</code>　决定电机和丝杆要多大。<br>
+    压差 P 是同一个，所以 <code>F_吸力 / F_电机 = A_吸盘 / A_膜片 = (D_吸盘/D_膜片)²</code>。
+    <b>让吸盘大于膜片，等于免费放大吸力。</b>
+  </div>
+
+  <table>
+    <thead><tr><th>驱动膜片直径</th><th>膜片拉力 (−25 kPa)</th><th>电机扭矩 (p=0.3, η=0.3)</th><th>杠杆比 (∅25 吸盘)</th><th>评价</th></tr></thead>
+    <tbody>
+      <tr><td>∅15 mm</td><td>4.42 N</td><td>0.70 mN·m</td><td>2.78</td><td>电机最省力，但需要约 2 倍行程</td></tr>
+      <tr class="hl"><td>∅20 mm</td><td>7.85 N</td><td>1.25 mN·m</td><td>1.56</td><td><b>推荐</b> · 与图示一致，行程适中</td></tr>
+      <tr><td>∅22 mm</td><td>9.50 N</td><td>1.51 mN·m</td><td>1.29</td><td>接近 ∅12 电机的能力上限，需实测</td></tr>
+      <tr class="bad"><td>∅25 mm（与吸盘同大）</td><td>12.27 N</td><td>1.95 mN·m</td><td>1.00</td><td>无杠杆。p=0.5 时扭矩 3.3 mN·m，∅12 电机拉不动</td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula w">
+    <b>膜片缩小的代价：需要更长的行程</b><br>
+    膜片面积减半，要达到同样的容积变化就得把行程加倍。而腔体的压力下降幅度取决于
+    <code>ΔV / V_残气</code> —— <b>腔内残留空气越少越好</b>。装配时让吸盘在水中自然压合排气，能把残气降到最低，
+    此时几毫米的行程就足以把压力拉到 −25 kPa。具体行程必须在实物上标定，因为还取决于唇边和玻璃的柔度。
+  </div>
+</div>
+
+<!-- ══════ 参数 ══════ -->
+<div class="card">
+  <h2 id="s4"><span class="n">4</span>关键参数与吸力核算</h2>
+  <p class="cap">吸力只由「压差 × 吸盘开口面积」决定，与电机大小无关。电机只负责把膜片拉到位。</p>
+
+  <table>
+    <thead>
+      <tr><th>吸盘开口直径</th><th>有效面积</th><th>−10 kPa</th><th>−20 kPa</th><th>−25 kPa</th><th>−30 kPa</th></tr>
+    </thead>
+    <tbody>
+      <tr class="bad"><td>∅15 mm</td><td>1.767 cm²</td><td>1.77 N</td><td>3.53 N</td><td>4.42 N</td><td>5.30 N</td></tr>
+      <tr><td>∅20 mm</td><td>3.142 cm²</td><td>3.14 N</td><td>6.28 N</td><td>7.85 N</td><td>9.42 N</td></tr>
+      <tr class="hl"><td><b>∅25 mm（推荐）</b></td><td>4.909 cm²</td><td>4.91 N</td><td>9.82 N</td><td><b>12.27 N</b></td><td>14.73 N</td></tr>
+      <tr><td>∅30 mm</td><td>7.069 cm²</td><td>7.07 N</td><td>14.14 N</td><td>17.67 N</td><td>21.21 N</td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula">
+    <b>为什么不能选 ∅15</b><br>
+    吸盘的抗剥离力矩约等于 <code>F_vac · R</code>，代入 F ∝ R² 后 <b>∝ R³</b>。
+    ∅15 吸盘在 −25 kPa 下允许的重心离壁距离只有 <b>4.4 mm</b>（非中性浮力）或 22 mm（近中性浮力）；
+    ∅25 则分别是 20.5 mm 和 102 mm。<b>吸盘直径是唯一一个以三次方回报的参数</b>，不要在这里省钱。
+  </div>
+
+  <div class="formula">
+    <b>丝杆的力学</b><br>
+    <code>T = F · p / (2π · η)</code>　（F 膜片拉力，p 导程，η 效率 ≈0.3）<br>
+    推荐配置：F = 7.85 N、p = 0.3 mm → <b>T = 1.25 mN·m</b>，∅12 空心杯电机（通常 1–3 mN·m）留有余量。<br>
+    <span style="color:var(--ink-3);font-size:12.5px">
+    注意这里的 F 是<b>膜片</b>上的力，不是吸盘上的力 —— 这正是第 3 节那个杠杆的意义。</span>
+  </div>
+
+  <div class="formula w">
+    <b>自重 / 浮力配合</b><br>
+    水下有效重量 <code>G_eff = (m − ρV)·g</code>。机身密封舱里必须留一个可调配重腔，
+    把 G_eff 调到 <b>0.3–0.5 N</b>（比中性略重，保证能贴住壁面，但绝不能到正浮力）。
+    <br>仅靠吸盘加大还不够 —— <b>∅25 吸盘 + 近中性浮力</b>两个条件同时满足，运动单元的步态才真正安全。
+    详细核算见 <a href="motion.html">motion.html</a> 第 3 节。
+  </div>
+</div>
+
+<!-- ══════ 设计要点 ══════ -->
+<div class="card">
+  <h2 id="s5"><span class="n">5</span>设计要点与风险</h2>
+  <p class="cap">按优先级排序，前两条会直接决定方案成不成立。</p>
+
+  <ul class="pts">
+    <li class="w"><b>① 膜片上拱后，压差是"往回推"的 —— 必须有自锁或过死点机构。</b><span class="tag w">最关键</span>
+      <br>膜片上拱、腔体负压时，外部水压会把膜片往下压。这个力（推荐配置下 <b>7.85 N</b>）全程由丝杆传递到电机上，
+      意味着电机要一直通电堵转维持吸附 —— 功耗、发热、掉电即脱落都是问题。
+      <br><b>对策 A：</b>导程 ≤0.3 mm 的丝杆本身具备自锁能力（η &lt; 0.5），断电可保位。推荐配置已经满足。
+      <br><b>对策 B（更优）：</b>用<b>过死点连杆</b> —— 像手动吸盘挂钩那样，扳过死点后真空力反而把机构锁得更紧，电机只在吸附／释放瞬间动作。
+      <br><b>对策 C：</b>加棘轮或单向卡爪，结构简单但需要额外的解锁动作。</li>
+
+    <li class="w"><b>② 密封唇边比膜片更容易失败，而且还要抗剪。</b>
+      <br>膜片负责"产生压差"，唇边负责"守住压差"。玻璃上的藻膜、水垢、划痕都会漏气。
+      唇边建议用 Shore A 5–15 的极软硅胶做薄裙边，靠压差自紧；唇边内侧加一圈微凸的密封筋，比纯平面压合可靠得多。
+      <br><b>本方案特有的一条：</b>因为吸盘不能滑动（死容积负压无法补偿），唇边在机器人自重和刷辊反力下
+      <b>要长期承受静态剪切</b>。唇边的厚度和根部圆弧要按抗剪设计，而不是只按密封设计 —— 这是和普通真空吸盘最大的区别。</li>
+
+    <li class="w"><b>③ 死容积负压会随时间衰减。</b>
+      <br>没有泵，所以任何微小的泄漏都会<b>永久地</b>把腔体压力抬上去，而丝杆自锁又让容积固定不变。结果是吸力在几十分钟到几小时内衰减。
+      <br><b>好消息：</b>爬行步态每一步都会重新拉一次膜片，等于自动复抽，连续作业时是自维持的。
+      <br><b>要做的两件事：</b>① 长时间驻留前主动复抽一次；② <b>每只吸盘装一个机械式负压开关</b>（几块钱），
+      既做吸附确认，也做衰减监测 —— 这个开关还是运动单元电气互锁的必需件。</li>
+
+    <li><b>④ 膜片材料从 0.25 mm / Shore A 20 开始试。</b>
+      <br>膜片加大到 ∅20 后必须相应减薄，否则电机拉不动。做 0.2 / 0.3 / 0.5 mm × Shore A 10 / 20 / 30 共 9 组对比。
+      固定方式用<b>压环 + O 圈</b>而不是纯粘接 —— 粘接在反复形变下会从边缘剥离。
+      膜片上最好做同心波纹（像扬声器振膜），让形变发生在波纹处而不是整体拉伸。</li>
+
+    <li><b>⑤ 膜片上方那一侧不能密封。</b>
+      <br>如果外壳内腔上半部被密封住，膜片上拱时上半部会变成正压，把膜片往下顶，白做工。
+      上半部必须与外部水体连通（开孔）或者填充不可压缩的硅油。开孔更简单，但孔要加防水透气膜防杂质。</li>
+
+    <li><b>⑥ 单吸盘单元先行验证，只验证一件事。</b>
+      <br>做一个吸盘 + 一块玻璃，用弹簧秤拉，或者直接在膜片上方贴一个薄膜压力传感器，
+      确认<b>拉膜能不能稳定产生 −20 kPa 以上</b>。同时标定三件事：达到目标压差所需的<b>行程</b>、
+      吸附后<b>能维持多久</b>（衰减曲线）、以及唇边在不同表面状态下的漏气率。
+      <br>这三条数据出来之前，运动单元的所有计算都只是估算。</li>
+  </ul>
+
+  <div class="formula w">
+    <b>作业工况校核 —— 吸附单元要按"刷辊正在转"来选，不是按"静止挂着"来选</b><br>
+    <b>静止悬挂时：</b>载荷只有 <code>G_eff · h = 0.4 N × 40 mm = 0.016 N·m</code>，唇边几乎不受剪切。
+    <br><b>刷辊工作时：</b><code>M = N·z_b·√(1+μ²) + G_eff·h ≈ 1.5 × 25 × 1.118 + 16 ≈ 58 N·mm</code> ——
+    是静止时的 <b>3.6 倍</b>，而且是<b>持续交变</b>的：刷辊每转一圈，刷丝对唇边的激励就重复一次。
+    <br><b>这就是本方案要求"唇边必须按抗剪设计"的定量来源。</b>普通真空吸盘没有这一条，
+    因为它们不承受持续的侧向载荷，唇边只负责密封。
+    <br><br><b>另一个必须守住的边界：膜片绝不能进入外部载荷路径。</b>
+    载荷闭合路径必须是 <b>壁面 → 唇边 → 吸盘刚性座 → 机身</b>。膜片只在内部制造压差。
+    如果吸盘是靠膜片吊在机身上的，切向刚度会掉三个数量级，刷辊一转就颤振。
+    <br><span style="color:var(--ink-3);font-size:12.5px">
+    好消息：三足布局下这套吸附单元的剥离余量是 <b>18.3 倍</b>（<a href="motion.html">motion.html</a> 第 6 节）。
+    所以<b>唇边不需要为了强度做硬</b> —— 保持 Shore A 5–15 的软唇边保证密封，
+    抗剥离由三点分担的力偶提供，两者各司其职。</span>
+  </div>
+</div>
+
+<footer>
+  吸附单元结构示意 · 非工程图纸 · 比例与形变幅度均已夸张处理<br>
+  配套文档：<a href="motion.html">运动单元设计</a> · <a href="work.html">作业机构设计</a>
+</footer>
+</div>
+</main>
+<script src="assets/toc.js"></script>
+</body>
+</html>
