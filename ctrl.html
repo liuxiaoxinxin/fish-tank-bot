@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>鱼缸壁面清洁机器人 — 主控与传感器设计</title>
+<link rel="stylesheet" href="assets/notion.css">
+</head>
+<body>
+<nav class="side" id="side">
+  <div class="side-doc"><span class="side-icon">🧠</span><span class="side-name">主控与传感器设计</span></div>
+  <div class="side-label">目录</div>
+  <ul class="side-list">
+    <li><a href="#s1" title="1 · 算力分工 — 为什么视觉不放机器人身上">1 · 算力分工 — 为什么视觉不放机器人身上</a></li>
+    <li><a href="#s2" title="2 · 机器人主控 — ESP32-S3">2 · 机器人主控 — ESP32-S3</a></li>
+    <li class="lv2"><a href="#s2a1" title="A · 选型：为什么是 S3，不是什么">A · 选型：为什么是 S3，不是什么</a></li>
+    <li class="lv2"><a href="#s2a2" title="B · 引脚预算 — 31 要挤进 36">B · 引脚预算 — 31 要挤进 36</a></li>
+    <li class="lv2"><a href="#s2a3" title="C · 模拟通道预算 — ADC2 整块报废">C · 模拟通道预算 — ADC2 整块报废</a></li>
+    <li><a href="#s3" title="3 · 传感器套件">3 · 传感器套件</a></li>
+    <li class="lv2"><a href="#s3a1" title="A · 真空 — 三只吸盘和那个不能用的参考">A · 真空 — 三只吸盘和那个不能用的参考</a></li>
+    <li class="lv2"><a href="#s3a2" title="B · 姿态与深度 — 两个绝对基准">B · 姿态与深度 — 两个绝对基准</a></li>
+    <li class="lv2"><a href="#s3a3" title="C · 电流 — 一信号三用，与它做不到的两件事">C · 电流 — 一信号三用，与它做不到的两件事</a></li>
+    <li class="lv2"><a href="#s3a4" title="D · 位置反馈 — 编码器买的是精度，不是速度">D · 位置反馈 — 编码器买的是精度，不是速度</a></li>
+    <li class="lv2"><a href="#s3a5" title="E · 脏污检测挪进前窗模块">E · 脏污检测挪进前窗模块</a></li>
+    <li><a href="#s4" title="4 · 待机功耗预算 — 1 mW 能不能做到">4 · 待机功耗预算 — 1 mW 能不能做到</a></li>
+    <li class="lv2"><a href="#s4a1" title="A · 漏电通路逐项">A · 漏电通路逐项</a></li>
+    <li class="lv2"><a href="#s4a2" title="B · 真空维持 — 最大的不确定项">B · 真空维持 — 最大的不确定项</a></li>
+    <li class="lv2"><a href="#s4a3" title="C · 结论与验收判据">C · 结论与验收判据</a></li>
+    <li><a href="#s5" title="5 · 唤醒与睡眠策略">5 · 唤醒与睡眠策略</a></li>
+    <li class="lv2"><a href="#s5a1" title="A · 唤醒成本与唤醒风暴">A · 唤醒成本与唤醒风暴</a></li>
+    <li class="lv2"><a href="#s5a2" title="B · 为什么不保持连接">B · 为什么不保持连接</a></li>
+    <li class="lv2"><a href="#s5a3" title="C · 不可达窗口与补救">C · 不可达窗口与补救</a></li>
+    <li><a href="#s6" title="6 · 位置与姿态的来源">6 · 位置与姿态的来源</a></li>
+    <li class="lv2"><a href="#s6a1" title="A · 三个绝对基准">A · 三个绝对基准</a></li>
+    <li class="lv2"><a href="#s6a2" title="B · 步态正解 — 三根推杆定死位姿">B · 步态正解 — 三根推杆定死位姿</a></li>
+    <li class="lv2"><a href="#s6a3" title="C · n = 2 的欠约束窗口">C · n = 2 的欠约束窗口</a></li>
+    <li class="lv2"><a href="#s6a4" title="D · 残差即滑移探测">D · 残差即滑移探测</a></li>
+    <li><a href="#s7" title="7 · 通信架构">7 · 通信架构</a></li>
+    <li class="lv2"><a href="#s7a1" title="A · 链路预算 — 路必须走玻璃，不能走水">A · 链路预算 — 路必须走玻璃，不能走水</a></li>
+    <li class="lv2"><a href="#s7a2" title="B · 拓扑与协议">B · 拓扑与协议</a></li>
+    <li class="lv2"><a href="#s7a3" title="C · 数据模型">C · 数据模型</a></li>
+    <li><a href="#s8" title="8 · 坞站端 — 网关与视觉">8 · 坞站端 — 网关与视觉</a></li>
+    <li class="lv2"><a href="#s8a1" title="A · 双芯片分工">A · 双芯片分工</a></li>
+    <li class="lv2"><a href="#s8a2" title="B · 逆变器不自产 PWM">B · 逆变器不自产 PWM</a></li>
+    <li class="lv2"><a href="#s8a3" title="C · 信标与锁相解调">C · 信标与锁相解调</a></li>
+    <li><a href="#s9" title="9 · 固件、OTA 与不可维修性">9 · 固件、OTA 与不可维修性</a></li>
+    <li class="lv2"><a href="#s9a1" title="A · 三段式 OTA">A · 三段式 OTA</a></li>
+    <li class="lv2"><a href="#s9a2" title="B · 磁铁作恢复入口">B · 磁铁作恢复入口</a></li>
+    <li class="lv2"><a href="#s9a3" title="C · 看门狗安全态与上电顺序">C · 看门狗安全态与上电顺序</a></li>
+    <li class="lv2"><a href="#s9a4" title="D · 保护板自锁与黑匣子">D · 保护板自锁与黑匣子</a></li>
+    <li><a href="#s10" title="10 · 对其它文档的修改要求">10 · 对其它文档的修改要求</a></li>
+    <li><a href="#s11" title="11 · 实施路线">11 · 实施路线</a></li>
+  </ul>
+</nav>
+<button class="side-btn" type="button" aria-label="目录">&#9776;</button>
+<main class="page">
+<div class="page-inner">
+
+<header>
+  <div class="page-icon">🧠</div>
+  <h1>鱼缸壁面清洁机器人 — 主控与传感器设计</h1>
+  <p class="sub">1 mW 待机预算 · ESP32-S3 · 三足正解里程 · BLE + MQTT · 视觉放在坞站</p>
+</header>
+
+<!-- ══════ 结论先行 ══════ -->
+<div class="keybox">
+  <h3>结论先行：这一层的三个判断</h3>
+  <p>
+    <b>一、续航的瓶颈本来是吸盘漏气，靠「不作业就回坞」绕过去了。</b>
+    电子件能算到 <b>0.2–0.4 mW</b>，对着 1 mW 的预算还有两倍半到五倍余量。
+    但如果机器人<b>挂在壁上</b>度过待机，吸盘负压会衰减、就得补抽 ——
+    按 <code>dock.html</code> 第 6 节原来的策略算下来是 <b>5 mW，
+    单独一项就把整个预算打穿五倍</b>。
+    现在的架构是<b>两次作业之间回坞站待着</b>，吸盘松开，这一项直接归零。
+    <b>代价搬到了机构上：机器人每天要成功对接 3 次以上</b>，
+    对接可靠性取代待机功耗，成为这一层新的头号风险。
+  </p>
+  <p>
+    <b>二、位置的绝对基准有三个，不要指望 IMU 积分。</b>重力（贴在立壁上，加速度计直接量出转角）、
+    水线（出水入水是一个 3.9 kPa 的硬台阶）、坞站（信标是一个绝对坐标锚点）。
+    三根推杆的长度又直接给出机身位姿。四个来源互相独立，
+    <b>而它们的差就是滑移探测器</b> —— 这是这一层最值钱的东西。
+  </p>
+  <p>
+    <b>三、无线烧录的代价是「没有退路」。</b>穿舱点 0 个意味着没有 USB、没有按键、
+    没有可以摸到的 BOOT 脚。<b>刷成砖就是拿刀撬壳。</b>所以固件这一层必须按
+    「一定会刷坏一次」来设计：三段式 OTA + 强制回滚 + 一个用户拿得到的恢复入口。
+  </p>
+</div>
+
+<!-- ══════ 1 算力分工 ══════ -->
+<div class="card">
+  <h2 id="s1"><span class="n">1</span>算力分工 — 为什么视觉不放机器人身上</h2>
+  <p class="cap">
+    这一节要纠正一个初稿的论证：「机器人跑不了 Linux，所以视觉放坞站」——
+    <b>结论对，理由错。</b>真正的理由是光学，不是功耗。
+  </p>
+
+  <p>
+    这台机器人的待机功耗指标是 <b>0.17 Wh/周</b>（<code>dock.html</code> 第 3 节）。
+    这个数字来自「1000 mAh 电池 + 每天作业 0.4 Wh → 一次充电撑约 2 周」
+    这条链。把它换算成功率：
+  </p>
+
+  <div class="formula">
+    <b>待机功率预算 = 0.17 Wh ÷ 168 h = 1.0 mW（整机，含电池自放电）</b><br>
+    在 7.4 V 上，这等于电池平均输出 <code>135 µA</code>。
+    放到放电末端 6.0 V，是 <code>168 µA</code> —— <b>按 168 µA 做预算，不要按 135 µA。</b>
+  </div>
+
+  <div class="formula w">
+    <b>但这条线现在是设计目标，不是硬约束 —— 因为机器人不作业就回坞站</b><br>
+    初稿把 1 mW 当成一刀切的硬约束，用它来证明「机器人这一侧不能跑 Linux」。
+    <b>那个论证在「回坞站待机」这条架构下不成立了。</b>
+    RV1106 这类 SoC 挂起到内存是 <code>30–100 mW</code>，一天 2.4 Wh；
+    而坞站入电池 2.2 W，机器人一天里绝大多数时间是停在上面的 ——
+    <b>算力开销被坞站直接覆盖，电池不再是瓶颈。</b>
+    <br><b>所以「视觉放坞站」这个决定要换一个理由，而且那个理由更硬：</b>
+    <ul class="pts" style="margin:10px 0 0">
+      <li><b>光学上根本拍不了。</b>前窗模块贴着 5 mm 玻璃，镜头是照着玻璃的<b>法线</b>看出去，
+        要拍的是<b>对面的壁</b> —— 中间隔着 300 mm 水。
+        而淡水成像的衰减按 <code>dock.html</code> 第 3 节修正是 <b>250–420 dB/m</b>，
+        300 mm 就是 75–126 dB。这不是「图像差一点」，是<b>拍不到</b>。</li>
+      <li><b>没地方放。</b>Ø70 的非金属窗口里已经塞了 Ø60 线圈和信标接收，
+        再来一组镜头 + 补光会直接把浮力账顶穿（<code>body.html</code> 第 4 节）。</li>
+      <li><b>坞站看得更好。</b>它从缸外看整面玻璃，不穿水、不穿玻璃内表面，
+        而且它自己是已知的绝对坐标。</li>
+    </ul>
+    <br><b>1 mW 这条线仍然值得守</b>，理由变成三条次要但真实的：
+    坞站可能不在（用户没装、坏了、被拔了）、发热、以及选型纪律 ——
+    一个能睡到 µA 级的板子，元件和布局都不会差。
+  </div>
+
+  <p>
+    视觉的问题就变成了「往哪儿放」，而不是「上不上」。答案是<b>放在坞站</b> ——
+    坞站接市电，<b>功耗预算无穷大</b>，机器人这一侧一度电都不花。
+  </p>
+
+  <svg viewBox="0 0 720 400" role="img" aria-label="算力与功耗的分工：市电侧与电池侧" style="width:100%;height:auto">
+    <defs>
+      <linearGradient id="c1Glass" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#cfe0ee"/><stop offset="1" stop-color="#aac7de"/>
+      </linearGradient>
+    </defs>
+    <rect width="720" height="400" rx="14" fill="#fbfbfa"/>
+
+    <!-- 玻璃 -->
+    <rect x="340" y="66" width="18" height="252" fill="url(#c1Glass)"/>
+    <line x1="340" y1="66" x2="340" y2="318" stroke="#8fb4d6" stroke-width="1.6"/>
+    <line x1="358" y1="66" x2="358" y2="318" stroke="#8fb4d6" stroke-width="1.6"/>
+    <text x="349" y="338" text-anchor="middle" class="s-sub">玻璃 5 mm</text>
+
+    <!-- ── 左侧：坞站 ── -->
+    <rect x="44" y="66" width="270" height="252" rx="12"
+          fill="#eef5f0" stroke="#5c8f6e" stroke-width="2"/>
+    <text x="179" y="50" text-anchor="middle" class="s-lbl">坞站 · 缸外 · 接市电</text>
+    <text x="179" y="94" text-anchor="middle" class="s-sub">功耗预算：无穷大</text>
+
+    <rect x="70" y="112" width="218" height="40" rx="8" fill="#cfe0d5" stroke="#5c8f6e" stroke-width="1.4"/>
+    <text x="179" y="130" text-anchor="middle" class="s-lbl">ESP32-C6 网关</text>
+    <text x="179" y="146" text-anchor="middle" class="s-sub">WiFi + BLE 5 · MQTT/TLS 上云</text>
+
+    <rect x="70" y="162" width="218" height="40" rx="8" fill="#cfe0d5" stroke="#5c8f6e" stroke-width="1.4"/>
+    <text x="179" y="180" text-anchor="middle" class="s-lbl">RV1106 + 摄像头</text>
+    <text x="179" y="196" text-anchor="middle" class="s-sub">Linux · 视觉与推流</text>
+
+    <rect x="70" y="212" width="218" height="40" rx="8" fill="#e0bb8c" stroke="#b5714a" stroke-width="1.4"/>
+    <text x="179" y="230" text-anchor="middle" class="s-lbl">谐振逆变器</text>
+    <text x="179" y="246" text-anchor="middle" class="s-sub">固定频率 · 只调母线电压</text>
+
+    <rect x="70" y="262" width="218" height="40" rx="8" fill="#f4dcdc" stroke="#c9615b" stroke-width="1.4"/>
+    <text x="179" y="280" text-anchor="middle" class="s-lbl">940 nm 信标 ×4</text>
+    <text x="179" y="296" text-anchor="middle" class="s-sub">锁相调制 · 绝对坐标锚点</text>
+
+    <!-- ── 右侧：机器人 ── -->
+    <rect x="382" y="66" width="294" height="252" rx="12"
+          fill="#f2f0ec" stroke="#8b8880" stroke-width="2"/>
+    <text x="529" y="50" text-anchor="middle" class="s-lbl">机器人 · 缸内 · 电池</text>
+    <text x="529" y="94" text-anchor="middle" class="s-sub" style="fill:var(--red-fg)">功耗目标：1.0 mW（设计目标，非硬约束）</text>
+
+    <rect x="406" y="112" width="246" height="40" rx="8" fill="#e4e2dd" stroke="#8b8880" stroke-width="1.4"/>
+    <text x="529" y="130" text-anchor="middle" class="s-lbl">ESP32-S3 主控</text>
+    <text x="529" y="146" text-anchor="middle" class="s-sub">深度睡眠 7 µA（不含 PSRAM）</text>
+
+    <rect x="406" y="162" width="246" height="40" rx="8" fill="#d5e3da" stroke="#5c8f6e" stroke-width="1.4"/>
+    <text x="529" y="180" text-anchor="middle" class="s-lbl">传感器套件</text>
+    <text x="529" y="196" text-anchor="middle" class="s-sub">真空 ×3 · IMU · 深度 · 编码器 ×3</text>
+
+    <rect x="406" y="212" width="246" height="40" rx="8" fill="#e4e2dd" stroke="#8b8880" stroke-width="1.4"/>
+    <text x="529" y="230" text-anchor="middle" class="s-lbl">7 路电机驱动</text>
+    <text x="529" y="246" text-anchor="middle" class="s-sub">推杆 ×3 · 膜片 ×3 · 刷辊 ×1</text>
+
+    <rect x="406" y="262" width="246" height="40" rx="8" fill="#e6eef7" stroke="#4a86b8" stroke-width="1.4"/>
+    <text x="529" y="280" text-anchor="middle" class="s-lbl">前窗模块</text>
+    <text x="529" y="296" text-anchor="middle" class="s-sub">天线 + 接收线圈 + 光电二极管</text>
+
+    <!-- 底部对比 -->
+    <line x1="44" y1="356" x2="676" y2="356" stroke="#d9d6d0" stroke-width="1.2"/>
+    <text x="44" y="380" class="s-sub" style="fill:var(--green-fg)">市电侧：算力在这里，怎么花都行</text>
+    <text x="676" y="380" text-anchor="end" class="s-sub" style="fill:var(--red-fg)">电池侧：视觉放不下 —— 挡在光学上，不是算力上</text>
+  </svg>
+
+  <h3 id="s1a1"><span class="n">A</span>坞站相机能做什么，不能做什么</h3>
+  <p class="cap">
+    把视觉放坞站是对的决定，但要写清楚它到底买到了什么 —— 否则会围绕它设计出错误的依赖。
+  </p>
+
+  <p><b>它买到的，主要是产品功能：</b>「用 App 看鱼缸」这件事本身就有价值，和清洁功能正交。</p>
+
+  <p><b>它买不到的，是机器人定位。两个几何上的硬理由：</b></p>
+
+  <ul class="pts">
+    <li class="w"><b>它看不见自己所在的那面壁。</b>坞站夹在玻璃外侧、镜头朝缸内，
+      而机器人在这块玻璃的<b>内侧</b>作业。相机是在自己的安装平面里<b>侧视</b>它，
+      再加上水-玻璃界面的全反射临界角（水 1.33 / 玻璃 1.52，临界角约 61°），
+      大角度射来的光线根本不出射。<b>机器人主要在哪面壁作业，相机就最看不见哪面壁。</b></li>
+    <li class="w"><b>隔着水看对面壁，恰恰在需要它的时候失效。</b>要看对面壁就得穿过 600 mm 缸水。
+      干净缸里没问题，但要清洗的缸里水体消光系数是 5–20 /m，
+      <code>e^(−cL)</code> 落在 0.05 到 1e-5 之间 —— 是一层散射雾，不是图像。
+      <b>机器人的价值主张和相机的可用性是反相关的。</b></li>
+    <li class="w"><b>坞站里也放不下。</b><code>dock.html</code> 第 5 节把坞站定死在 ∅90 × 22 mm，
+      玻璃侧一个 ∅70 的非金属区，里面已经塞了 ∅60 的发射线圈和间距 ±20 mm 的四只信标。
+      镜头是<b>不透明</b>的，还要再开一个光学孔 ——
+      这会直接推翻坞站的结构和防坠绳安装。</li>
+  </ul>
+
+  <div class="formula">
+    <b>要绝对位置，用信标，不用相机</b><br>
+    把四只 940 nm 信标的驱动电流加大、加同步检波和 AGC，
+    <b>同样那四只光电二极管就变成一个测向传感器</b>：测出到已知点的方位角，
+    结合已知的壁面方程，在 200–400 mm 距离上给出一个<b>绝对的一维位置解</b>。
+    <br>成本是几块钱的 LED 驱动电流，不占体积、不穿水、不依赖水质。
+    <b>这才是坞站能提供的绝对基准。</b>相机留着，但按「看鱼缸」这个功能定价。
+  </div>
+</div>
+
+<!-- ══════ 2 机器人主控 ══════ -->
+<div class="card">
+  <h2 id="s2"><span class="n">2</span>机器人主控 — ESP32-S3</h2>
+  <p class="cap">
+    选型只需要满足三条：睡眠电流低于 50 µA、能同时驱动 7 路电机、有足够多的模拟通道。
+  </p>
+
+  <h3 id="s2a1"><span class="n">A</span>选型：为什么是 S3，不是什么</h3>
+
+  <p>
+    先说被否掉的：<b>RV1106 这类 Linux SoC</b>（第 1 节的 30–100 倍超预算）、
+    <b>ESP32-C3</b>（只有单核，且 ADC 通道和外设都更少，7 路电机加 15 路模拟量挤不下）。
+  </p>
+
+  <p>ESP32-S3 的站得住的理由只有四条，<b>其中两条必须说清楚，因为常被说反</b>：</p>
+
+  <table>
+    <thead><tr><th>理由</th><th>说明</th><th>成立吗</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td><b>双核</b></td><td>核 1 跑电机控制与步态，核 0 跑协议与无线。互不抢时基</td><td>成立</td></tr>
+      <tr class="hl"><td><b>ADC1 有 10 路</b></td><td>这是模拟通道预算的全部来源，见本节 C</td><td>成立</td></tr>
+      <tr class="hl"><td><b>生态与价格</b></td><td>模块 ¥18–25，资料最全，外设驱动现成</td><td>成立</td></tr>
+      <tr class="hl"><td><b>MCPWM / LEDC</b></td><td>推杆三路要真死区与同步，归 MCPWM</td><td>成立</td></tr>
+      <tr class="bad"><td>PSRAM「地图和日志不用抠」</td><td class="bad"><b>说反了。</b>PSRAM 在低功耗模式下要 <code>40–200 µA</code>，
+        <b>单独一项就超 1 mW 预算 1.4 倍</b></td><td class="bad">不成立，必须选无 PSRAM 型号</td></tr>
+      <tr class="bad"><td>「4 路 PCNT 正交解码」</td><td class="bad"><b>数量错了。</b>ESP32-S3 只有 <b>2 个</b> PCNT 单元，三个推杆不够分</td><td class="bad">不成立，改用 I2C 角度传感器</td></tr>
+      <tr class="bad"><td>「带 DVP 摄像头接口」</td><td class="bad">视觉已经放坞站了，这个接口用不上</td><td class="bad">不成立</td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula w">
+    <b>必须选无 PSRAM 的模块：ESP32-S3-WROOM-1-N4 或 -N8</b><br>
+    不要 N8R2 / N8R8。<b>带 PSRAM 的型号在深度睡眠时会给 PSRAM 供电，
+    实测多出 40–200 µA</b>，而整个待机预算是 135 µA。
+    <br>而且这笔钱买不到东西：整机需要存的东西是四面壁的覆盖栅格，
+    <b>600 × 400 mm 按 10 mm 栅格是 2400 格，位图加浓度各一份约 5 kB</b>，
+    四面壁 20 kB。一个 4 MB flash 的模块剩下三个数量级。
+    <br><b>验收判据：整板深度睡眠电流 &lt; 50 µA @ 3.3 V，用 µA 表实测，不看数据手册。</b>
+  </div>
+
+  <h3 id="s2a2"><span class="n">B</span>引脚预算 — 31 要挤进 36</h3>
+
+  <p>
+    ESP32-S3-WROOM-1（无 PSRAM 型号）引出约 <b>36 根可用 GPIO</b>，
+    其中 GPIO26–32 归片内 flash。逐项算：
+  </p>
+
+  <table>
+    <thead><tr><th>用途</th><th>路数</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>电机 PWM</td><td>7</td><td>推杆 ×3 走 MCPWM，膜片 ×3 + 刷辊 走 LEDC</td></tr>
+      <tr><td>电机方向 DIR</td><td>7</td><td><b>全部挪到 TCA9535 扩展器</b>，省 7 根</td></tr>
+      <tr><td>真空开关 ×3</td><td>3</td><td>也走 TCA9535</td></tr>
+      <tr class="hl"><td>I2C 总线</td><td><b>2</b></td><td>IMU + 3 只角度传感器 + 真空传感器全挂这一条</td></tr>
+      <tr><td>模拟量（ADC1）</td><td>8</td><td>见本节 C</td></tr>
+      <tr><td>磁控开关</td><td>1</td><td>必须能唤醒，走 RTC GPIO</td></tr>
+      <tr><td>状态灯 / 蜂鸣</td><td>1</td><td>故障可见</td></tr>
+      <tr><td>调试 UART</td><td>2</td><td>只接到腔内焊盘，不引出</td></tr>
+      <tr class="hl"><td><b>合计</b></td><td><b>24</b></td><td>余量 12 根，够二期加东西</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    关键是<b>两处合并</b>：编码器不走 GPIO 而走 I2C（3 路省下 4 根），
+    方向线和开关线走扩展器（省 10 根）。不做这两件事就是 38 根，直接超。
+  </p>
+
+  <h3 id="s2a3"><span class="n">C</span>模拟通道预算 — ADC2 整块报废</h3>
+
+  <p>
+    ESP32-S3 有两组 SAR ADC。看起来有 20 路，实际只有 <b>10 路能用</b>：
+  </p>
+
+  <div class="formula w">
+    <b>ADC2 不能用，而且不是「开 WiFi 时不能用」</b><br>
+    ADC2 被无线控制器占用：一旦调用 <code>esp_wifi_start()</code>，读 ADC2 返回 <code>ESP_ERR_TIMEOUT</code>；
+    <b>蓝牙同样占用</b>，所以「用 BLE 就不用 WiFi 了」并不能把 ADC2 救回来。
+    另外 ESP32-S3 勘误表里 ADC2 的数字控制器 / DMA 已知不可用，没有修复计划。
+    <br><b>按 ADC1 只有 10 路做设计，ADC2 当作不存在。</b>
+  </div>
+
+  <table>
+    <thead><tr><th>模拟量</th><th>通道</th><th>采样要求</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td>真空 ×3（差压式，参考端接水腔）</td><td>3</td><td>1 kHz，要快 —— 角部特征是瞬态</td></tr>
+      <tr class="hl"><td>光电二极管 → <code>e_x</code> / <code>e_y</code></td><td><b>2</b></td><td><code>e_x=(A+C)−(B+D)</code>、<code>e_y=(A+B)−(C+D)</code> 用两个差分放大器合成，
+        <b>4 路并成 2 路</b>，顺带白拿共模抑制（抗环境光）</td></tr>
+      <tr><td>电机电流 ×7</td><td>1</td><td>INA181 ×7 → 74HC4067 八选一轮询，100 Hz 级足够</td></tr>
+      <tr><td>电池分压</td><td>1</td><td><b>必须 MOSFET 门控</b>，见第 4 节</td></tr>
+      <tr><td>NTC 温度</td><td>1</td><td><b>必须 GPIO 供电</b>，见第 4 节</td></tr>
+      <tr class="hl"><td><b>合计</b></td><td><b>8 / 10</b></td><td>留 2 路</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    电流为什么不走外置 I2C ADC：两片 ADS1115 在 860 SPS 下轮询七路是每路 215 µs 一个样本，
+    <b>会和 PWM 拍频</b>。INA181 是模拟输出，走 mux 进 ADC1 的连续 / DMA 模式，
+    带宽高而且能和 PWM 同步采样，还便宜一半。
+  </p>
+</div>
+
+<!-- ══════ 3 传感器套件 ══════ -->
+<div class="card">
+  <h2 id="s3"><span class="n">3</span>传感器套件</h2>
+  <p class="cap">
+    每一个传感器都要能回答「这个数用来做什么判断」。答不出来的就不装。
+  </p>
+
+  <h3 id="s3a1"><span class="n">A</span>真空 — 三只吸盘和那个不能用的参考</h3>
+
+  <p>这一条是整篇里最容易被忽略、后果又最严重的一处。</p>
+
+  <div class="formula w">
+    <b>密封壳内的空气压力会跟着温度跑，幅度 2.7–8.5 kPa</b><br>
+    壳体是<u>密封的</u>，内部空气体积不变，于是 <code>ΔP/P = ΔT/T</code>。
+    电机是贴在壁上的，热表给的是平均 3.75 W 下温升 11–19 K、峰值 12.7 W。
+    从「凉缸待机」到「热缸刷洗」，腔内气温摆 8–25 K 完全正常 ——
+    对应 <code>2.7–8.5 kPa</code> 的参考漂移。
+    <br><b>拿腔内空气当基准的真空传感器，在 −25 kPa 的设定点上会读错 11–34%。</b>
+    <br><b>更糟的是机械负压开关也共用这个参考</b> —— 那个开关是吸盘的<b>硬件安全互锁</b>，
+    于是「跳闸点」跟着热循环走，在电机最吃力的时候互锁最不可靠。
+  </div>
+
+  <p>
+    修法不花钱：<code>suction.html</code> 第 5 节⑤ 本来就要求膜片上方的上腔
+    <b>与外部水体连通</b>（否则膜片上拱时上腔变正压，白做工）。
+    <b>把这个上腔直接当作真空传感器的参考端。</b>水腔压力就是环境压力，与腔内气温无关。
+    三只差压传感器的参考口各接各自的上腔，量程 −100…0 kPa。
+  </p>
+
+  <p>
+    顺带把这笔账记清楚：这个开孔在<b>吸盘单元的上腔</b>，不在壳体上，
+    所以 <code>body.html</code> 第 5 节的「穿舱点 0 个」仍然成立。
+    <code>body.html</code> 第 2D 节④ 禁止的是在<b>壳体</b>上装透气阀（那会给水汽开高速路），
+    与吸盘上腔的通水孔是两件事，不要混。
+  </p>
+
+  <p>
+    量程和分辨率：片内 ADC 12 位、校准后约 0.1% ≈ <b>0.1 kPa ≈ 10 mm 水柱</b>。
+    够不够？<b>够，但要有退路。</b>角部检测靠的是压力信号的<b>特征变化</b>（唇边过棱时的压力波形）
+    而不是绝对精度。如果实测发现特征太弱，
+    <b>三路真空换成外置 ADS1115 差分输入</b>，那是唯一需要动的地方。
+  </p>
+
+  <h3 id="s3a2"><span class="n">B</span>姿态与深度 — 两个绝对基准</h3>
+
+  <p>
+    <b>IMU 要留，但它的作用被写反了。</b>常见的说法是「IMU 积分得到位移，会漂」——
+    在立壁上，重力是<b>躺在壁面内</b>的，机体系的比力矢量就是
+    <code>(−g·sinφ, −g·cosφ, 0)</code>。
+    也就是说<b>静止时加速度计直接量出壁面内的转角 φ，不需要积分</b>。
+    每次停下来（步进-停顿式步态里大部分时间都在停）都是一次绝对标定。
+    漂的只有位置，而位置正好由推杆长度给出（第 6 节）。
+    <br>选型：BMI270 或 QMI8658，¥8–12。<b>不要磁力计</b> ——
+    坞站感应线圈的 60–100 kHz 磁场会把它淹掉。
+  </p>
+
+  <p>
+    <b>深度计（MS5837-02BA）的真正用法是水线，不是绝对深度。</b>
+    它的绝对精度是 ±50 mbar ≈ <b>±500 mm</b>，当绝对基准没用；
+    相对分辨率约 0.2 mbar ≈ 2 mm。
+    而「在水线上把读数归零」也不可靠 —— 真缸每周蒸发 1–2 L，水位就掉 5–8 mm。
+    <br><b>可靠的是出水入水这个动作本身</b>：跨越水线是一个 <b>3.9 kPa</b> 的硬台阶，
+    每一次浮出水面都是一次明确无误的绝对 y 基准，比任何标定都硬。
+  </p>
+
+  <h3 id="s3a3"><span class="n">C</span>电流 — 一信号三用，与它做不到的两件事</h3>
+
+  <p>
+    H 桥的低边总有一路 MOS 导通，所以<b>单只低边采样电阻就能测出电流幅值</b>，方向由指令已知。
+    七路电流同时服务三件事：
+  </p>
+
+  <ul class="pts">
+    <li><b>行程到底确认</b> —— 膜片拉到硬限位时电流抬升，这是可靠的。</li>
+    <li><b>刷辊缠绕</b> —— 磁耦合会打滑保护电机，但<b>打滑本身要能被发现并上报</b>。</li>
+    <li><b>电池级电流异常</b> —— 这是安全项，见第 9 节 D。</li>
+  </ul>
+
+  <div class="formula w">
+    <b>电流检测做不到的两件事，不要写进设计</b><br>
+    <b>一、它不能确认吸附成功。</b><code>motion.html</code> 第 9 节的时序表写着
+    「电流检测确认吸附成功」—— 这句要改。电流抬升只说明<b>膜片走到了行程末端</b>，
+    它完全不说明唇边有没有贴合。<b>一个漏气的吸盘和一个好吸盘产生同样的电流波形。</b>
+    确认吸附只有真空开关能做。
+    <br><b>二、它做不了障碍物探测。</b>丝杆导程 0.3 mm、效率约 0.3，
+    意味着<b>七成的电机扭矩花在丝杆摩擦上，而且不随外载变化</b>。
+    一个障碍物扰动的是剩下那两三成里的一小部分，
+    而唇边摩擦随藻类、温度、唇边老化变化的幅度比这个大得多。
+    信号会被埋掉。<b>障碍物改由「腿没走到指令位置」来判断</b>（第 6 节 A）。
+  </div>
+
+  <h3 id="s3a4"><span class="n">D</span>位置反馈 — 编码器买的是精度，不是速度</h3>
+
+  <p>
+    <code>dock.html</code> 第 4 节 A 写的是「IMU 积分 + 里程计数得到相对位移」，
+    而 <code>body.html</code> 第 5 节写的是推杆电机<b>开环</b>、没有编码器。两者对不上。
+    真正的问题不是「精度差一点」，而是：
+  </p>
+
+  <ul class="pts">
+    <li class="w"><b>±5 mm 的对接伺服在开环下不可能实现。</b>
+      <code>dock.html</code> 第 4 节 B 让机器人闭环收到 ±5 mm
+      （那个指标已经从 ±2 mm 放松过一次了），
+      并把精度上限归给「腿的最小步距」——
+      但开环有刷直流电机<b>没有「步距」这个概念</b>。设计里不存在任何机制
+      能让推杆被命令走到 ±5 mm 并重复到达。</li>
+    <li class="w"><b>复位后腿的位置是未知的。</b>看门狗中途复位，没有限位开关可以回零。
+      没有编码器，这个步态无法恢复。</li>
+    <li class="w"><b>吸盘有没有爬移，现在无法知道。</b>而
+      <code>motion.html</code> 第 4 节说这正是那个「否则看不见」的失效。</li>
+  </ul>
+
+  <div class="formula">
+    <b>选型：AS5600（I2C，12 位）磁角度传感器 ×3</b><br>
+    比霍尔编码器省事得多：<b>只占 2 根线</b>，不占 PCNT，不产生中断，
+    而且<b>上电即知绝对角度</b> —— 顺带解决复位恢复。
+    0.3 mm 导程下 12 位远超所需。
+    <br><b>一个坑：AS5600 的 I2C 地址固定 0x36，三只挂一条总线会冲突。</b>
+    加一片 <b>TCA9548A</b>（I2C 八选一，¥3）分开，总线仍只占 2 根线。
+    或者换 SPI 接口的 MT6701，用三根独立 CS。
+    <br>代价：每只约 ¥5–6，三只加 mux 约 ¥20；<b>质量 +8 g</b>。
+  </div>
+
+  <div class="formula w">
+    <b>不要承诺速度收益</b><br>
+    <code>motion.html</code> 的步态确认时间是被「真空建立到 −20 kPa」限制的<b>流体时间</b>，
+    不是位置时间。<b>编码器不会让单步周期变快一秒。</b>
+    它买到的是精度、复位可恢复、以及第 6 节 D 那个滑移探测器。
+    写清楚，否则后面会有人拿它去压节拍。
+  </div>
+
+  <p>
+    另外一个悬空的问题必须点出来：<b>推杆电机的扭矩需求在全仓库里从未推导过。</b>
+    <code>body.html</code> 第 3 节只给了「推杆电机峰值 2.0 W」，没有力、没有导程、没有效率。
+    吸附电机是 1.25 mN·m 一步一步推出来的，推杆是三倍功耗却没有任何推导。
+    <b>这件事要在选电机、选导程、选编码器之前补上</b> ——
+    如果推杆需要减速箱，那么「和吸附电机统一型号」这条备件通用性就不成立了。
+  </p>
+
+  <h3 id="s3a5"><span class="n">E</span>脏污检测挪进前窗模块</h3>
+
+  <p>
+    <code>work.html</code> 第 4 节的 L2 是四个 pogo：+5 V / GND / ID / SIG。
+    水里露出四个导体、其中一个还是 5 V —— 这正好是
+    <code>dock.html</code> 第 2 节花一整节否掉的东西（「缸内零电气」）。
+    淡水 100–1000 µS/cm 下，间距 1–2 mm 的相邻 pogo 之间是几 kΩ，
+    <b>ID 识别电阻被水桥分流，方案从根上不可靠</b>；
+    +5 V 持续电解，会长生物膜、腐蚀触点，而且这一切发生在鱼缸里。
+  </p>
+
+  <div class="formula">
+    <b>脏污检测搬进前窗模块，零暴露导体</b><br>
+    前窗模块已经是一块朝向玻璃的 POM 实体，和接收线圈、天线共用同一个窗口。
+    <b>在它上面铣一个斜孔</b>，让一对红外发射/接收管以掠射角看到
+    <b>行进方向前方 20–50 mm</b> 的玻璃。
+    脏污检测、障碍预判、零穿舱点，同时消掉整个 L2 电气段。
+  </div>
+
+  <p>
+    作业头识别（原来的 ID 脚）改成<b>无源识别</b>：头上做一块反射图案，
+    用同一个窗口读；或者贴一块小磁铁，用现成的磁传感读。
+    <b>L2 的 +5 V 不引出。</b>
+    一期本来就不上吸污头，L2 的电气部分留着也是空置的。
+  </p>
+</div>
+
+<!-- ══════ 4 待机功耗预算 ══════ -->
+<div class="card">
+  <h2 id="s4"><span class="n">4</span>待机功耗预算 — 1 mW 能不能做到</h2>
+  <p class="cap">
+    分两笔账：电子件的漏电，和维持吸附的机械功耗。第二笔比第一笔大一个数量级。
+  </p>
+
+  <h3 id="s4a1"><span class="n">A</span>漏电通路逐项</h3>
+
+  <p>按 3.3 V 折算，逐项列到 µW：</p>
+
+  <table>
+    <thead><tr><th>通路</th><th>电流</th><th>功率</th><th>备注</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td>ESP32-S3 深度睡眠 + RTC 定时器</td><td>7 µA</td><td>23 µW</td><td>裸芯片、<b>无 PSRAM</b></td></tr>
+      <tr><td>SPI NOR flash（已进 power-down）</td><td>~5 µA</td><td>17 µW</td><td>未进 power-down 是 +15–30 µA，必须在睡眠时关</td></tr>
+      <tr class="hl"><td>常开 3.3 V buck 静态电流</td><td>1.5 µA</td><td>5 µW</td><td><b>必须选低 Iq 的</b>，见下方红线</td></tr>
+      <tr><td>电池保护 IC（DW01A + FS8205）</td><td>3–5 µA</td><td>12–17 µW</td><td>不可省</td></tr>
+      <tr><td>负载开关 / I2C 上拉 / ESD 漏电</td><td>~1 µA</td><td>3 µW</td><td></td></tr>
+      <tr><td>传感器待机</td><td>3 µA</td><td>10 µW</td><td>IMU 挂起、真空传感器待命、mux 断电</td></tr>
+      <tr><td>磁控开关上拉（<b>外部 1 MΩ</b>）</td><td>3.3 µA</td><td>11 µW</td><td>用片内 45 kΩ 上拉是 73 µA，见第 5 节</td></tr>
+      <tr class="hl"><td><b>电子件小计</b></td><td><b>~26 µA</b></td><td><b>≈ 0.09 mW</b></td><td></td></tr>
+      <tr><td>电池自放电 1–3%/月（7.4 Wh）</td><td>—</td><td>0.1–0.3 mW</td><td><b>和全部电子件同量级，不能漏记</b></td></tr>
+      <tr><td>唤醒 48 次/天（每次 ~0.2 s @ 40 mA）</td><td>—</td><td>0.03 mW</td><td>约 3% 预算</td></tr>
+      <tr class="hl"><td><b>合计</b></td><td></td><td><b>0.2–0.4 mW</b></td><td><b>对着 1.0 mW 有 2.5–5× 余量</b></td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula w">
+    <b>三个会把预算悄悄吃光的陷阱</b><br>
+    <b>① 电池分压不改门控。</b>100 kΩ / 100 kΩ 直接跨在 7.4 V 上是 <b>37 µA</b>。
+    加一只 MOSFET 门控，只在测量时接通。
+    <br><b>② NTC 分压不改 GPIO 供电。</b>10 kΩ / 10 kΩ 跨 3.3 V 是 <b>165 µA</b> ——
+    <b>单项就超预算 22%。</b>把分压顶端接到一个 GPIO 上，测量时才拉高。
+    <br><b>③ 贪便宜的 buck。</b>MP2315 静态约 200 µA（= 0.24 Wh/周，<b>1.4 倍预算</b>），
+    AMS1117 更是毫安级（<b>5 mA 就是 0.84 Wh/周，单这一项就是预算的 5 倍</b>）。
+    要 TPS62903 这一类（Iq 1.5 µA）。<b>这一条上没有便宜的余地。</b>
+  </div>
+
+  <p>
+    顺带砍掉一整条轨：<b>不要 5 V 逻辑轨。</b>
+    传感器清单里没有任何东西需要 5 V（L2 的 +5 V 已经按第 3 节 E 删了）。
+    2S 电池直接降到 3.3 V 单轨，一颗 TPS62903（2 A，Iq 1.5 µA）同时供 MCU 和
+    BLE 发射的 500 mA 余量，不需要第二级，也就不需要 5 V 负载开关。
+  </p>
+
+  <h3 id="s4a2"><span class="n">B</span>真空维持 — 最大的不确定项</h3>
+
+  <p>
+    上面那笔账只回答了「电子件睡得好不好」。它没回答一个更基本的问题：
+    <b>不作业的时候，机器人待在哪里？</b>
+  </p>
+
+  <p>
+    这个问题有唯一答案：<b>回坞站待着。</b>两次作业之间停在坞站上，
+    中途电量不够也回坞站补，充满了接着干。
+    这一条决定把下面整项开销<b>直接归零</b> —— 坞站上不需要吸附，
+    吸盘松开，就没有任何负压要维持。
+  </p>
+
+  <div class="formula">
+    <b>为什么必须写清楚这一条：反过来的方案贵 5 倍</b><br>
+    假设改成<b>挂在壁上</b>待机 —— 那它就是一个 0.4 N 有效重量的物体吊在三只吸盘上，
+    而 <code>suction.html</code> 第 5 节③ 说了负压会<b>在几十分钟到几小时内衰减</b>，
+    840 个半小时的窗口里得有人去补抽。
+    <br><b>热力学下限仍然可以忽略</b>：抽气功 <code>P·Q/η</code>，
+    每只吸盘漏 100 µL/h 也只有 <code>1e5 Pa × 2.8e-8 m³/s ÷ 0.3 ≈ 9 µW</code>，
+    三只 27 µW —— 比电子件还小。
+    <br><b>但每次都得起一次电机。</b>按 <code>dock.html</code> 第 6 节原来写的策略
+    （每 30 min 唤醒 2 s 补真空、三只吸盘一起补）：
+    <code>3 × 1.5 W × 2 s = 9 J = 2.5 mWh</code>，一天 48 次 →
+    <b>0.84 Wh/周 ≈ 5.0 mW</b>。
+    <br><b>那是整个电子件预算的 5 倍 —— 挂壁待机的方案单独被这一项否掉。</b>
+  </div>
+
+  <div class="formula">
+    <b>漏气量本身不是问题，每次动作的固定开销才是</b><br>
+    <b>热力学下限可以忽略</b>：抽气功 <code>P·Q/η</code>，
+    每只吸盘漏 100 µL/h 也只有 <code>1e5 Pa × 2.8e-8 m³/s ÷ 0.3 ≈ 9 µW</code>，
+    三只 27 µW —— 比电子件还小。
+    <br><b>但每次都得起一次电机。</b>按 <code>dock.html</code> 第 6 节现在写的策略
+    （每 30 min 唤醒 2 s 补真空、三只吸盘一起补）：
+    <code>3 × 1.5 W × 2 s = 9 J = 2.5 mWh</code>，一天 48 次 →
+    <b>0.84 Wh/周 ≈ 5.0 mW</b>。
+    <br><b>这是整个预算的 5 倍。它单独一项就否掉了「一次充电撑三周」。</b>
+  </div>
+
+  <p>
+    两头之间差了 170 倍，而这个区间现在<b>没有任何实测数据</b>。
+    归零是架构决定的，不是测量决定的 —— 但只要机器人<b>还在壁上</b>，
+    就有两件事非测不可，因为它们决定的是别的东西：
+  </p>
+
+  <ul class="pts">
+    <li><b>一条作业中的 2.1 min 要不要补真空？</b>
+      按 <code>suction.html</code> 第 5 节③ 的衰减速率，答案是<b>不用</b> ——
+      衰减尺度是几十分钟，一次作业才 126 s。但这是从「几十分钟」这个估算推的，
+      要在 <code>body.html</code> 第 7 节「第一步」那个空密封壳里做一条真空衰减曲线来兜底：
+      同一只吸盘、贴在<b>真实长藻的玻璃</b>上，记 72 h 的 ΔP。
+      万一衰减比估算快一个数量级，这条曲线就是必须改架构的信号。</li>
+    <li><b>用上那个没人写下来的杠杆：<code>ΔP ∝ 1/V_残余</code>。</b>
+      在同样的漏气量下，<b>残余容积越大，压降越慢</b>。
+      这条即使不做挂壁待机也用得上：作业中的安全裕度、掉电后的悬停时间都由它定。
+      代价是行程，但这是一个免费的控制旋钮。</li>
+    <li class="w"><b>回坞间隔也要自适应。</b>固定 30 min 是最坏情况的假设，不该常态执行。
+      按现在的架构，机器人是「作业 → 回坞」循环，坞站只要监测到电量低于阈值就补，
+      补到多少停由 <code>dock.html</code> 第 6 节定。</li>
+  </ul>
+
+  <div class="formula w">
+    <b>代价搬走了，没有消失 —— 从功耗搬到了机构</b><br>
+    「不作业就回坞」把上面那 5 mW 换成了一条更硬的要求：<b>机器人必须每天成功对接 3 次以上</b>
+    （出发 3 次 + 返回 3 次，中途补电还要再加）。而对接精度是 ±5 mm、
+    靠四象限光电捕获 ±25 mm —— 这是<b>一个每天要做 6 遍的动作，不是 2.5 周做 1 遍</b>。
+    <br>于是新的风险清单是：导向罩积藻会不会挡住光电二极管、
+    坞站信标透镜会不会被水垢糊住、线圈在 ±5 mm 边缘反复对接会不会磨损导向面。
+    <br><b><code>dock.html</code> 第 3 节「回坞周期 2.5 周」这句话现在没有意义了</b> ——
+    电池在坞站上一直被补，永远用不到 2.5 周。<b>那一节要按新架构重写。</b>
+  </div>
+
+  <h3 id="s4a3"><span class="n">C</span>结论与验收判据</h3>
+
+  <div class="formula">
+    <b>结论：整机通过，余量 2.5–5 倍</b><br>
+    <b>电子件：0.2–0.4 mW</b>。真空维持项<b>为零</b> —— 不作业就回坞站，吸盘松开。
+    合计 <b>&lt; 0.5 mW</b>，对 1.0 mW 的预算余量 2 倍以上。
+    <br><b>而且这个预算的性质变了：</b>机器人现在每天回坞 3 次以上，
+    待机功耗不再是「撑三周」的生死线，只是一个效率指标。
+    <b>1 mW 这条线仍然值得守</b>（它同时压住了发热和元件选型），
+    但它已经从硬约束降级为设计目标。
+    <br><b>验收判据：</b>
+    ① 整板深度睡眠电流 &lt; 50 µA @ 3.3 V（µA 表实测）——
+    这是唯一还能一票否决的电气指标，因为 PSRAM 和分压漏电都是在这里露馅的；
+    ② 拿到「压降速率 vs 残余容积」曲线 —— 它现在判定的是作业中的安全裕度，不是待机功耗；
+    ③ 对接成功率 ≥ 99%（连续 200 次无失败），这是替代掉原第 ③ 条的新判据。
+  </div>
+
+  <svg viewBox="0 0 720 390" role="img" aria-label="待机功耗堆叠与 1 mW 预算线" style="width:100%;height:auto">
+    <defs>
+      <marker id="c3Arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#c9615b"/>
+      </marker>
+    </defs>
+    <rect width="720" height="390" rx="14" fill="#fbfbfa"/>
+
+    <text x="34" y="34" class="s-lbl">待机功耗堆叠（µW，3.3 V 折算）</text>
+
+    <!-- 坐标轴 -->
+    <line x1="90" y1="252" x2="650" y2="252" stroke="#d9d6d0" stroke-width="1.4"/>
+    <text x="90" y="270" text-anchor="middle" class="s-sub">0</text>
+    <text x="202" y="270" text-anchor="middle" class="s-sub">200</text>
+    <text x="314" y="270" text-anchor="middle" class="s-sub">400</text>
+    <text x="426" y="270" text-anchor="middle" class="s-sub">600</text>
+    <text x="538" y="270" text-anchor="middle" class="s-sub">800</text>
+    <text x="650" y="270" text-anchor="middle" class="s-sub">1000</text>
+
+    <!-- 预算线 1 mW = x650 -->
+    <line x1="650" y1="60" x2="650" y2="252" stroke="#c9615b" stroke-width="2" stroke-dasharray="7 5"/>
+    <text x="656" y="76" class="s-sub" style="fill:var(--red-fg)">1.0 mW</text>
+    <text x="656" y="92" class="s-sub" style="fill:var(--red-fg)">预算线</text>
+
+    <!-- 堆叠条：每项一段，累计 -->
+    <!-- 23 -->
+    <rect x="90" y="70" width="12.9" height="34" fill="#4a86b8"/>
+    <!-- 17 -->
+    <rect x="102.9" y="70" width="9.5" height="34" fill="#6f9dc4"/>
+    <!-- 5 -->
+    <rect x="112.4" y="70" width="2.8" height="34" fill="#94b6d4"/>
+    <!-- 15 -->
+    <rect x="115.2" y="70" width="8.4" height="34" fill="#5c8f6e"/>
+    <!-- 3 -->
+    <rect x="123.6" y="70" width="1.7" height="34" fill="#8fae98"/>
+    <!-- 10 -->
+    <rect x="125.3" y="70" width="5.6" height="34" fill="#b5714a"/>
+    <!-- 11 -->
+    <rect x="130.9" y="70" width="6.2" height="34" fill="#d9a05b"/>
+    <!-- 自放电 200 -->
+    <rect x="137.1" y="70" width="112" height="34" fill="#a8a49c"/>
+    <!-- 唤醒 30 -->
+    <rect x="249.1" y="70" width="16.8" height="34" fill="#c4c0b8"/>
+    <!-- 合计边界 -->
+    <line x1="265.9" y1="62" x2="265.9" y2="112" stroke="#6b6862" stroke-width="1.8"/>
+    <text x="265.9" y="56" text-anchor="middle" class="s-lbl">≈ 300 µW</text>
+
+    <!-- 逐项标注（右侧引线） -->
+    <g stroke="#c9c5be" stroke-width="1">
+      <line x1="96" y1="104" x2="96" y2="132"/>
+      <line x1="96" y1="132" x2="120" y2="132"/>
+      <line x1="209" y1="104" x2="209" y2="176"/>
+      <line x1="209" y1="176" x2="240" y2="176"/>
+      <line x1="257" y1="104" x2="257" y2="212"/>
+      <line x1="257" y1="212" x2="288" y2="212"/>
+    </g>
+
+    <text x="124" y="128" class="s-sub">MCU 睡眠 23 + flash 17 + buck 5 + 保护 15 +</text>
+    <text x="124" y="146" class="s-sub">开关/传感器 13 + 磁控上拉 11</text>
+    <text x="244" y="172" class="s-sub" style="fill:var(--orange-fg)">电池自放电 100–300</text>
+    <text x="244" y="190" class="s-sub" style="fill:var(--orange-fg)">和全部电子件同量级</text>
+    <text x="292" y="208" class="s-sub">48 次 / 天唤醒 30</text>
+
+    <!-- 下方：真空维持项 -->
+    <rect x="90" y="298" width="560" height="30" rx="6" fill="#f4dcdc" stroke="#c9615b" stroke-width="1.6"/>
+    <text x="102" y="318" class="s-lbl" style="fill:var(--red-fg)">✗ 真空维持（挂壁待机的方案）≈ 5000 µW</text>
+    <line x1="650" y1="298" x2="650" y2="328" stroke="#c9615b" stroke-width="2" stroke-dasharray="7 5"/>
+    <line x1="640" y1="313" x2="676" y2="313" stroke="#c9615b" stroke-width="2" marker-end="url(#c3Arr)"/>
+    <text x="666" y="352" text-anchor="end" class="s-sub" style="fill:var(--red-fg)">超出预算 5 倍 —— 这一项否掉了挂壁待机</text>
+    <text x="90" y="366" class="s-sub">改成回坞站待机后这一项归零；电子件全加起来只占预算三成</text>
+  </svg>
+</div>
+
+<!-- ══════ 5 唤醒与睡眠 ══════ -->
+<div class="card">
+  <h2 id="s5"><span class="n">5</span>唤醒与睡眠策略</h2>
+  <p class="cap">
+    省电的关键不是把电流压到多低，而是<b>不要把要花电的事安排得太频繁</b>。
+  </p>
+
+  <h3 id="s5a1"><span class="n">A</span>唤醒成本与唤醒风暴</h3>
+
+  <p>
+    一次完整启动约 0.2 s × 40 mA ≈ <code>2.2 µAh</code>。
+    一天 48 次是 0.75 mAh/周，约 <b>3% 预算</b> —— 完全可以接受。
+    绑住手脚的是频率：<b>5 min 一次就吃掉 15%，1 min 一次直接超预算。</b>
+    所以 <b>30 min 是对的默认值</b>，而理由是「启动开销」而不是「无线连接开销」。
+  </p>
+
+  <div class="formula w">
+    <b>唤醒源必须是受监督的，否则会变成唤醒风暴</b><br>
+    ESP32-S3 的 <code>ext0</code> / <code>ext1</code> 唤醒是<b>电平触发</b>的。
+    如果真空开关卡在闭合位置（触点粘连、或者用户把磁铁一直贴在缸上），
+    唤醒源就<b>一直处于有效状态</b> —— 每次进深度睡眠立刻又被唤醒，
+    <b>变成 40 mA 的死循环，几天把电池放空。</b>
+    <br><b>做法：</b>唤醒线用<b>末端电阻受监督输入</b>（断线和短路都能区分），
+    开机自检时如果发现这条线卡住，<b>拒绝把它设为唤醒源</b>，退回定时器唤醒并上报故障。
+  </div>
+
+  <p>
+    另外三条细节，每一条都能单独坑掉可靠性：
+  </p>
+
+  <ul class="pts">
+    <li class="w"><b>触点湿润问题。</b>真空开关做互锁时通过电机电流，是大电流分断，触点能自清洁；
+      而做唤醒输入时只有微安级，<b>根本不足以击穿氧化膜</b>。
+      挂壁两周后同一个触点上会长出一层氧化膜。
+      要么互锁与唤醒用<b>两组独立触点（DPST）</b>，要么唤醒这一路单独选镀金触点的器件。</li>
+    <li class="w"><b>不要把 7.4 V 电机节点直接接到 RTC GPIO 上。</b>
+      如果开关串在释放回路里，它所在的节点是电机轨电压；
+      而 <code>VDD3P3_RTC</code> 在主轨关闭时仍然带电，直接相连是<b>倒灌与闩锁风险</b>。
+      中间加一级缓冲（光耦或小 MOSFET），缓冲由常开轨供电。</li>
+    <li><b>别把它当「快掉了」传感器。</b>真空开关是个慢指示器
+      （<code>suction.html</code> 说衰减是几十分钟到几小时）。
+      它适合的正是那个慢失效模式，但它<b>不是跌落预警</b>。</li>
+  </ul>
+
+  <h3 id="s5a2"><span class="n">B</span>为什么不保持连接</h3>
+
+  <p>
+    机器人平时<b>不保持 WiFi 关联、也不保持 BLE 连接</b>。
+    这里真正的理由不是「电流大」，而是<b>无状态</b>：
+    保持连接意味着要周期性开接收窗口、要维护会话、要在信号差时重连，
+    而这些都发生在<b>电池侧</b>。把「常驻在线」这件事整个挪到坞站去做，代价就归零了。
+  </p>
+
+  <p>
+    代价是诚实的，但比初稿小得多：<b>机器人在坞站上的时候是醒的。</b>
+    既然两次作业之间它都停在坞站（第 4 节 B），它就<b>大部分时间在线</b> ——
+    App 提的请求由坞站转成 BLE，机器人当场就能收。
+    真正不可达的只有<b>作业中的那 2.1 min</b>，以及万一回坞失败挂在壁上的时候。
+    那两种情况下的最坏延迟才等于唤醒周期（默认 30 min），见下面 C。
+  </p>
+
+  <h3 id="s5a3"><span class="n">C</span>不可达窗口与补救</h3>
+
+  <p>
+    不可达的只剩两种场景，各有一条便宜的对策。
+    顺便否掉一个被高估的方案：<b>不需要低频唤醒接收机。</b>
+    有人会想用 AS3933 那类 125 kHz 唤醒接收机做到「永远可呼叫」。
+    算一下就知道不值得：如果机器人本来就每 30 min 醒一次，
+    <b>在那次唤醒里加一个 150 ms 的 BLE 接收窗口，一周只花约 0.94 mAh ≈ 4% 预算</b>，
+    就获得了 30 min 内可达的指令通道；
+    而 AS3933 要在铝合金壳里再开一个非金属窗口放磁棒天线 ——
+    那是继前窗模块之后的<b>第二个非金属窗口问题</b>，零件更多、风险更高。
+    <b>一秒的无线，比一整套低频链路便宜。</b>
+  </p>
+
+  <table>
+    <thead><tr><th>需求</th><th>手段</th><th>延迟 / 代价</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td><b>停在坞站上（大部分时间）</b></td><td>机器人本来就醒着，坞站把 App 请求转成 BLE</td><td><b>零延迟。这是主路径</b></td></tr>
+      <tr class="hl"><td>下发作息计划</td><td>App 写进机器人，机器人按自己的 RTC 闹钟工作</td><td>零延迟，不依赖被唤醒</td></tr>
+      <tr><td>作业中想插一条指令</td><td>每次 30 min 自检时开 150 ms BLE 接收窗口等待</td><td>≤ 30 min，约 4% 预算</td></tr>
+      <tr><td>用户就在缸边、要立刻叫它</td><td><b>缸外贴一块磁铁</b>触发磁控开关</td><td>瞬时。成本几毛钱</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    磁控开关上拉要用<b>外部 1 MΩ</b>，不要用片内约 45 kΩ 的：
+    用户把磁铁一直吸在缸上是正常行为，片内上拉下那是 <b>73 µA，占掉预算的 54%</b>；
+    外部 1 MΩ 是 3.3 µA。
+  </p>
+</div>
+
+<!-- ══════ 6 位置与姿态 ══════ -->
+<div class="card">
+  <h2 id="s6"><span class="n">6</span>位置与姿态的来源</h2>
+  <p class="cap">
+    <code>dock.html</code> 第 4 节的 L1/L2/L3 分层是对的，这一节把它落到具体器件上，并修掉一个建模错误。
+  </p>
+
+  <h3 id="s6a1"><span class="n">A</span>三个绝对基准</h3>
+
+  <table>
+    <thead><tr><th>基准</th><th>给什么</th><th>什么时候可用</th><th>误差量级</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td><b>重力</b></td><td>壁面内的转角 φ（绝对，非积分）</td><td>静止时，每次停顿</td><td>&lt; 1°</td></tr>
+      <tr class="hl"><td><b>水线</b></td><td>深度 y（绝对）</td><td>每次浮出/潜入水面</td><td>3.9 kPa 台阶，判得死</td></tr>
+      <tr class="hl"><td><b>坞站信标</b></td><td>方位角 → 一维绝对位置</td><td>坞站可见、200–400 mm 内</td><td>厘米级</td></tr>
+      <tr><td>缸角碰撞</td><td>沿壁的绝对坐标（清零）</td><td>碰到棱时</td><td>由结构决定</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    四个基准互相独立，来源完全不同（重力、流体静压、光学、接触）。
+    <b>这正是它们有用的原因</b> —— 也正因为独立，它们之间的差才是可信的异常信号（见 D）。
+  </p>
+
+  <h3 id="s6a2"><span class="n">B</span>步态正解 — 三根推杆定死位姿</h3>
+
+  <p>
+    三足 3-RPR 并联平台有一个白拿的性质：
+    <b>当三只吸盘都吸住时，三个基点把机身完全约束，三根推杆的长度唯一确定机身位姿
+    <code>(x, y, φ)</code></b>。这是运动学正解，不是积分。
+    <br><b>前提是雅可比非奇异</b> —— 这一条不是自动成立的：径向布置（机身铰点与吸盘同角度）
+    时行列式恒等于 0，正解退化、位姿完全不可观测。<b>本设计靠的是铰点圆与吸盘圆错开 60°</b>，
+    推导与扫描见 <a href="motion.html">运动单元设计</a> 第 5 节。
+  </p>
+
+  <div class="formula">
+    <b>加了编码器之后，位置误差的性质变了</b><br>
+    从「陀螺零偏积分」（误差随时间<b>累积</b>，几十毫米量级、且没有上界）
+    变成「标定系数 + 丝杆回差」（误差<b>有界</b>，10 mm 量级，且不随运行时间增长）。
+    <br>这是 L2 那一层最实在的一次质量提升。<code>dock.html</code> 说的
+    「IMU 零点漂移是主要误差来源」从这一版起不再成立。
+  </div>
+
+  <h3 id="s6a3"><span class="n">C</span>n = 2 的欠约束窗口</h3>
+
+  <div class="formula w">
+    <b><code>motion.html</code> 第 5 节的这句话要改</b><br>
+    原文：「n = 2（换步相）… <b>机身保持不动</b>，只把抬起的那条腿摆到新位置，
+    禁止移动机身，只动抬起的腿。」
+    <br><b>这是错的。</b>两条腿、两个壁面固定基点，对机身的三个平面自由度只构成
+    <b>两个约束</b>，机身还剩下<b>一个未约束的自由度</b>（绕枢轴的转动）——
+    这是一个四杆机构，不是一个固定支座。
+    <br><b>后果：把一条腿（比如杆 c）抬起来挪动，本身就会让机身动。</b>
+    正解只在 n = 3 时成立，n = 2 期间的位置推算必须单列，不能用正解。
+  </div>
+
+  <p>
+    这不影响结论（三足方案仍然是最优的），但它影响两件事：
+    <b>一是在 <code>motion.html</code> 的时序里，n = 2 期间不能假装机身已知</b>；
+    二是它把「n = 2 期间腿的落点精度」变成一个有实际意义的指标 ——
+    因为机身自己的姿态也在这一小段时间里漂。
+  </p>
+
+  <h3 id="s6a4"><span class="n">D</span>残差即滑移探测</h3>
+
+  <p>
+    现在手上有一对可以互相校验的独立量：
+    <b>正解给出的 φ</b>（来自三根推杆长度）和 <b>加速度计给出的绝对 φ</b>（来自重力）。
+    两者相减得到一个残差，而这个残差的用途比正解本身更值钱。
+  </p>
+
+  <div class="formula">
+    <b>吸盘在壁上爬移，现在能被看见了</b><br>
+    唇边在 <code>R_t = 100 mm</code> 处滑移 1 mm，对应转角差
+    <code>0.57°</code>；而 1 mg 的加速度计分辨率约 <code>0.06°</code> ——
+    <b>信噪比接近 10</b>。
+    <br>正解把这 1 mm 的滑移<b>吸收成了「机身移动了」</b>，自己看不出来；
+    只有和重力这个绝对参考一比才会暴露。
+    <br><b>而「吸盘缓慢爬移」正是 <code>motion.html</code> 第 4 节说「否则看不见」的那个失效。</b>
+    这是加编码器最硬的一条理由，比「提高定位精度」更硬。
+  </div>
+
+  <p>
+    同一条残差还可以兼职做<b>接触式障碍探测</b>：
+    腿被命令走而没走到（编码器没动）就是撞上了东西。
+    这比第 3 节 C 说的电流法可靠得多，因为丝杆摩擦的噪声不会进入这个判据。
+  </p>
+</div>
+
+<!-- ══════ 7 通信架构 ══════ -->
+<div class="card">
+  <h2 id="s7"><span class="n">7</span>通信架构</h2>
+  <p class="cap">
+    链路的第一条设计规则不是选协议，是<b>选定路径</b>：必须走玻璃，绝不能走水。
+  </p>
+
+  <h3 id="s7a1"><span class="n">A</span>链路预算 — 路必须走玻璃，不能走水</h3>
+
+  <div class="formula w">
+    <b>修正一个数量级错误：淡水在 2.4 GHz 的衰减不是 9–10 dB/m，是约 300 dB/m</b><br>
+    按淡水在 25 °C 的德拜参数（ε′ ≈ 78、ε″ ≈ 10），穿透深度只有 <b>1.4–1.8 cm</b>，
+    对应衰减 <b>250–420 dB/m</b>。300 mm 的缸水是 <code>75–126 dB</code>，不是 3 dB。
+    <br>（<code>body.html</code> 第 5 节与 <code>dock.html</code> 第 3 节都在用那个旧数字。）
+  </div>
+
+  <p>
+    好消息是<b>结论没变，而且更强</b>：
+  </p>
+
+  <table>
+    <thead><tr><th>路径</th><th>损耗</th><th>结论</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td><b>天线 → 5 mm 玻璃 → 0.3–0.8 m 空气 → 坞站</b></td>
+        <td>玻璃约 1–2 dB + 自由空间 0.6 m 约 36 dB ≈ <b>40 dB</b></td>
+        <td>BLA 链路预算约 90 dB，<b>余量 50 dB，很宽裕</b></td></tr>
+      <tr class="bad"><td>天线 → 300 mm 缸水 → 玻璃</td><td><b>75–126 dB</b></td><td class="bad">比走玻璃差 70–120 dB，<b>不可能</b></td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    由此得到一条<b>必须先写死的禁令</b>：
+    <b>任何「缸内中继」「浮动信标」「机器人给对面壁的同伴转发」的方案直接出局。</b>
+    没有余量可用。 <code>body.html</code> 里「真正会坑你的不是路径损耗，是失谐」
+    这句话的<b>结论仍然对，但要换个理由</b>：
+    5 mm 玻璃的路径损耗确实只有一两 dB，所以唯一的风险确实只剩失谐（水让 εr 从 1 跳到 80，
+    谐振点会跑），只是原因和原文写的不一样。
+  </p>
+
+  <p>
+    一个要留意的安装场景：<b>如果坞站贴在前壁、而机器人跑到后壁，
+    同时缸靠墙或者有柜罩，逃逸路径就只剩一条缝。</b>这一条写进说明书的安装要求里。
+  </p>
+
+  <h3 id="s7a2"><span class="n">B</span>拓扑与协议</h3>
+
+  <table>
+    <thead><tr><th>段</th><th>协议</th><th>方向与角色</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td>机器人 ↔ 坞站</td><td><b>BLE 5</b></td>
+        <td><b>坞站做外设、常驻广播；机器人做 central</b>。
+          反过来的话机器人要花扫描电，而且市电侧没有理由省这点</td></tr>
+      <tr><td>手机 ↔ 机器人（一期可独立工作）</td><td>BLE 直连</td>
+        <td>手机在缸外，走的是同一条穿玻璃路径。
+          <b>所以一期不需要坞站也不需要云就能用</b> —— 通信栈不是阻塞依赖</td></tr>
+      <tr class="hl"><td>坞站 ↔ 云</td><td><b>MQTT over TLS</b></td>
+        <td>市电常驻，负责保活、缓存、转发</td></tr>
+      <tr><td>App ↔ 云</td><td>HTTPS / MQTT</td><td>远程查看与指令</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    这个拓扑的要点是<b>把「常驻在线」这件事全部放在有市电的一侧</b>。
+    机器人只在自己醒着的时候，主动去连一个已经在广播的坞站，连完就走。
+  </p>
+
+  <h3 id="s7a3"><span class="n">C</span>数据模型</h3>
+
+  <table>
+    <thead><tr><th>数据</th><th>存在哪</th><th>体积</th></tr></thead>
+    <tbody>
+      <tr><td>作业日程</td><td>机器人（App 写入，NVS）</td><td>&lt; 1 kB</td></tr>
+      <tr><td>覆盖栅格 + 障碍盒（四面壁）</td><td>机器人</td>
+        <td>600 × 400 mm @ 10 mm = 2400 格/面；位图 + 浓度各一份约 5 kB/面 → <b>约 20 kB</b></td></tr>
+      <tr><td>步态状态与标定系数</td><td>机器人（<b>RTC 慢内存 + NVS</b>）</td><td>&lt; 1 kB</td></tr>
+      <tr><td>运行日志（黑匣子）</td><td>机器人（独立分区，环形）</td>
+        <td>约 100 B × 48 次/天 = 5 kB/天，擦写均衡下可用几十年</td></tr>
+      <tr><td>OTA 镜像缓存、TLS 证书</td><td>坞站</td><td>MB 级，市电侧不心疼</td></tr>
+      <tr><td>历史曲线、告警推送</td><td>云</td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    <b>障碍盒是这里最划算的一项。</b>
+    让用户在 App 里画「不要进这里」的矩形（过滤器进水口、加热棒），
+    一个 100 × 100 mm 的盒子只要 100 字节、零 BOM 成本，
+    却比任何传感器都可靠地避开了两个真正会出事的物体 ——
+    详下。
+  </p>
+
+  <div class="formula w">
+    <b>纯接触式避障有两个例外，靠 App 声明的障碍盒兜住</b><br>
+    <b>① 过滤器进水口。</b>如果 ∅25 吸盘正好盖住进水栅格，
+    会同时<b>饿死过滤器</b>（这是鱼的风险，不是机器人的风险）和把自己吸死在那里。
+    <b>② 加热棒。</b>直径 25–30 mm 的玻璃管、表面 30–35 °C。
+    吸盘在这种曲率上封不住，而刷辊带着约 2 N 的预压力蹭过一根热玻璃管，
+    是缸里唯一一件会被永久损坏的东西。
+    <br>这两样都在壁面中段，靠撞是撞不出正确结论的。<b>让用户画个框，成本为零。</b>
+  </div>
+</div>
+
+<!-- ══════ 8 坞站端 ══════ -->
+<div class="card">
+  <h2 id="s8"><span class="n">8</span>坞站端 — 网关与视觉</h2>
+  <p class="cap">
+    市电侧的两颗芯片，各干各的，中间用 UART 交换结构化结果。
+  </p>
+
+  <h3 id="s8a1"><span class="n">A</span>双芯片分工</h3>
+
+  <table>
+    <thead><tr><th>芯片</th><th>职责</th><th>不做什么</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td><b>ESP32-C6</b>（¥12）</td>
+        <td>WiFi 6 + BLE 5 网关：MQTT/TLS 上云、给机器人做 BLE 外设、
+          充电状态机、信标驱动与锁相解调、按钮与指示灯</td>
+        <td>不跑视觉，不产生逆变器 PWM</td></tr>
+      <tr class="hl"><td><b>RV1106</b> + 摄像头</td>
+        <td>Linux：MJPEG 推流（「看鱼缸」）、可选的机器人位置检测与障碍物地图</td>
+        <td>不参与安全回路，不控制充电</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    C6 一个器件同时给了 WiFi、BLE 和 Thread，工具链和机器人侧同源。
+    <b>视觉这颗是按产品功能配的</b>（第 1 节 A），不是定位的必需品 ——
+    所以它坏掉的时候，坞站的充电与对接功能必须完全不受影响。
+  </p>
+
+  <h3 id="s8a2"><span class="n">B</span>逆变器不自产 PWM</h3>
+
+  <div class="formula">
+    <b>不要让 MCU 生成 60–100 kHz 的驱动波形</b><br>
+    LEDC 在 100 kHz 下只剩 <b>7 位分辨率</b>，调压会变成阶跃；
+    而且把 5 W 的谐振回路挂在一颗 MCU 的定时器上，故障模式会变得很难看。
+    <br><b>做法：固定频率的谐振逆变器</b>（专用驱动 IC，或自激振荡），
+    频率由 LC 定死；<b>MCU 只做两件事</b>：
+    一个使能脚，和通过 buck 调母线电压来控制功率。
+    简单、稳，正好和 <code>dock.html</code> 第 3 节的功率链路对得上。
+  </div>
+
+  <h3 id="s8a3"><span class="n">C</span>信标与锁相解调</h3>
+
+  <div class="formula w">
+    <b>不能用现成的红外接收模块</b><br>
+    一体化 IR 接收头（那种三只脚、输出高低电平的）内部已经做了载波解调和整形，
+    <b>输出的是数字量</b>。而四象限方案要的是
+    <code>e_x = (A+C) − (B+D)</code>、<code>e_y = (A+B) − (C+D)</code> ——
+    <b>要的是幅值</b>。用接收头，<code>e_x / e_y</code> 直接就没了。
+    <br><b>正确做法：</b>光电二极管走模拟通道进 ADC，
+    LED 按 <b>1–2 kHz 调制</b>，MCU 做<b>锁相解调</b>。
+    这样既拿到幅值，又天然避开 100/120 Hz 的市电闪烁 ——
+    而且和第 2 节 C 里那两路差分通道是同一套硬件。
+  </div>
+
+  <p>
+    坞站端的零件清单（线圈、逆变器、信标、摄像头、安装结构）以
+    <code>dock.html</code> 第 5 节为准，<b>本节只写电子的分工，不重复那张表</b>，
+    避免两处各写一份然后走样。
+  </p>
+</div>
+
+<!-- ══════ 9 固件与不可维修性 ══════ -->
+<div class="card">
+  <h2 id="s9"><span class="n">9</span>固件、OTA 与不可维修性</h2>
+  <p class="cap">
+    这一节比别的节都重，因为它没有第二次机会：<b>穿舱点 0 个 = 没有 USB、没有按键、没有退路。</b>
+  </p>
+
+  <h3 id="s9a1"><span class="n">A</span>三段式 OTA</h3>
+
+  <p>
+    ESP32-S3 的串口下载模式在这里<b>完全不可用</b>：没有 USB，没有能摸到的 BOOT 脚，
+    也没有办法断电重启。所以「刷坏了怎么办」必须在固件里回答完。
+  </p>
+
+  <table>
+    <thead><tr><th>层</th><th>机制</th><th>作用</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td>1 · 应用分区</td>
+        <td>双分区 + <code>CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE</code></td>
+        <td>新镜像必须<b>通过健康检查后主动自确认</b>（<code>esp_ota_mark_app_valid_cancel_rollback()</code>），
+          否则 bootloader 自动回滚。<b>绝对不能关掉回滚。</b></td></tr>
+      <tr class="hl"><td>2 · 救援应用</td>
+        <td>factory 分区里一个尽量小、尽量不改的镜像</td>
+        <td>只做一件事：起来 → 开 BLE → 收 OTA。<b>它永远不被 OTA 覆盖。</b></td></tr>
+      <tr><td>3 · bootloader 与分区表</td>
+        <td><b>永不 OTA</b></td><td>写死的规则。这两样一坏就真的只能撬壳</td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula w">
+    <b>三条硬规则</b><br>
+    ① <b>只在坞站上、且三只吸盘都吸住（n = 3）时才接受 OTA。</b>
+    绝不允许在有一条腿悬空的时候换固件。
+    <br>② <b>RWDT 在看门狗里最先武装</b>，早于任何外设初始化。
+    <br>③ <b>连续 3 次启动失败进安全模式</b>（RTC 内存里的启动计数器），
+    安全模式下只广播「我需要帮助」，不做任何电机动作。
+  </div>
+
+  <h3 id="s9a2"><span class="n">B</span>磁铁作恢复入口</h3>
+
+  <p>
+    三段式 OTA 兜住的是「镜像坏了」。但还有一类失效是它兜不住的：
+    应用和救援应用都进不去、或者配置被写坏。
+    这时候需要一个人能操作的入口，而<b>用户手上唯一拿得到的东西就是一块磁铁</b>。
+  </p>
+
+  <div class="formula">
+    <b>一个磁控开关，干三件事</b><br>
+    <b>① 瞬时唤醒</b> —— 第 5 节 C。<br>
+    <b>② 恢复模式</b>：上电瞬间磁铁按住 10 s → 只启动救援应用，只做 OTA。<br>
+    <b>③ 恢复出厂</b>：同样的动作更长时间，清 NVS。<br>
+    磁铁能穿过非磁性铝合金和 5 mm 玻璃，所以这个动作在缸外就能做。
+  </div>
+
+  <h3 id="s9a3"><span class="n">C</span>看门狗安全态与上电顺序</h3>
+
+  <div class="formula">
+    <b>中途复位不会掉下来，但上电不能接着往下跑</b><br>
+    <b>好消息：</b>丝杆自锁（导程 0.3 mm、效率 &lt; 0.5），
+    所以断电或复位不会让机器人从壁上掉下去。<b>这是本设计最好的安全性质，而且是白拿的。</b>
+    <br><b>但上电第一件事必须是抽满三只吸盘</b>，不是恢复上次的步态。
+    因为复位期间真空可能已经衰减，而「接着走」意味着在吸力未知的情况下抬腿。
+    <br>步态进度（哪条腿是空的、它的指令长度、相位）存在 <b>RTC 慢内存</b>里，
+    它能扛过数字复位。<b>但这个功能没有编码器就实现不了</b> —— 这是加编码器的第四条理由。
+  </div>
+
+  <h3 id="s9a4"><span class="n">D</span>保护板自锁与黑匣子</h3>
+
+  <div class="formula w">
+    <b>保护板锁死是一个死局，不是小麻烦</b><br>
+    峰值 12.7 W ≈ 1.7 A，而有刷电机启动是稳态的数倍。
+    电池 + 保护 MOS + 走线阻抗约 150–200 mΩ，<b>4–5 A 的冲击就掉 0.8 V，
+    足以触发 DW01A 的过流比较器</b>。一旦触发，电池组闩锁关断，
+    MCU 断电，而<b>机器人没有能力走到坞站去复位自己</b> —— 只能拆机。
+    <br><b>对策（都很便宜）：</b>保护 MOS 按 ≥ 8 A 选；
+    电机轨加 470–1000 µF 低 ESR 电解；
+    <code>work.html</code> 第 7 节⑥ 要求的 0.5 s 刷辊软启动本来就存在，
+    <b>它同时就是冲击电流控制</b>；
+    软件在 3.4 V/节 提前收手，<b>留 ≥ 0.2 Wh 余量给回程</b>。
+  </div>
+
+  <p>
+    <b>黑匣子：没有控制台、没有 USB，读不到的故障等于修不了的故障。</b>
+    在独立分区里放一个环形日志，每次唤醒记一条（约 100 B）。
+    磨损不是问题 —— 5 kB/天 对上带擦写均衡的 128 kB 分区是几十年的量级。
+    这块日志是「用户报了一个奇怪现象」时唯一能用的东西。
+  </p>
+</div>
+
+<!-- ══════ 10 对其它文档的修改要求 ══════ -->
+<div class="card">
+  <h2 id="s10"><span class="n">10</span>对其它文档的修改要求</h2>
+  <p class="cap">
+    逐条列出本文档引起的修改。前面几条是<b>本层设计顺带查出来的既有错误</b>，与主控无关，但必须改；
+    后面几条来自「<b>不作业就回坞站</b>」这条架构决定 —— 它把风险从功耗搬到了对接机构上。
+  </p>
+
+  <table>
+    <thead><tr><th>文档</th><th>位置</th><th>改成</th></tr></thead>
+    <tbody>
+      <tr class="bad"><td><code>body.html</code></td><td>第 5 节功耗段</td>
+        <td><b>「每周 3 次」是单位错误。</b><code>3.75 W × 2.1 min × 3 = 0.39 Wh</code>，
+          只有按<b>每天 3 次</b>才等于文中的「每天 0.4 Wh」。
+          <code>dock.html</code> 第 3 节的 2.8 Wh/周、5.9 Wh、2 周全部建立在这个读法上，
+          <b>改成「每天 3 次」是一个词的事；改成「每周 3 次」则要重算四篇文档和坞站的间隙论证。</b>
+          本文档按「每天 3 次」定稿。</td></tr>
+      <tr class="bad"><td><code>body.html</code></td><td>第 5 节天线段</td>
+        <td>「淡水在 2.4 GHz 的衰减约 9–10 dB/m」→ <b>约 300 dB/m（250–420）</b>。
+          结论（天线朝玻璃）不变而且更强，但理由要从「好 6 dB」改成
+          <b>「穿水路径不可能，不是差一点」</b>，并据此禁止一切缸内中继方案。</td></tr>
+      <tr class="bad"><td><code>body.html</code></td><td>第 6 节维护表</td>
+        <td>删除「充电 | 约 3 周 | 取出擦干，<b>插水密 USB-C</b>」这一行 ——
+          它描述的是另一个产品（拿出来、擦干、插上），
+          且与「穿舱点 0 个」「缸外感应坞站」直接冲突。
+          改为「无需人工干预；每 3–6 个月开盖换干燥剂」。</td></tr>
+      <tr class="bad"><td><code>motion.html</code></td><td>第 5 节与配图</td>
+        <td>n = 2 换步相的「<b>机身保持不动</b>」是错的：两个基点对三个自由度只构成两个约束，
+          机身还剩一个转动自由度。改为「<b>机身姿态在此相不唯一确定</b>，
+          正解只在 n = 3 成立」。图上的同句标注一并改。</td></tr>
+      <tr><td><code>motion.html</code></td><td>第 9 节时序表</td>
+        <td>「电流检测确认吸附成功」→ <b>「真空开关确认吸附，电流只确认行程到底」</b>。
+          理由见本文档第 3 节 C：漏气的吸盘和好吸盘电流波形一样。</td></tr>
+      <tr><td><code>motion.html</code></td><td>第 10 节电气互锁</td>
+        <td>「给<b>两只</b>吸盘各加一个真空开关」是双足时代的遗留，三足方案的
+          <b>不变量是 n ≥ 2</b>，所以释放 A 要被「B 与 C 都在吸」门控 ——
+          每只开关的触点要用在两处（DPST），或者加一片 CD4081 与门（关断时零功耗）。
+          <b>同时要写清楚它防的是什么</b>：静态与门防的是「已经丢了一只还去放第二只」的连锁，
+          <b>它不保证释放命令互斥</b> —— 两只都吸着时，两个门都满足。</td></tr>
+      <tr class="hl"><td><code>motion.html</code></td><td>电机描述 / 风险表</td>
+        <td>三个推杆电机改为<b>带 AS5600 磁角度传感器</b>；
+          说明 3-RPR 正解给出 (x, y, φ)，L2 从积分漂移变成有界误差。
+          <b>明确写「这是精度与可恢复性收益，不是速度收益」。</b>
+          并补一条待办：<b>推杆扭矩需求从未推导过</b>，选型前必须补。</td></tr>
+      <tr class="hl"><td><code>motion.html</code></td><td>第 1 / 2 节与配图</td>
+        <td><b>方案定三足，但文档前两节还在描述双足尺蠖</b>（前后各一、一条直线滑轨、
+          单点支撑的危险窗口），与第 5 节之后的三足 3-RPR 对不上。
+          <b>第 1 节按三足布局重画</b>（三只吸盘成三角形、三根推杆、机身居中）；
+          <b>第 2 节的「尺蠖步态时序」整节替换成三足步态</b> ——
+          第 5 节 A 的四帧拆解就是它该有的样子，两处合并，不要各写一份。
+          第 3 节的剥离力矩分析保留（它论证的是「n 不能等于 1」），
+          第 4 节改标题为<b>「为什么必须是三足 — 双足方案的稳定性边界」</b>，
+          作为对比保留而不是主线。</td></tr>
+      <tr><td><code>body.html</code></td><td>第 5 节电气表</td>
+        <td>「逻辑供电 5 V DC-DC」→ <b>3.3 V 单轨</b>（TPS62903，Iq 1.5 µA）；
+          电压监测行注明<b>分压必须 MOSFET 门控</b>，NTC 分压必须 GPIO 供电；
+          调试 / 烧录行补一句<b>磁铁恢复入口</b>。</td></tr>
+      <tr><td><code>body.html</code></td><td>第 3 节功耗表</td>
+        <td>「主控 + 传感器 1 | 0.4 | 0.4」拆开；
+          新增一行 <b>「待机（深度睡眠）| — | &lt; 1 mW」</b>，并注明表中「平均」指作业时。</td></tr>
+      <tr><td><code>body.html</code></td><td>第 4 节质量表</td>
+        <td>主控 PCB + 传感器 <b>42 → 55 g</b>（更大的板 + IMU + 深度计 + 电流采样 + 模拟开关 + 扩展器）；
+          「推杆 ×3（含电机）」注明<b>含角度传感器</b>（+8 g）；
+          零件合计 <b>823 → 844 g</b>，配重 <b>274 → ≈253 g</b>。
+          <b>仍落在「配重可调 ±100 g」范围内，不触发连锁重算</b> —— 这一点要写出来，
+          因为第 4 节自己警告过「改了排水体积就要回头改配重」。</td></tr>
+      <tr><td><code>body.html</code></td><td>第 7 节第一步</td>
+        <td>在同一个空密封壳的试验里<b>加一条真空衰减曲线</b>：
+          一只吸盘贴真实长藻玻璃，记 72 h 的 ΔP，
+          并测不同残余容积下的压降速率。这是本文档第 4 节 B 唯一的输入。</td></tr>
+      <tr><td><code>suction.html</code></td><td>第 5 节③⑤</td>
+        <td>明确上腔的通水孔在<b>吸盘单元上</b>、不在壳体上，所以「穿舱点 0 个」仍成立；
+          并把这个上腔<b>指定为真空传感器的差压参考腔</b>（本文档第 3 节 A）。
+          原「干燥剂 / &lt;40% RH」验收针对的是壳体，两者不要混为一谈。</td></tr>
+      <tr><td><code>work.html</code></td><td>第 6 节 L2 接口</td>
+        <td><b>L2 的 +5 V 不引出</b>；ID 识别改为无源方式（反射图案或磁铁）；
+          SIG 的用途（模拟反射率）改由<b>前窗模块</b>承担，见第 3 节 E。
+          理由：间距 1–2 mm 的裸露 pogo 在水里是几 kΩ 的水桥，
+          ID 电阻被分流、+5 V 持续电解 —— 这正是 <code>dock.html</code> 第 2 节否掉的做法。</td></tr>
+      <tr><td><code>dock.html</code></td><td>第 4 节 B</td>
+        <td>对接精度 <b>±2 mm → ±5 mm</b>。理由：<code>dock.html</code> 自己说
+          「线圈侧向容差 ±12 mm 时功率降 &lt; 20%」，±5 mm 仍有 2.4 倍余量，
+          而把指标放松 2.5 倍会显著降低腿的分辨率要求和 L2→L3 的交接难度。</td></tr>
+      <tr class="hl"><td><code>dock.html</code></td><td>第 3 节回坞频率</td>
+        <td><b>整节要按新架构重写。</b>原来写「满电撑 2.5 周，每两到三周回坞一次、每次充 3 小时」，
+          用来论证 13 mm 间隙够用。<b>现在机器人不作业就回坞，每天 6 次以上，每次停约 5 min。</b>
+          <b>关键结论要写清楚：13 mm 间隙的论证完全不变</b> ——
+          线圈是按<b>平均功率</b>（每周 2.8 Wh ≈ 17 mW）选的，回坞变频繁不改变平均功率，
+          反而去掉了「一次充 3 小时」这个峰值要求。
+          初稿那句「每天回坞就得把发射功率提到 15 W」是错的，它默认每次都要充满 5.9 Wh。</td></tr>
+      <tr><td><code>dock.html</code></td><td>第 6 节停靠时的吸附</td>
+        <td>「每 30 min 唤醒 2 s 补真空」整条删掉。新判据是
+          <b>「停留约 5 min 远小于漏气的几十分钟尺度，全程不用补抽」</b>。
+          但补一条：<b>考虑加一块被动磁吸座</b>（坞站里永磁 + 前窗模块里钢片），
+          让「停着不动了」这一失效模式不再依赖负压。</td></tr>
+      <tr><td><code>dock.html</code></td><td>第 8 节实施路线</td>
+        <td>第三步对接判据从「连续 20 次 ≥ 19」收紧到
+          <b>「连续 200 次 ≥ 99%」</b>；<b>新增第四步：真缸连续跑一个月的慢性污染测试</b>，
+          判据是光电信号衰减 &lt; 30%。对接次数涨 10 倍，污染累积速度同步涨 10 倍。</td></tr>
+      <tr><td><code>body.html</code></td><td>第 5 节电池段</td>
+        <td>补一条：<b>1000 mAh 现在明显偏大。</b>既然每次作业前后都回坞补电，
+          电池真正要扛的只是「一次作业 + 一次往返对接」≈ 0.1–0.2 Wh，
+          7.4 Wh 是它的 40 倍。<b>缩电池会让质量、体积、配重三项同时变好</b>，
+          但它会动第 4 节的浮力账，必须和排水体积、配重一起重算，不能单独改。</td></tr>
+      <tr><td><code>dock.html</code></td><td>第 5 节零件表</td>
+        <td>坞站端电子（MCU / 逆变器 / 信标 / 摄像头）<b>指向本文档第 8 节</b>，
+          不要两处各写一份。</td></tr>
+      <tr><td>全部文档</td><td>footer 配套文档</td>
+        <td>加 <code>&lt;a href="ctrl.html"&gt;主控与传感器设计&lt;/a&gt;</code></td></tr>
+      <tr><td><code>AGENTS.md</code></td><td>第 1 / 3 / 4 节</td>
+        <td>目录树加 <code>ctrl.html</code>；图标表加 🧠；基准配置补主控与通信基线。</td></tr>
+      <tr><td><code>README.md</code></td><td>索引与基线</td>
+        <td>加 <code>ctrl.html</code> 行；基线补「待机 &lt; 1 mW / 唤醒 30 min / BLE + MQTT」。</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════ 11 实施路线 ══════ -->
+<div class="card">
+  <h2 id="s11"><span class="n">11</span>实施路线</h2>
+  <p class="cap">
+    每一步都给出一个<b>能判定通过或失败</b>的判据。不通过的步骤要回头改设计，不许糊过去。
+  </p>
+
+  <table>
+    <thead><tr><th>#</th><th>做什么</th><th>通过判据</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td>1</td>
+        <td><b>µA 表测睡眠电流。</b>一颗 ESP32-S3-WROOM-1-N4 + 一颗低 Iq buck，
+          焊在一块最小板上，什么都不接</td>
+        <td><b>整板深度睡眠 &lt; 50 µA @ 3.3 V。</b>
+          达不到就换 buck，或者换模块型号 —— <b>这一步不过，后面全部重做</b></td></tr>
+      <tr class="hl"><td>2</td>
+        <td><b>真空衰减曲线。</b>复用 <code>body.html</code> 第 7 节第一步的空密封壳，
+          加一只吸盘贴在真实长藻的玻璃上，记 72 h</td>
+        <td>拿到「压降速率 vs 残余容积」曲线，<b>并能算出补抽的能量账</b>。
+          这一条决定第 4 节 B 是 0.03 mW 还是 5 mW</td></tr>
+      <tr><td>3</td>
+        <td><b>七路电机的电流与 PWM 特性。</b>MCPWM / LEDC 在目标频率下的分辨率、
+          INA181 增益、堵转电流、软启动效果</td>
+        <td>能区分「到位」与「堵转」；<b>3.3 V 单轨下不误触发保护板过流</b></td></tr>
+      <tr><td>4</td>
+        <td><b>三只 AS5600 + TCA9548A 的读数与回差标定。</b>走 0.3 mm 导程的丝杆</td>
+        <td>单步可分辨，且<b>正解与加速度计给出的 φ 的残差 &lt; 0.5°</b>
+          （这就是滑移探测的门槛）</td></tr>
+      <tr><td>5</td>
+        <td><b>穿玻璃的 BLE 链路。</b>手机 ↔ 机器人，隔着真缸、真水、真藻，
+          分别在前壁 / 侧壁 / 后壁位置测</td>
+        <td><b>余量 ≥ 20 dB</b>（0.3–0.8 m）。
+          后壁 + 柜罩那个场景单独测，测不过就写进安装要求</td></tr>
+      <tr><td>6</td>
+        <td><b>故意推一个坏镜像，看能不能自己回滚</b></td>
+        <td>回滚成功，<b>且回滚后还能正常 OTA 一次</b>；
+          再用磁铁走一遍恢复模式</td></tr>
+      <tr><td>7</td>
+        <td>坞站 13 mm 间隙过 5 W</td>
+        <td>已在 <code>dock.html</code> 第 8 节列出，不重复</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    <b>第 1 步和第 2 步必须先做，而且它们互不依赖，可以并行。</b>
+    第 1 步判定的是一整类方案的生死（能不能深度睡眠），
+    第 2 步判定的是整个续航指标的生死（补抽到底要花多少电）。
+    其余各步都建立在这两步的结论上。
+  </p>
+</div>
+
+<footer>
+  主控与传感器结构示意 · 非工程图纸 · 数值为量级估算，需实测标定<br>
+  配套文档：<a href="body.html">主体设计</a> · <a href="suction.html">吸附单元设计</a> · <a href="motion.html">运动单元设计</a> · <a href="work.html">作业机构设计</a> · <a href="dock.html">充电坞站设计</a>
+</footer>
+</div>
+</main>
+<script src="assets/toc.js"></script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>鱼缸壁面清洁机器人 — 结构设计文档</title>
+<link rel="stylesheet" href="assets/notion.css">
+</head>
+<body>
+<nav class="side" id="side">
+  <div class="side-doc"><span class="side-icon">🐟</span><span class="side-name">文档总目录</span></div>
+  <div class="side-label">本页</div>
+  <ul class="side-list">
+    <li><a href="#s1" title="1 · 六份设计文档">1 · 六份设计文档</a></li>
+    <li><a href="#s2" title="2 · 三维示意与物料清单">2 · 三维示意与物料清单</a></li>
+    <li><a href="#s3" title="3 · 从哪一篇读起">3 · 从哪一篇读起</a></li>
+    <li><a href="#s4" title="4 · 怎么读这些文档">4 · 怎么读这些文档</a></li>
+  </ul>
+</nav>
+<button class="side-btn" type="button" aria-label="目录">&#9776;</button>
+<main class="page">
+<div class="page-inner">
+
+<header>
+  <div class="page-icon">🐟</div>
+  <h1>鱼缸壁面清洁机器人 — 结构设计文档</h1>
+  <p class="sub">吸附在鱼缸玻璃壁面上、靠封闭死容积负压固定的爬壁清洁机器人。整机接近中性浮力，步进式运动，无真空泵、无气动管路。八份文档，用浏览器直接打开即可。</p>
+</header>
+
+<div class="keybox">
+  <h3>结论先行</h3>
+  <p>这是一套<strong>结构设计文档库</strong>，不是成品说明书。所有数字都还在推导阶段，几处关键参数是互相咬合的估算值 —— 改一个要回头改一串，哪些地方咬在一起写在每篇的正文里。</p>
+  <p><strong>要动手做样机，先看 <a href="bom.html">Demo 物料清单</a>。</strong>里面有四个还没实测、但卡着一整串选型的实验；做完之前，别照着图纸买件。</p>
+</div>
+
+<h2 id="s1"><span class="n">1</span>六份设计文档</h2>
+<p class="cap">按单元拆开。每篇自成一体，可以单独读；跨单元的接口写在各自的开头几节。</p>
+
+<ul class="doclist">
+  <li><a href="suction.html">
+    <span class="di">🧲</span>
+    <div>
+      <b>吸附单元</b>
+      <p>空心杯电机 + 丝杆驱动膜片形变产生负压，无泵、无气路。剖面图、双状态对比、面积解耦、吸力核算、剥离力矩分析</p>
+    </div>
+  </a></li>
+  <li><a href="motion.html">
+    <span class="di">⚙️</span>
+    <div>
+      <b>运动单元</b>
+      <p>三足 3-RPR 并联平台步态。逐帧运动分解、雅可比与奇异位形、刷辊作业载荷、方案对比、性能估算</p>
+    </div>
+  </a></li>
+  <li><a href="work.html">
+    <span class="di">🧹</span>
+    <div>
+      <b>作业机构</b>
+      <p>主机 / 可换作业头分层。清洁元件选型、刷辊 + 刮条组合、效率分析、磁耦合免工具快换、扩展接口</p>
+    </div>
+  </a></li>
+  <li><a href="body.html">
+    <span class="di">📦</span>
+    <div>
+      <b>主体</b>
+      <p>铝合金壳体 + POM 盖板与前窗模块。密封与材料相容性、电机直连壳壁散热、浮力配平与可调配重、电气架构</p>
+    </div>
+  </a></li>
+  <li><a href="dock.html">
+    <span class="di">🔌</span>
+    <div>
+      <b>充电坞站</b>
+      <p>缸外感应充电，磁场穿过玻璃。为什么不用电极、13 mm 间隙预算、四象限光电对接、充电安全与失效模式</p>
+    </div>
+  </a></li>
+  <li><a href="ctrl.html">
+    <span class="di">🧠</span>
+    <div>
+      <b>主控与传感器</b>
+      <p>1 mW 待机预算决定算力分工，视觉放坞站。ESP32-S3 通道预算、传感器套件、待机漏电账、三足正解里程</p>
+    </div>
+  </a></li>
+</ul>
+
+<h2 id="s2"><span class="n">2</span>三维示意与物料清单</h2>
+<p class="cap">一篇是上面六份的三维汇总，一篇是把它们变成采购单。</p>
+
+<ul class="doclist">
+  <li><a href="model.html">
+    <span class="di">🧊</span>
+    <div>
+      <b>整机三维示意<span class="tag b">需联网</span></b>
+      <p>three.js 交互模型，按六份文档的标注尺寸 1:1 建模。分层展开滑杆、四个视角预设、干涉自检表（改参数后自动重算）</p>
+    </div>
+  </a></li>
+  <li><a href="bom.html">
+    <span class="di">🧾</span>
+    <div>
+      <b>Demo 样机物料清单</b>
+      <p>结构件走 3D 打印、控制走现成开发板。分四批下单、先做的四个实验、按子系统分组的采购表、3D 打印件清单</p>
+    </div>
+  </a></li>
+</ul>
+
+<div class="formula">
+  <p><strong>只有 <code>model.html</code> 需要联网</strong> —— 它的 three.js 从 CDN 取，离线打开会看到一段说明，页面其余部分照常。原因见 <a href="AGENTS.md">AGENTS.md</a> 第 6 节。其余七篇都是纯静态的，双击就能看。</p>
+</div>
+
+<h2 id="s3"><span class="n">3</span>从哪一篇读起</h2>
+<p class="cap">推荐顺序。前三步是「这东西凭什么能吸住、能走、能擦」，后面才是把它拼起来。</p>
+
+<ul class="pts">
+  <li><strong><a href="bom.html">物料清单</a> 第 2 节</strong> — 四个还没做的实验。它们决定后面所有零件的选型，一周、几百块。不先做这一步，别的都是纸上谈兵。</li>
+  <li><strong><a href="suction.html">吸附单元</a></strong> — 吸力从哪来。核心是「膜片比吸盘小」这条面积解耦，以及为什么吸盘直径是唯一一个以三次方回报的参数。</li>
+  <li><strong><a href="motion.html">运动单元</a></strong> — 三条腿怎么挪。核心是吸盘圆和铰点圆必须错开 60°，对齐就是雅可比奇异。</li>
+  <li><strong><a href="work.html">作业机构</a></strong> — 刷辊转速为什么必须慢，以及为什么作业头要无源、无密封、直接泡水。</li>
+  <li><strong><a href="body.html">主体</a></strong> — 把上面三个装进一个壳里：密封、散热、配平，三件事互相拉扯。</li>
+  <li><strong><a href="dock.html">充电坞站</a></strong> — 13 mm 间隙、45% 效率、每次 5 min，这四个数串在一条链上。</li>
+  <li><strong><a href="ctrl.html">主控与传感器</a></strong> — 1 mW 待机预算怎么把算力分工切成现在这样，以及为什么视觉放在了坞站。</li>
+  <li><strong><a href="model.html">整机三维示意</a></strong> — 最后看。它把上面所有数字变成一个能转、能拆开看的东西。</li>
+</ul>
+
+<h2 id="s4"><span class="n">4</span>怎么读这些文档</h2>
+<p class="cap">这一节写给要改这些文档的人（包括以后的你自己）。</p>
+
+<table>
+  <thead>
+    <tr><th>想做的事</th><th>先读哪里</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>改任何一篇 HTML 的外观 / 加内容块</td>
+      <td><a href="AGENTS.md">AGENTS.md</a> 第 2 节是唯一的风格真实来源。样式只改 <code>assets/notion.css</code>，不要往 HTML 里写 <code>&lt;style&gt;</code></td>
+    </tr>
+    <tr>
+      <td>改了基准参数（吸盘直径、丝杆导程、膜片尺寸…）</td>
+      <td>AGENTS.md 第 4 节列了全部基准值。这些数<strong>跨文档咬合</strong>，改一个必须全文搜索其余文档同步</td>
+    </tr>
+    <tr>
+      <td>加新图 / 改标注</td>
+      <td>AGENTS.md 第 2.6 节（SVG id 必须加图号前缀）和第 5 节（文字会静默溢出 <code>viewBox</code> 被裁掉，必须渲染才知道）</td>
+    </tr>
+    <tr>
+      <td>改 <code>model.html</code> 的三维部分</td>
+      <td>AGENTS.md 第 6 节。尺寸只写在 <code>CFG</code> 一个对象里，改完跑一遍 <code>BOT.labelLayout()</code> 和 <code>BOT.modelBounds()</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="formula w">
+  <p><strong>不要在 HTML 里写死十六进制颜色</strong>，用 <code>assets/notion.css</code> 里的 CSS 变量。<code>AGENTS.md</code> 里有一份完整色板，是 Notion 原生色，不要再引入新颜色。</p>
+</div>
+
+<footer>这是文档库的入口页。八份文档都是单页 HTML + 内联 SVG，共享 <code>assets/</code> 下的样式与脚本，所以不要把某一篇单独拷走。所有内容为设计推导，非工程图纸。</footer>
+</div>
+</main>
+<script src="assets/toc.js"></script>
+</body>
+</html>

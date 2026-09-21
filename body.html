@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>鱼缸壁面清洁机器人 — 主体设计</title>
+<link rel="stylesheet" href="assets/notion.css">
+</head>
+<body>
+<nav class="side" id="side">
+  <div class="side-doc"><span class="side-icon">📦</span><span class="side-name">主体设计</span></div>
+  <div class="side-label">目录</div>
+  <ul class="side-list">
+    <li><a href="#s1" title="1 · 总体布局与厚度预算">1 · 总体布局与厚度预算</a></li>
+    <li><a href="#s2" title="2 · 密封设计">2 · 密封设计</a></li>
+    <li class="lv2"><a href="#s2a1" title="A · 先把压力算清楚">A · 先把压力算清楚</a></li>
+    <li class="lv2"><a href="#s2a2" title="B · 静密封：O 圈沟槽">B · 静密封：O 圈沟槽</a></li>
+    <li class="lv2"><a href="#s2a3" title="C · 材料相容性 — 选错 O 圈会毁掉整机">C · 材料相容性 — 选错 O 圈会毁掉整机</a></li>
+    <li class="lv2"><a href="#s2a4" title="D · 水汽渗透与凝露">D · 水汽渗透与凝露</a></li>
+    <li><a href="#s3" title="3 · 热设计 — 热通路不是散热面积">3 · 热设计 — 热通路不是散热面积</a></li>
+    <li><a href="#s4" title="4 · 重量与浮力配平">4 · 重量与浮力配平</a></li>
+    <li><a href="#s5" title="5 · 电气架构与穿舱">5 · 电气架构与穿舱</a></li>
+    <li><a href="#s6" title="6 · 装配与维修">6 · 装配与维修</a></li>
+    <li><a href="#s7" title="7 · 实施路线">7 · 实施路线</a></li>
+  </ul>
+</nav>
+<button class="side-btn" type="button" aria-label="目录">&#9776;</button>
+<main class="page">
+<div class="page-inner">
+
+<header>
+  <div class="page-icon">📦</div>
+  <h1>鱼缸壁面清洁机器人 — 主体设计</h1>
+  <p class="sub">铝合金承力壳体 · 全静密封 · 电机金属直连壳壁散热 · 可调配重</p>
+</header>
+
+<!-- ══════ 结论先行 ══════ -->
+<div class="keybox">
+  <h3>结论先行：三个反直觉的判断</h3>
+  <p>
+    <b>一、密封在这台机器上不是难题。</b>水深 400 mm，壳体内外压差只有 <b>3.9 kPa</b> ——
+    是大气压的 3.9%，比吸盘内部的 −25 kPa 还小 6 倍。这个量级下随便一个 O 圈都封得住。
+    <b>真正会毁掉整机的是材料老化、电偶腐蚀和水汽凝露</b>，不是压差。别把力气花错地方。
+  </p>
+  <p>
+    <b>二、散热的关键不是散热面积，是热通路。</b>外面全是水，换热系数比空气高两个数量级，
+    壳壁到水那一段温升只有 <b>0.19 K</b>。但如果电机悬空装在塑料支架上，
+    那 3 mm 塑料的热阻是铝的 <b>1000 倍</b>，温升从 0.1 K 变成 <b>112 K</b> —— 电机直接烧掉。
+    <b>一句话：所有发热元件用金属件直接锁到金属壳壁上。</b>
+  </p>
+  <p>
+    <b>三、这台机器人需要配重，不是减重。</b>有效重量只有 0.4 N，而零件本身 844 g ——
+    意味着整机密度必须和水差在 <b>5% 以内</b>。排水体积算出来 1056 cm³，
+    总质量就得配到 <b>1097 g</b>，其中 <b>约 253 g 是配重</b>。
+    而且<b>必须做成可调</b>，因为排水体积的估算误差必然超过 ±5%。
+  </p>
+  <p>
+    <b>方案基线：</b>6061 铝阳极氧化壳体 + POM 非金属前窗模块（天线与接收线圈窗口）
+    + EPDM O 圈全静密封，<b>总厚 64 mm</b>，<b>整机质量 ≈ 1130 g</b>，电池 2S 1000 mAh。
+  </p>
+</div>
+
+<!-- ══════ 1 总体布局 ══════ -->
+<div class="card">
+  <h2 id="s1"><span class="n">1</span>总体布局与厚度预算</h2>
+  <p class="cap">
+    三足布局已经定死了外部尺寸：三个吸盘在 R_t = 100 mm 的圆上（运动单元给的）。
+    主体要做的就是<b>在这三条腿之间塞进所有东西，并且尽量薄</b>。
+    <br>下面这张图是<b>按 1:2 真实比例</b>画的 —— 只有按比例画，才看得出「塞不下」这件事是真的。
+  </p>
+
+  <svg viewBox="0 0 720 520" role="img" aria-label="主体俯视布局，真实比例" style="width:100%;height:auto">
+    <defs>
+      <linearGradient id="b1Cav" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#dce9f5"/><stop offset="1" stop-color="#c3d9ec"/>
+      </linearGradient>
+    </defs>
+    <rect width="720" height="520" rx="14" fill="#fbfbfa"/>
+
+    <!-- 比例尺 -->
+    <g stroke="#9b9891" stroke-width="1">
+      <line x1="24" y1="26" x2="104" y2="26" stroke-width="2"/>
+      <line x1="24" y1="20" x2="24" y2="32"/><line x1="104" y1="20" x2="104" y2="32"/>
+    </g>
+    <text x="114" y="30" class="s-sub">20 mm　图按 1:2 真实比例</text>
+
+    <!-- 吸盘圆 R_t = 100 -->
+    <circle cx="350" cy="290" r="200" fill="none" stroke="#2f9d90"
+            stroke-width="1.2" stroke-dasharray="3 6" opacity=".45"/>
+    <!-- 支撑三角形 -->
+    <polygon points="350,90 523.2,390 176.8,390" fill="none" stroke="#9b9891"
+             stroke-width="1.6" stroke-dasharray="7 5"/>
+    <!-- 铰点圆 r = 50 -->
+    <circle cx="350" cy="290" r="100" fill="none" stroke="#d9a441"
+            stroke-width="1.6" stroke-dasharray="6 4"/>
+
+    <!-- 三条推杆：正好压在三角形的三条半边边上，铰点是边的中点 -->
+    <g stroke="#b8b5ae" stroke-width="14" stroke-linecap="round">
+      <line x1="350" y1="90" x2="436.6" y2="240"/>
+      <line x1="350" y1="390" x2="523.2" y2="390"/>
+      <line x1="263.4" y1="240" x2="176.8" y2="390"/>
+    </g>
+
+    <!-- 主腔：为躲开刷辊整体前移，前缘探出三角形 -->
+    <rect x="240" y="120" width="220" height="170" rx="16" fill="url(#b1Cav)"
+          stroke="#4a86b8" stroke-width="2"/>
+    <text x="350" y="146" text-anchor="middle" class="s-lbl">主腔 110 × 85</text>
+    <text x="350" y="164" text-anchor="middle" class="s-sub">主控 / 电池 / 推杆电机</text>
+
+    <!-- 刷辊：退到重心之后 y = +18 -->
+    <rect x="270" y="292" width="160" height="68" rx="34" fill="#e0bb8c"
+          fill-opacity=".55" stroke="#b5714a" stroke-width="2" stroke-dasharray="6 4"/>
+    <!-- 刮条：刷辊之后 y = +38 -->
+    <rect x="270" y="364" width="160" height="10" fill="#6b6862" fill-opacity=".75"/>
+
+    <!-- 跨梁：吊住铰点座 b（0, +50）。中间隔着刷辊，只能从刷辊上方过去 -->
+    <rect x="338" y="290" width="24" height="100" rx="11" fill="#f2ddb0"
+          stroke="#c08a2e" stroke-width="1.6"/>
+    <text x="332" y="428" text-anchor="end" class="s-sub" style="fill:#a05f3c">跨梁（从刷辊上方过去）</text>
+
+    <!-- 导向罩 / 接收线圈：偏中线左 15 mm -->
+    <circle cx="320" cy="226" r="60" fill="#dce9f5" fill-opacity=".55"
+            stroke="#4a86b8" stroke-width="1.6" stroke-dasharray="5 4"/>
+    <text x="320" y="222" text-anchor="middle" class="s-lbl">导向罩</text>
+    <text x="320" y="240" text-anchor="middle" class="s-sub">接收线圈 ∅50</text>
+
+    <!-- R_t 半径线 -->
+    <line x1="350" y1="290" x2="350" y2="90" stroke="#4a86b8" stroke-width="1.4" stroke-dasharray="6 4"/>
+    <circle cx="350" cy="290" r="3" fill="#4a86b8"/>
+    <text x="380" y="108" class="s-sub" style="fill:var(--blue-fg)">R_t = 100 mm</text>
+
+    <!-- 铰点圆半径线（leader） -->
+    <line x1="212" y1="336" x2="263.4" y2="340" stroke="#d9a441" stroke-width="1" stroke-dasharray="3 3"/>
+    <text x="208" y="340" text-anchor="end" class="s-sub" style="fill:#a8811f">铰点圆 r = 50 mm</text>
+
+    <!-- 吸盘 -->
+    <g fill="#cfe6e2" stroke="#2f9d90" stroke-width="2">
+      <circle cx="350" cy="90" r="25"/>
+      <circle cx="523.2" cy="390" r="25"/>
+      <circle cx="176.8" cy="390" r="25"/>
+    </g>
+    <text x="350" y="46" text-anchor="middle" class="s-lbl">吸盘 ∅25 ×3</text>
+
+    <!-- 铰点 -->
+    <g fill="#f6d98a" stroke="#b08a2e" stroke-width="2">
+      <circle cx="436.6" cy="240" r="7"/>
+      <circle cx="350" cy="390" r="7"/>
+      <circle cx="263.4" cy="240" r="7"/>
+    </g>
+
+    <!-- 连接点编号：与 motion.html 第 1 节同一套（a 前足 / b 机尾右 / c 机尾左） -->
+    <g font-size="11.5" font-weight="700" text-anchor="middle">
+      <circle cx="470" cy="228" r="11" fill="#fbfbfa" stroke="#8b8880" stroke-width="1.3"/><text x="470" y="232.5" fill="#37352f">a</text>
+      <circle cx="350" cy="414" r="11" fill="#fbfbfa" stroke="#8b8880" stroke-width="1.3"/><text x="350" y="418.5" fill="#37352f">b</text>
+      <circle cx="222" cy="232" r="11" fill="#fbfbfa" stroke="#8b8880" stroke-width="1.3"/><text x="222" y="236.5" fill="#37352f">c</text>
+    </g>
+
+    <!-- 刷辊 / 刮条标注 -->
+    <line x1="430" y1="326" x2="440" y2="326" stroke="#b5714a" stroke-width="1" stroke-dasharray="3 2"/>
+    <text x="444" y="330" class="s-lbl" style="fill:#a05f3c">刷辊 ∅34 × 80</text>
+    <text x="224" y="371" text-anchor="end" class="s-sub">刮条</text>
+
+    <!-- 推杆标注 -->
+    <line x1="438" y1="238" x2="452" y2="152" stroke="#9b9891" stroke-width="1" stroke-dasharray="3 3"/>
+    <text x="456" y="146" class="s-sub">推杆压在三角形的</text>
+    <text x="456" y="164" class="s-sub">半边边上，铰点在</text>
+    <text x="456" y="182" class="s-sub">每条边的中点</text>
+    <text x="456" y="202" class="s-sub">铰点座编号 a / b / c</text>
+
+    <!-- 剖切符号 A-A：沿三角形底边 -->
+    <line x1="125" y1="390" x2="575" y2="390" stroke="#4a86b8" stroke-width="1.8" stroke-dasharray="16 6"/>
+    <g stroke="#4a86b8" stroke-width="2.5">
+      <line x1="125" y1="374" x2="125" y2="406"/>
+      <line x1="575" y1="374" x2="575" y2="406"/>
+    </g>
+    <text x="125" y="368" text-anchor="middle" class="s-lbl" style="fill:var(--blue-fg)">A</text>
+    <text x="575" y="368" text-anchor="middle" class="s-lbl" style="fill:var(--blue-fg)">A</text>
+
+    <!-- 右下角几何信息 -->
+    <rect x="548" y="100" width="160" height="212" rx="8" fill="#f1f1ef"/>
+    <text x="562" y="126" class="s-lbl">支撑三角形</text>
+    <text x="562" y="146" class="s-sub">边长 173.2 mm</text>
+    <text x="562" y="164" class="s-sub">内切圆 ∅100 mm</text>
+    <text x="562" y="182" class="s-sub">外接圆 R_t = 100</text>
+    <text x="562" y="208" class="s-lbl">铰点圆</text>
+    <text x="562" y="228" class="s-sub">r = 50 mm</text>
+    <text x="562" y="246" class="s-sub">与吸盘圆错开 60°</text>
+    <text x="562" y="272" class="s-sub" style="fill:var(--red-fg)">错开是必需的：</text>
+    <text x="562" y="290" class="s-sub" style="fill:var(--red-fg)">径向布置雅可比</text>
+    <text x="562" y="306" class="s-sub" style="fill:var(--red-fg)">奇异，转不动</text>
+
+    <!-- 结论 -->
+    <text x="24" y="446" class="s-lbl" style="fill:var(--red-fg)">主腔前缘探出支撑三角形 85 mm</text>
+    <text x="24" y="464" class="s-sub">三角形的内切圆只有 ∅100 mm，装不下 110 × 85 的盒子</text>
+    <text x="24" y="482" class="s-sub">（需要边长 257 mm，相当于 R_t ≈ 149 mm —— 做不到）</text>
+  </svg>
+
+  <div class="formula">
+    <b>布局的第一条结论：主腔必然探出支撑三角形，这不是选择而是算术</b><br>
+    三个吸盘撑在 R_t = 100 mm 处，整机跨度必然 200 mm 以上。但这<b>不等于</b>主腔要 200 mm 宽 ——
+    真正卡住布局的是支撑三角形的面积，它比直觉小得多：<b>边长 173.2 mm、内切圆只有 ∅100 mm</b>。
+    <br><b>更关键的一点：三条推杆正好压在三角形的三条边上。</b>
+    每个机身铰点都是某条边的中点（铰点圆 r = 50 mm，与吸盘圆<b>错开 60°</b>，理由见
+    <a href="motion.html">运动单元设计</a> 第 5 节），推杆从边中点沿半边边伸到吸盘 ——
+    所以<b>「零件不碰腿」和「零件落在三角形内」是同一个约束</b>。<br>
+    算下来：110 × 85 mm 的盒子要整个放进这个三角形，需要边长 257 mm（≈ R_t 149 mm）。
+    <b>做不到。所以主腔整体前移，前缘探出三角形约 85 mm。</b><br>
+    探出不会削弱吸附 —— <b>吸力由三个吸盘提供，支撑多边形始终是那 173 mm 的三角形</b>，
+    探出的部分只是额外排水体积。<br>
+    <b>三条腿编号 a / b / c（对照表在 <a href="motion.html">运动单元设计</a> 第 1 节）：</b>
+    杆 a 接前足 A，杆 c 接机尾左 C，这两个铰点座都在主腔的投影里，直接做在腔壁加强区上就行。
+    <b>杆 b 不一样：它的铰点座在正后方 <code>(0, +50)</code>，比主腔尾面（y = 0）还靠后 50 mm，
+    中间正好隔着刷辊</b>（刷辊占 y = +1 ~ +35）。绕不过去 —— 从刷辊两侧绕的那两条路，
+    正是杆 b 和杆 c 自己的走廊。所以它只能靠一根<b>从刷辊上方跨过去的跨梁</b>吊到机尾
+    （图中琥珀色那根），到 y = +50 再下探到推杆那一层（z = 18 ~ 30）。<br>
+    <span style="color:var(--ink-3);font-size:12.5px">
+    探出量要算进第 4 节的配重：外形包络就是排水体积，主腔每前探 10 mm，配重就要多加 20 g 以上。</span>
+  </div>
+
+  <svg viewBox="0 0 720 490" role="img" aria-label="沿剖切线 A-A 的主体剖面" style="width:100%;height:auto">
+    <defs>
+      <linearGradient id="b2Glass" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#cfe0ee"/><stop offset="1" stop-color="#aac7de"/>
+      </linearGradient>
+      <marker id="b2Dim" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0,5 L10,0 L10,10 z" fill="#9b9891"/>
+      </marker>
+      <marker id="b2DimS" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M10,5 L0,0 L0,10 z" fill="#9b9891"/>
+      </marker>
+    </defs>
+    <rect width="720" height="490" rx="14" fill="#fbfbfa"/>
+
+    <!-- 玻璃 -->
+    <rect x="70" y="40" width="24" height="400" fill="url(#b2Glass)"/>
+    <line x1="94" y1="40" x2="94" y2="440" stroke="#8fb4d6" stroke-width="1.6"/>
+    <text x="82" y="462" text-anchor="middle" class="s-sub">玻璃</text>
+
+    <!-- 主腔壳体 -->
+    <rect x="199" y="88" width="98" height="306" rx="8" fill="#e4e2dd" stroke="#8b8880" stroke-width="2"/>
+    <!-- 盖板（POM，非金属） -->
+    <rect x="297" y="88" width="21" height="306" rx="4" fill="#cfe0d5" stroke="#5c8f6e" stroke-width="2"/>
+    <!-- O 圈 -->
+    <circle cx="294" cy="95" r="5" fill="#e07a5f" stroke="#a8453f" stroke-width="1.2"/>
+    <circle cx="294" cy="387" r="5" fill="#e07a5f" stroke="#a8453f" stroke-width="1.2"/>
+
+    <!-- 吸盘单元 B（上） -->
+    <polygon points="94,92 94,128 157,134 157,86" fill="#cfe6e2" stroke="#2f9d90" stroke-width="1.8" stroke-linejoin="round"/>
+    <rect x="157" y="88" width="42" height="44" rx="4" fill="#b8b5ae" stroke="#8b8880" stroke-width="1.4"/>
+    <rect x="203" y="100" width="26" height="22" rx="3" fill="#8b8880"/>
+    <rect x="233" y="92" width="40" height="38" rx="4" fill="#6b6862"/>
+
+    <!-- 吸盘单元 C（下） -->
+    <polygon points="94,352 94,388 157,394 157,346" fill="#cfe6e2" stroke="#2f9d90" stroke-width="1.8" stroke-linejoin="round"/>
+    <rect x="157" y="348" width="42" height="44" rx="4" fill="#b8b5ae" stroke="#8b8880" stroke-width="1.4"/>
+    <rect x="203" y="360" width="26" height="22" rx="3" fill="#8b8880"/>
+    <rect x="233" y="352" width="40" height="38" rx="4" fill="#6b6862"/>
+
+    <!-- 主腔内部 -->
+    <rect x="205" y="160" width="44" height="56" rx="4" fill="#8b8880"/>
+    <rect x="205" y="256" width="44" height="56" rx="4" fill="#8b8880"/>
+    <rect x="258" y="150" width="34" height="52" rx="4" fill="#4a86b8" fill-opacity=".55" stroke="#4a86b8" stroke-width="1.4"/>
+    <rect x="258" y="212" width="34" height="82" rx="4" fill="#7c5cbf" fill-opacity=".4" stroke="#7c5cbf" stroke-width="1.4"/>
+    <text x="275" y="243" text-anchor="middle" font-size="9" fill="#5a3f8f" font-weight="600">电池</text>
+    <text x="275" y="178" text-anchor="middle" font-size="9" fill="#2c5c85" font-weight="600">主控</text>
+    <text x="227" y="192" text-anchor="middle" font-size="9" fill="#fff" font-weight="600">推杆</text>
+    <text x="227" y="288" text-anchor="middle" font-size="9" fill="#fff" font-weight="600">推杆</text>
+
+    <!-- 厚度标尺 -->
+    <line x1="94" y1="428" x2="318" y2="428" stroke="#9b9891" stroke-width="1.4"
+          marker-end="url(#b2Dim)" marker-start="url(#b2DimS)"/>
+    <g stroke="#9b9891" stroke-width="1" stroke-dasharray="3 3">
+      <line x1="157" y1="120" x2="157" y2="425"/>
+      <line x1="199" y1="120" x2="199" y2="425"/>
+      <line x1="297" y1="120" x2="297" y2="425"/>
+    </g>
+    <text x="125" y="450" text-anchor="middle" class="s-sub">0–18</text>
+    <text x="178" y="450" text-anchor="middle" class="s-sub">18–30</text>
+    <text x="248" y="450" text-anchor="middle" class="s-sub">30–58</text>
+    <text x="307" y="450" text-anchor="middle" class="s-sub">58–64</text>
+    <text x="206" y="468" text-anchor="middle" class="s-lbl">总厚 64 mm</text>
+
+    <!-- 右栏标注 -->
+    <rect x="352" y="80" width="352" height="386" rx="10" fill="#f1f1ef"/>
+    <text x="370" y="106" class="s-lbl">厚度分层（单位 mm，从玻璃面起算）</text>
+
+    <rect x="370" y="122" width="14" height="14" rx="3" fill="#cfe6e2" stroke="#2f9d90" stroke-width="1.4"/>
+    <text x="394" y="134" class="s-lbl">0–18　吸盘 + 膜片腔</text>
+    <text x="394" y="152" class="s-sub">唇边、吸盘体和膜片，由吸附单元定死。</text>
+
+    <rect x="370" y="168" width="14" height="14" rx="3" fill="#b8b5ae" stroke="#8b8880" stroke-width="1.4"/>
+    <text x="394" y="180" class="s-lbl">18–30　传动层</text>
+    <text x="394" y="198" class="s-sub">丝杆、推杆、导向。两个驱动的必经之路。</text>
+
+    <rect x="370" y="214" width="14" height="14" rx="3" fill="#e4e2dd" stroke="#8b8880" stroke-width="1.4"/>
+    <text x="394" y="226" class="s-lbl">30–58　主腔</text>
+    <text x="394" y="244" class="s-sub">推杆电机、主控板、电池。<tspan font-weight="600" style="fill:var(--fg)">电机全部横放</tspan>，</text>
+    <text x="394" y="262" class="s-sub">让直径不占厚度方向，主腔才到 28 mm。</text>
+
+    <rect x="370" y="278" width="14" height="14" rx="3" fill="#cfe0d5" stroke="#5c8f6e" stroke-width="1.4"/>
+    <text x="394" y="290" class="s-lbl">58–64　盖板 + O 圈</text>
+    <text x="394" y="308" class="s-sub">POM 盖板。非金属，顺带避开电偶腐蚀。</text>
+
+    <text x="370" y="340" class="s-sub" style="fill:var(--red-fg)">刷辊 ∅34 占 8–42 mm，轴线 y = +18 mm</text>
+    <text x="370" y="358" class="s-sub" style="fill:var(--red-fg)">与主腔重叠 —— 刷辊处主腔要挖槽让开。</text>
+    <text x="370" y="382" class="s-sub">剖面 A-A 沿三角形底边切（y = +50 mm），</text>
+    <text x="370" y="400" class="s-sub">正好沿杆 b 的轴线，不经过刷辊。</text>
+
+    <text x="370" y="424" class="s-sub" style="fill:var(--blue-fg)">前窗模块（POM 实体）：中心偏中线左</text>
+    <text x="370" y="442" class="s-sub" style="fill:var(--blue-fg)">15 mm、前 32 mm；伸到距玻璃 2 mm，</text>
+    <text x="370" y="460" class="s-sub" style="fill:var(--blue-fg)">罩壁 1.5 mm。天线与接收线圈共用它。</text>
+  </svg>
+<div class="formula w">
+    <b>剖面里必须留出来的两处让位</b><br>
+    ① <b>主腔沿推杆方向挖缺口。</b>三条推杆走在 18–30 mm 的传动层里，在俯视投影上它们会穿过主腔的轮廓
+    （第 1 节第一张图）—— 那是 z 向分层的结果，不是干涉。但推杆的电机与导向占 30–58 mm 那一层，
+    所以<b>主腔在三条推杆的正上方（投影重叠处）要挖出让位缺口</b>，缺口不穿透壳壁，
+    也不并进主腔容积。<br>
+    ② <b>作业头要有约 20 mm 的被动退让行程。</b>作业头必须贴玻璃（预压 2 N），
+    接收线圈也必须离玻璃 ≤5 mm —— 两者抢同一段 30 mm 间隙，平面上又躲不开三条推杆。
+    所以作业头装在一对<b>直线滑槽</b>上：对接时由坞站的顶块把它顶离玻璃 20 mm，
+    出坞后靠<b>作业头已有的那根 2 N 预压弹簧</b>自动复位。
+    <b>退让靠机械，作业头仍然无源、无电气件</b>（见 <a href="work.html">作业机构设计</a> 第 4 节）。
+  </div>
+</div>
+
+<!-- ══════ 2 密封设计 ══════ -->
+<div class="card">
+  <h2 id="s2"><span class="n">2</span>密封设计</h2>
+  <p class="cap">
+    这一节的顺序是刻意的：<b>先算压力，再谈密封</b>。因为算完之后你会发现，
+    难度比想象的低一个数量级，力气应该花在别的地方。
+  </p>
+
+  <h3 id="s2a1"><span class="n">A</span>先把压力算清楚</h3>
+
+  <table>
+    <thead><tr><th>工况</th><th>压差</th><th>相当于</th><th>对比</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td><b>主腔（水深 400 mm）</b></td><td><b>3.9 kPa</b></td><td>0.039 atm</td><td>整机要承受的最大外压</td></tr>
+      <tr><td>主腔（水深 200 mm）</td><td>2.0 kPa</td><td>0.019 atm</td><td>机器人在缸壁中部时</td></tr>
+      <tr><td>吸盘内腔</td><td>−25 kPa</td><td>0.25 atm</td><td><b>是主腔的 6.4 倍</b>，但那是吸附单元的事</td></tr>
+      <tr class="bad"><td>家用 30 m 防水表</td><td>300 kPa</td><td>3 atm</td><td>本机需求是它的 1/76</td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula">
+    <b>这个数字改变了整个设计的重点</b><br>
+    <b>3.9 kPa 意味着：</b>壁厚不需要考虑强度（2 mm 铝板能扛几百 kPa）、
+    O 圈不需要高压设计、螺栓间距可以很宽松、不需要压力补偿。
+    <br><b>所以真正要做的是三件别的事：</b>
+    <br>① <b>材料相容性</b> —— 长期泡水的橡胶和金属会不会老化、腐蚀（见 C）
+    <br>② <b>水汽渗透与凝露</b> —— 这才是电子件真正的杀手（见 D）
+    <br>③ <b>装配可靠性</b> —— O 圈沾了一粒沙就漏，而这跟压差无关（见第 6 节）
+  </div>
+
+  <h3 id="s2a2"><span class="n">B</span>静密封：O 圈沟槽</h3>
+  <p class="cap">
+    动密封（穿轴）在上一份文档里已经被磁耦合全部消掉了。
+    所以主体上<b>只剩一条密封线</b>：壳体与盖板的接合面。这是一个矩形 O 圈。
+    <br><b>前窗模块不能是另装上去的零件</b> —— 它必须和盖板做成一体（同一块 POM 铣出来，
+    或者和盖板用同一圈螺钉压在一起）。<b>否则每加一个零件就多一条密封线，
+    而这条线正好在水最深的地方。</b>
+  </p>
+
+  <svg viewBox="0 0 720 400" role="img" aria-label="O 圈沟槽放大剖面" style="width:100%;height:auto">
+    <defs>
+      <marker id="b3Dim" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0,5 L10,0 L10,10 z" fill="#9b9891"/>
+      </marker>
+      <marker id="b3DimS" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M10,5 L0,0 L0,10 z" fill="#9b9891"/>
+      </marker>
+      <marker id="b3Push" viewBox="0 0 10 10" refX="5" refY="9" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0,10 L5,0 L10,10 z" fill="#5c8f6e"/>
+      </marker>
+    </defs>
+    <rect width="720" height="400" rx="14" fill="#fbfbfa"/>
+
+    <!-- ── 左：组装态。比例 50 px/mm ── -->
+    <line x1="240" y1="30" x2="240" y2="52" stroke="#5c8f6e" stroke-width="3" marker-end="url(#b3Push)"/>
+    <rect x="60" y="60" width="340" height="110" rx="5" fill="#cfe0d5" stroke="#5c8f6e" stroke-width="2"/>
+    <text x="76" y="122" class="s-lbl">盖板　POM</text>
+
+    <rect x="60" y="170" width="340" height="170" rx="5" fill="#e4e2dd" stroke="#8b8880" stroke-width="2"/>
+    <!-- 沟槽 2.6 × 1.6 mm -->
+    <rect x="175" y="170" width="130" height="80" fill="#fbfbfa" stroke="#8b8880" stroke-width="1.6"/>
+    <!-- O 圈压缩态：∅2.0 挤到 1.6 高 -->
+    <ellipse cx="240" cy="210" rx="49" ry="40" fill="#e07a5f" stroke="#a8453f" stroke-width="1.8"/>
+    <text x="76" y="320" class="s-lbl">壳体　6061 铝</text>
+
+    <!-- 槽宽 -->
+    <line x1="175" y1="272" x2="305" y2="272" stroke="#9b9891" stroke-width="1.2"
+          marker-end="url(#b3Dim)" marker-start="url(#b3DimS)"/>
+    <text x="240" y="290" text-anchor="middle" class="s-sub">槽宽 2.6</text>
+    <!-- 槽深 -->
+    <line x1="322" y1="170" x2="322" y2="250" stroke="#9b9891" stroke-width="1.2"
+          marker-end="url(#b3Dim)" marker-start="url(#b3DimS)"/>
+    <text x="332" y="215" class="s-sub">槽深 1.6</text>
+
+    <text x="60" y="378" class="s-sub">组装态：盖板压下来，O 圈被挤进沟槽</text>
+
+    <!-- ── 右：自由态 ── -->
+    <rect x="460" y="60" width="240" height="290" rx="10" fill="#f1f1ef"/>
+    <circle cx="565" cy="170" r="50" fill="#e07a5f" fill-opacity=".22"
+            stroke="#a8453f" stroke-width="1.8" stroke-dasharray="6 4"/>
+    <line x1="645" y1="120" x2="645" y2="220" stroke="#9b9891" stroke-width="1.2"
+          marker-end="url(#b3Dim)" marker-start="url(#b3DimS)"/>
+    <text x="654" y="175" class="s-sub">∅2.0</text>
+    <text x="476" y="258" class="s-lbl">自由态</text>
+    <text x="476" y="280" class="s-sub">线径 ∅2.0 mm</text>
+    <text x="476" y="300" class="s-sub">硬度 Shore A 70</text>
+    <text x="476" y="320" class="s-sub">材质 EPDM</text>
+  </svg>
+
+  <div class="formula">
+    <b>沟槽的四个数，以及它们是怎么来的</b><br>
+    <b>线径 ∅2.0</b>（市面最好买的规格）→ <b>压缩率取 20%</b>，所以 O 圈坐下后的高度是
+    <code>2.0 × 0.8 = 1.6 mm</code> → <b>槽深就开 1.6 mm</b>，让盖板压到底时正好把它挤到 20%。<br>
+    <b>槽宽 2.6 mm</b> 是按"橡胶不可压缩"反推的：O 圈截面积 <code>π × 1² = 3.14 mm²</code>，
+    压到 1.6 mm 高时横向必然鼓到 <code>3.14 ÷ 1.6 ≈ 1.96 mm</code>。
+    槽宽给到 2.6 mm，两侧共留 0.6 mm 余隙 —— <b>不给余隙，橡胶无处可去，会硬顶住盖板装不到底</b>。
+    <br><span style="color:var(--ink-3);font-size:12.5px">
+    注意压下去的是<b>高度</b>不是体积。橡胶的体积模量极高（≈2000 MPa），
+    在 3.9 kPa 的外压下体积几乎不变，所以它是靠"变形"密封，不是靠"被压扁"。</span>
+  </div>
+
+  <ul class="pts">
+    <li><b>O 圈选 EPDM（三元乙丙），硬度 Shore A 70。</b>线径 ∅2.0 mm 是最好买的规格。</li>
+    <li><b>沟槽尺寸按上面四个数走。</b>压缩率 15–25% 是安全区间，20% 是甜点。
+      压缩率低于 15% 封不住，高于 30% 橡胶会永久变形（压缩永久变形），拆一次就废。</li>
+    <li><b>槽开在壳体上，不开在盖板上。</b>开盖时 O 圈留在槽里 —— 不会掉、不会装反、
+      不会被手指带歪。这一条能消掉一半的装配失误。</li>
+    <li><b>螺栓间距 ≤ 25 mm。</b>3.9 kPa 用不着密排螺栓，但间距太大会让盖板在螺栓之间
+      "鼓"起来，压缩率不均匀。<b>周圈约 10 个 M3。</b></li>
+    <li class="w"><b>装配前 O 圈要涂一层硅脂。</b>不是为了密封，是为了让它<b>不扭转、不粘连</b>。
+      干装的 O 圈在拧紧时会滚动移位，肉眼看不出来但已经漏了。</li>
+  </ul>
+
+  <h3 id="s2a3"><span class="n">C</span>材料相容性 — 选错 O 圈会毁掉整机</h3>
+  <p class="cap">
+    3.9 kPa 的压差可以忽略，但<b>泡一年</b>不能忽略。这一节里每一项选错的后果都是"三个月后开始漏水"。
+  </p>
+
+  <table>
+    <thead><tr><th>零件</th><th>选定</th><th>不要用</th><th>理由</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td><b>壳体</b></td><td>6061 铝 + 阳极氧化</td><td>PC / ABS</td>
+          <td>导热 205 vs 0.2 W/(m·K)（见第 3 节）；<b>单件 CNC 比注塑开模便宜得多</b></td></tr>
+      <tr class="hl"><td><b>O 圈</b></td><td><b>EPDM</b></td><td class="bad">NBR 丁腈橡胶</td>
+          <td>NBR 长期泡水会<b>水解</b>：膨胀、变软、失去弹性，通常 3–6 个月开始渗漏</td></tr>
+      <tr class="hl"><td><b>盖板</b></td><td>POM</td><td>铝</td>
+          <td>非金属，不参与电偶腐蚀；也方便做透视检查和天线调试打孔</td></tr>
+      <tr class="hl"><td><b>前窗模块</b></td><td>POM 实体</td><td class="bad">铝 / 任何金属</td>
+          <td><b>这一块必须非金属</b> —— 它包着接收线圈和天线，金属会同时屏蔽磁场和射频</td></tr>
+      <tr><td>螺钉</td><td>316 不锈钢 + 尼龙垫圈</td><td>碳钢 / 304</td>
+          <td>防锈 + 隔断电偶腐蚀</td></tr>
+      <tr><td>吸盘 / 膜片</td><td>食品级硅胶</td><td>天然橡胶</td>
+          <td>无毒（缸里有活物）、耐老化、耐疲劳</td></tr>
+      <tr><td>刮条</td><td>铂金硫化硅胶 Shore A 40</td><td>过氧化物硫化硅胶</td>
+          <td>过氧化物残留物可能析出</td></tr>
+      <tr><td>刷丝</td><td>尼龙 PA6</td><td>金属丝 / 回收料</td>
+          <td>无毒可长期浸泡</td></tr>
+      <tr><td>干燥剂</td><td>硅胶干燥剂包</td><td>生石灰</td>
+          <td>生石灰遇水放热且强碱，万一漏了会毁掉整缸</td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula w">
+    <b>电偶腐蚀 —— 铝合金壳体上最容易忽略的坑</b><br>
+    缸水是弱电解液（含矿物质）。<b>铝和 316 不锈钢一旦在水里接触，铝就是阳极，会被持续吃掉。</b>
+    这不是"会不会"的问题，是"多久"的问题 —— 通常是几个月。
+    <br><b>三道防线，三道都要上：</b>
+    <br>① 阳极氧化层本身是绝缘的（但攻丝的螺纹孔会破坏它）
+    <br>② 每个不锈钢螺钉下面加<b>尼龙垫圈</b>，螺钉柱里加<b>尼龙套筒</b>，彻底断开金属接触
+    <br>③ 所有内部电气用<b>单一接地点</b>接到壳体，避免杂散电流在铝上乱跑
+    <br><span style="color:var(--ink-3);font-size:12.5px">
+    另外一个不显眼但真实的腐蚀源：<b>7 个电机的外壳电位不完全相同</b>，
+    如果它们的金属外壳彼此导通又接触铝壳，会形成微电池。<b>电机座加绝缘垫片</b>，成本几乎为零。</span>
+  </div>
+
+  <h3 id="s2a4"><span class="n">D</span>水汽渗透与凝露</h3>
+  <p class="cap">
+    这一条比压差重要得多。<b>电子件不是被水淹死的，是被冷凝水泡死的。</b>
+  </p>
+
+  <div class="formula w">
+    <b>失效机理：不是漏进来的，是"呼吸"进来的</b><br>
+    机器人在 28 °C 的缸水里工作，拿出来放到 20 °C 的房间 —— 腔内空气冷却收缩，
+    <b>形成微负压，把外部湿气"吸"进壳内</b>（即使密封完好，也会透过塑料盖板和 O 圈渗透）。
+    再放回缸里升温，水汽在<b>温度最低的金属壳壁上凝结成水珠</b>，顺着流到 PCB 上。
+    <br><b>这个循环每周重复，几个月后 PCB 就完了。</b>
+  </div>
+
+  <ul class="pts">
+    <li><b>① PCB 三防漆（保形涂覆）。</b>成本几块钱，是最划算的一道保险。
+      即使腔内进水，涂覆过的板子还能继续工作。</li>
+    <li><b>② 干燥剂包。</b>贴在盖板内侧，每 3–6 个月或每次开盖更换。
+      10 g 硅胶干燥剂能吸收约 1 g 水，对一个 0.5 L 的腔体足够撑很久。</li>
+    <li><b>③ 壳体用金属，不用塑料。</b>铝的透湿率实际上是零，塑料则会有可观的渗透量。
+      这也是选铝壳的理由之一。<b>只有盖板和前窗模块是 POM，渗透面积小。</b></li>
+    <li class="w"><b>④ 不要装防水透气阀。</b>很多人第一反应是装一个 Gore-Tex 透气膜来平衡内外压差。
+      <b>这里不要装。</b>透气膜挡得住液态水，但挡不住水蒸气分子 ——
+      它反而给水汽开了一条直达的高速路。3.9 kPa 的压差根本不需要平衡。</li>
+    <li class="w"><b>⑤ 绝对不要油浸或灌封。</b>充硅油能解决密封和耐压，
+      但一旦泄漏就是<b>整缸鱼团灭</b>。这个风险在鱼缸场景下不可接受。</li>
+  </ul>
+</div>
+
+<!-- ══════ 3 热设计 ══════ -->
+<div class="card">
+  <h2 id="s3"><span class="n">3</span>热设计 — 热通路不是散热面积</h2>
+  <p class="cap">
+    先算功耗，再算热阻。算完会发现：<b>外面那一段完全不是问题，里面那一段才是生死线</b>。
+  </p>
+
+  <table>
+    <thead><tr><th>部件</th><th>数量</th><th>峰值 (W)</th><th>平均 (W)</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>吸附膜片电机</td><td>3</td><td>1.5</td><td>0.3</td><td>只在抽气时；抽完丝杆自锁，零功耗保持</td></tr>
+      <tr><td>推杆电机</td><td>3</td><td>2.0</td><td>1.0</td><td>行走时</td></tr>
+      <tr><td>刷辊电机</td><td>1</td><td>1.5</td><td>1.5</td><td>持续运转</td></tr>
+      <tr><td>主控 + 传感器</td><td>1</td><td>0.4</td><td>0.4</td><td>作业时</td></tr>
+      <tr><td>无线</td><td>1</td><td>0.3</td><td>0.05</td><td>突发</td></tr>
+      <tr><td>DC-DC 损耗</td><td>—</td><td>—</td><td>0.5</td><td>按 85% 效率估</td></tr>
+      <tr class="hl"><td><b>合计</b></td><td></td><td><b>12.7</b></td><td><b>3.75</b></td><td>以上全部是<b>作业时</b>的功耗</td></tr>
+      <tr class="hl"><td><b>待机（深度睡眠）</b></td><td>—</td><td>—</td><td><b>&lt; 1 mW</b></td><td><b>不计入上表</b>。整机的待机账见 <a href="ctrl.html">主控与传感器设计</a> 第 4 节</td></tr>
+    </tbody>
+  </table>
+
+  <svg viewBox="0 0 700 360" role="img" aria-label="塑料支架与铝支架的热通路对比" style="width:100%;height:auto">
+    <defs>
+      <linearGradient id="b4Water" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#bcd9ee"/><stop offset="1" stop-color="#8fbcdc"/>
+      </linearGradient>
+      <marker id="b4Cool" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#448361"/>
+      </marker>
+    </defs>
+    <rect width="700" height="360" rx="14" fill="#fbfbfa"/>
+
+    <!-- ── 左：塑料支架 ── -->
+    <rect x="18" y="30" width="318" height="300" rx="10" fill="#fdeeec"/>
+    <text x="34" y="56" class="s-lbl" style="fill:var(--red-fg)">✗ 电机悬空装在塑料支架上</text>
+    <rect x="34" y="80" width="42" height="120" fill="url(#b4Water)"/>
+    <rect x="76" y="80" width="22" height="120" fill="#b8b5ae" stroke="#8b8880" stroke-width="1.5"/>
+    <text x="55" y="218" text-anchor="middle" class="s-sub">水</text>
+    <text x="87" y="218" text-anchor="middle" class="s-sub">壳壁</text>
+    <rect x="98" y="130" width="76" height="70" rx="4" fill="#e8a882" stroke="#c9615b" stroke-width="1.8"/>
+    <text x="136" y="170" text-anchor="middle" font-size="10" font-weight="600" fill="#8a3a35">塑料支架</text>
+    <rect x="174" y="122" width="86" height="86" rx="6" fill="#c9615b" stroke="#8a3a35" stroke-width="2"/>
+    <text x="217" y="158" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">电机</text>
+    <text x="217" y="178" text-anchor="middle" font-size="10" fill="#ffe0dc">&gt; 130 °C</text>
+    <text x="34" y="256" class="s-lbl" style="fill:var(--red-fg)">热阻 30 K/W</text>
+    <text x="34" y="276" class="s-sub" style="fill:var(--red-fg)">3.75 W × 30 = 112 K 温升</text>
+    <text x="34" y="296" class="s-sub">热量卡在电机里出不来</text>
+
+    <!-- ── 右：铝支架 ── -->
+    <rect x="364" y="30" width="318" height="300" rx="10" fill="#eef5ed"/>
+    <text x="380" y="56" class="s-lbl" style="fill:var(--green-fg)">✓ 电机用铝座直接锁在铝壳壁上</text>
+    <rect x="380" y="80" width="42" height="120" fill="url(#b4Water)"/>
+    <rect x="422" y="80" width="22" height="120" fill="#b8b5ae" stroke="#8b8880" stroke-width="1.5"/>
+    <text x="401" y="218" text-anchor="middle" class="s-sub">水</text>
+    <text x="433" y="218" text-anchor="middle" class="s-sub">壳壁</text>
+    <rect x="444" y="130" width="76" height="70" rx="4" fill="#c3d9ec" stroke="#4a86b8" stroke-width="1.8"/>
+    <text x="482" y="170" text-anchor="middle" font-size="10" font-weight="600" fill="#2c5c85">铝支架</text>
+    <rect x="520" y="122" width="86" height="86" rx="6" fill="#5c8f6e" stroke="#3d6b4d" stroke-width="2"/>
+    <text x="563" y="158" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">电机</text>
+    <text x="563" y="178" text-anchor="middle" font-size="10" fill="#dff0e2">≈ 40 °C</text>
+    <!-- 热流：一整条箭头从电机穿到水里，压在零件之上 -->
+    <line x1="514" y1="188" x2="378" y2="188" stroke="#448361" stroke-width="3.4"
+          marker-end="url(#b4Cool)"/>
+    <text x="380" y="256" class="s-lbl" style="fill:var(--green-fg)">热阻 3.5 K/W</text>
+    <text x="380" y="276" class="s-sub" style="fill:var(--green-fg)">3.75 W × 3.5 = 13 K 温升</text>
+    <text x="380" y="296" class="s-sub">热量一路流到水里</text>
+  </svg>
+
+  <table>
+    <thead><tr><th>热阻分段</th><th>热阻 (K/W)</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>电机内部 → 电机外壳</td><td>2–4</td><td>由电机本身决定，改不了。选电机时看这一项</td></tr>
+      <tr class="hl"><td><b>电机外壳 → 支架</b></td><td><b>0.3</b></td><td>金属对金属 + 导热硅脂</td></tr>
+      <tr class="hl"><td><b>支架 → 壳壁</b></td><td><b>0.3</b></td><td>同一块铝，或硅脂压接</td></tr>
+      <tr><td>壳壁内部扩散</td><td>0.2</td><td>铝的导热率很高，可忽略</td></tr>
+      <tr class="hl"><td><b>壳壁 → 水</b></td><td><b>0.05</b></td><td>自然对流，h ≈ 300 W/(m²·K)，面积 0.065 m²</td></tr>
+      <tr class="hl"><td><b>合计</b></td><td><b>≈ 3–5</b></td><td>3.75 W → <b>温升 11–19 K</b>，电机 37–45 °C，安全</td></tr>
+      <tr class="bad"><td>换成塑料支架（对照）</td><td>30+</td><td>3.75 W → <b>温升 112 K</b>，电机烧毁</td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula">
+    <b>热设计的三条硬规则</b><br>
+    <b>① 所有发热元件用金属件直接锁在金属壳壁上。</b>电机座、DC-DC 的散热面、刷辊电机的磁耦合定子，
+    全部走这条路。接触面涂导热硅脂，成本几乎为零，热阻降一半。
+    <br><b>② 主腔内部不要指望空气对流。</b>密封腔体里的空气是不流动的，它的作用只是<b>隔热</b>。
+    任何靠"空气散热"的想法在这里都不成立。
+    <br><b>③ 峰值 12.7 W 靠热容扛。</b>多个电机同时启动只是几秒的事。
+    铝壳体的热容（200 g × 900 J/(kg·K) = 180 J/K）能吸收 12.7 W × 5 s = 64 J，
+    温升 0.35 K。不需要为峰值做任何额外设计。
+  </div>
+</div>
+
+<!-- ══════ 4 重量与浮力 ══════ -->
+<div class="card">
+  <h2 id="s4"><span class="n">4</span>重量与浮力配平</h2>
+  <p class="cap">
+    这一节是全文最容易被做错的地方。水下机器人的直觉是"减重"，
+    <b>但这台机器需要的是加重</b>。
+  </p>
+
+  <div class="formula">
+    <b>为什么需要加重 —— 一个简单的算术</b><br>
+    运动单元定的目标是<b>有效重量 0.3–0.5 N</b>（近中性浮力，略重于水）。换算成质量是 <b>30–50 g</b>。
+    <br>而一台这个尺寸的机器人，零件本身就有 <b>844 g</b>。
+    <br><b>所以：整机质量 = 排水体积(g) + 41 g。</b>
+    排水体积由外形包络决定，是设计变量；配重是把它补上的手段。
+    <br><span style="color:var(--ink-3);font-size:12.5px">
+    换句话说，零件质量和水给的浮力必须匹配到 <b>5% 以内</b>。这个精度靠估算达不到，
+    所以配重<b>必须可调</b>。</span>
+  </div>
+
+  <table>
+    <thead><tr><th>项</th><th>数值</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>主腔包络</td><td>110 × 85 × 64 mm → 598 cm³</td><td>紧凑设计，前缘探出三角形约 85 mm</td></tr>
+      <tr><td>推杆 + 吸盘单元</td><td>3 × 72 × 34 × 42 mm → 308 cm³</td><td>含吸盘、膜片腔与推杆</td></tr>
+      <tr><td>刷辊 + 刮条</td><td>∅34 × 80 mm → 73 cm³</td><td></td></tr>
+      <tr><td>磁耦合 + 轴系</td><td>15 cm³</td><td></td></tr>
+      <tr><td>前窗模块（POM 实体）</td><td>62 cm³</td><td>接收线圈 + 天线 + 光电二极管共用</td></tr>
+      <tr class="hl"><td><b>排水体积合计</b></td><td><b>≈ 1056 cm³</b></td><td>浮力 10.4 N</td></tr>
+      <tr class="hl"><td><b>目标整机质量</b></td><td><b>≈ 1097 g</b></td><td>= 1056 g + 41 g</td></tr>
+    </tbody>
+  </table>
+
+  <table>
+    <thead><tr><th>零件</th><th>质量 (g)</th></tr></thead>
+    <tbody>
+      <tr><td>壳体（铝 1.5 mm）+ 盖板</td><td>200</td></tr>
+      <tr><td>吸附单元 ×3（吸盘 + 膜片 + 丝杆 + 电机）</td><td>144</td></tr>
+      <tr><td>推杆 ×3（含电机 + 磁角度传感器）</td><td>122</td></tr>
+      <tr><td>作业头（刷辊 + 刮条 + 外壳）</td><td>85</td></tr>
+      <tr><td>电池 2S 1000 mAh</td><td>55</td></tr>
+      <tr><td>线缆、螺钉、O 圈、干燥剂</td><td>50</td></tr>
+      <tr><td>刷辊电机 + 磁耦合</td><td>48</td></tr>
+      <tr><td>主控 PCB + 传感器</td><td>55</td></tr>
+      <tr><td>前窗模块（POM 实体 + 接收线圈）</td><td>85</td></tr>
+      <tr class="hl"><td><b>零件合计</b></td><td><b>844</b></td></tr>
+      <tr class="hl"><td><b>需要的配重</b></td><td><b>≈ 253 g</b></td></tr>
+    </tbody>
+  </table>
+
+  <ul class="pts">
+    <li class="w"><b>配重必须可调，范围 ±100 g。</b>排水体积的估算误差必然超过 ±5%（±50 cm³），
+      再加上零件质量的公差，±100 g 的调节范围是底线。
+      <b>做成一个凹槽，用不锈钢配重片（每片 25 g）加减。</b></li>
+    <li><b>主控这一层让零件重了 21 g，被配重吸收掉了。</b>
+      推杆上的磁角度传感器 +8 g（见 <a href="ctrl.html">主控与传感器设计</a> 第 3 节 D），
+      主控板变大 +13 g —— 合计把零件从 823 g 抬到 844 g，配重就从 274 g 降到约 253 g。
+      <b>这仍然落在上面 ±100 g 的可调范围内，所以不触发排水体积与配重的连锁重算。</b>
+      但这个余量不是无限的：再往上加 100 g 零件，配重就压到下限了。</li>
+    <li><b>配重材料用不锈钢，不用铅。</b>铅虽然密度更高（11.3 vs 7.9），
+      但加工时会产生有毒粉尘，而且如果哪天密封失效，铅会溶进鱼缸。<b>不值得为 30% 的体积省这个风险。</b></li>
+    <li><b>配重位置：尽量靠近壁面、靠近重心。</b>
+      虽然 0.4 N 的有效重量产生的剥离力矩只有 0.016 N·m（可以忽略），但配重靠壁能让机器人"趴"得更稳，
+      吸盘落下的瞬间也不容易翘。</li>
+    <li><b>电池可以充当一部分配重。</b>电池密度约 2 g/cm³，比铝高，放在离壁最远的位置当配重是合理的 ——
+      反正主腔里最远的位置也不到 64 mm。</li>
+  </ul>
+
+  <div class="formula w">
+    <b>顺带一提：R_t 是三足布局里最值钱的那个数字</b><br>
+    剥离抵抗力矩 <code>M = 0.866 · F_vac · R_t</code>，打 3 折后：
+    <b>R_t = 70 mm → 0.248 N·m</b>（SF 4.4）；
+    <b>R_t = 100 mm → 0.354 N·m</b>（SF 6.3）。
+    <br>R_t 减到 70 mm 能把整机跨度压到 165 mm、配重降到约 150 g，
+    代价是刷辊只能做到约 66 mm（<code>y = +1</code> 处的三角形半宽从 58.3 掉到 41）、趟数 8 → 10，单遍时间涨 25%。
+    <br><span style="color:var(--ink-3);font-size:12.5px">
+    <b>本文按 R_t = 100 mm 写</b>（与运动单元保持一致）。如果最后一版装机发现配重太夸张、
+    或者缸比较小，<b>缩 R_t 是最有效的那个旋钮</b> —— 它同时减小外形、减小配重。<b>代价要一起读：安全系数从 6.3 掉到 4.4，刷辊缩短 17%、单遍时间涨 25%。</b></span>
+  </div>
+</div>
+
+<!-- ══════ 5 电气架构 ══════ -->
+<div class="card">
+  <h2 id="s5"><span class="n">5</span>电气架构与穿舱</h2>
+  <p class="cap">
+    电气架构决定了<b>壳体上要开几个洞</b>。每开一个洞就多一个漏水点，所以这一节的目的是把洞减到零。
+  </p>
+
+  <table>
+    <thead><tr><th>需求</th><th>方案</th><th>要不要穿舱</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td><b>7 个电机的驱动</b></td><td>全部在腔内，磁耦合输出到作业头</td><td><b>不要</b></td></tr>
+      <tr class="hl"><td><b>无线通信</b></td><td>天线装在前窗模块里，朝玻璃</td><td><b>不要</b>（前窗本身就是窗口）</td></tr>
+      <tr class="hl"><td><b>充电</b></td><td>缸外感应坞站，磁场穿过玻璃</td><td><b>不要</b>（见坞站设计文档）</td></tr>
+      <tr><td>传感器（脏污检测，二期）</td><td>装在作业头上，走 L2 接口</td><td>不要</td></tr>
+      <tr><td>调试 / 烧录</td><td>走无线，不开口。
+        <b>恢复入口是磁控开关</b>（缸外磁铁按住 10 s 进 OTA 恢复模式）</td><td>不要</td></tr>
+      <tr class="hl"><td><b>合计穿舱点</b></td><td></td><td><b>0 个</b></td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula">
+    <b>天线为什么不放在金属壳体上 —— 法拉第笼</b><br>
+    铝合金壳体是一个完整的导体腔。<b>天线放在里面，电磁波出不去。</b>
+    所以必须有一块非金属窗口。
+    <br><b>朝向的选择：天线朝玻璃</b>，装在<b>前窗模块</b>里（见坞站设计文档），
+    和接收线圈共用同一个非金属窗口。信号路径是「天线 → 5 mm 玻璃 → 空气」，
+    <b>水程几乎为零</b>。
+    <br><span style="color:var(--ink-3);font-size:12.5px">
+    <b>淡水在 2.4 GHz 的衰减约 250–420 dB/m</b>：朝玻璃只过 5 mm 玻璃（约 1 dB）；
+    如果朝缸内，信号要先横穿约 300 mm 水 —— 那是 <b>75–126 dB</b>，
+    比走玻璃差 <b>70–120 dB</b>。
+    <b>这不是「好 6 dB」，是「此路不通」</b>，而且省掉一个非金属区。
+    （海水是另一回事，电导率高出两个数量级。）
+    <br><b>由此得出一条禁令：任何「缸内中继」「浮动信标」「机器人替对面壁转发」的方案直接出局</b> ——
+    没有余量可用。
+    <br><b>真正会坑你的不是路径损耗，是天线泡在水里的失谐</b> ——
+    εr 从 1 跳到 80，天线的谐振点会跑掉。所以选<b>宽带的板载天线</b>并留出调试余量，
+    不要用窄带高 Q 的定制天线。</span>
+  </div>
+
+  <table>
+    <thead><tr><th>项</th><th>选定</th><th>依据</th></tr></thead>
+    <tbody>
+      <tr><td>电池</td><td>2S 锂聚合物 1000 mAh（7.4 V / 7.4 Wh）</td><td>见下方功耗账</td></tr>
+      <tr><td>电机供电</td><td>直接电池电压 + PWM</td><td>空心杯低速开环够用，省掉 7 路 DC-DC</td></tr>
+      <tr class="hl"><td>逻辑供电</td><td><b>3.3 V 单轨</b> DC-DC（TPS62903 级，静态 1.5 µA）</td>
+        <td>主控 + 传感器 + 无线。<b>不要 5 V 轨</b> —— 没有器件需要它，
+          多一级就多一份静态电流，而待机预算只有 1 mW</td></tr>
+      <tr><td>电压监测</td><td>分压进 ADC，<b>必须 MOSFET 门控</b></td>
+        <td>低压时自动返回并吸附在壁上待命。
+          常通分压（100k/100k）是 37 µA，<b>占待机预算 27%</b></td></tr>
+      <tr><td>温度监测</td><td>NTC 分压，<b>由 GPIO 供电</b></td>
+        <td>锂电池安全需要。常通分压（10k/10k）是 165 µA，<b>单项就超预算</b></td></tr>
+      <tr><td>充电</td><td>1S/2S 平衡充，5 V 输入</td><td>用现成的充电模块</td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula w">
+    <b>电池的两头都不是作业功耗，而作业功耗又小到不该拿它定容量</b><br>
+    <b>作业：</b>3.75 W × 每次 2.1 min × 每天 3 次 ≈ <b>每天 0.4 Wh</b>（每周 2.8 Wh）。
+    <br><b>待机：</b>如果主控保持运行（50 mW），一周就是 <b>8.4 Wh</b> —— 比作业多 30 倍，
+    直接超过整块电池。所以 1000 mAh 够不够，取决于<b>能不能深度睡眠</b>。
+    <br><b>架构：</b>主控平时深度睡眠（&lt; 1 mW），而且<b>两次作业之间机器人停在坞站上</b>，
+    中途电量低了也回坞补，充满接着干。真空维持那一项因此归零。
+    <br><span style="color:var(--ink-3);font-size:12.5px">
+    1 mW 的账怎么凑出来（每一项漏电通路）见 <a href="ctrl.html">主控与传感器设计</a> 第 4 节。
+    <br><b>但这条架构同时说明：1000 mAh 现在明显偏大。</b>
+    既然每次作业前后都回坞补电，电池真正要扛的只是
+    <b>一次作业 + 一次往返对接</b>，量级是 0.1–0.2 Wh。
+    7.4 Wh 的包是它的 40 倍。<b>缩电池是本设计里少见的、三项同时变好的改动</b> ——
+    省质量、省体积、省配重。但它会动第 4 节的浮力账，
+    所以<b>要和排水体积、配重一起重算，不能单独改</b>。
+    这一条列进了待办，目前先按 1000 mAh 保守留着。
+    <br>如果睡眠方案做不下来，退路是加一个磁控开关（缸外一块磁铁一吸就开机）。
+    成本几毛钱，但需要用户手动操作。这个开关顺带兼任 OTA 恢复入口。</span>
+  </div>
+</div>
+
+<!-- ══════ 6 装配与维修 ══════ -->
+<div class="card">
+  <h2 id="s6"><span class="n">6</span>装配与维修</h2>
+  <p class="cap">
+    密封的可靠性在图纸上只决定一半，另一半在装配。
+    <b>这一节的目标是：让装配失误在物理上难以发生。</b>
+  </p>
+
+  <ul class="pts">
+    <li><b>① 槽开在壳体上。</b>O 圈放进槽里不会掉，盖板从上往下压。
+      如果槽开在盖板上，翻过来装配时 O 圈会掉下来、会被手指带歪。</li>
+    <li><b>② 螺钉用对角顺序拧，分两轮。</b>第一轮全部拧到"手指紧"，第二轮再按对角拧到扭矩值。
+      一次拧死一个会让盖板翘起来，压缩率在远端不足。</li>
+    <li><b>③ 盖板上做一个防呆定位。</b>一个不对称的定位销，让盖板<b>只有一种装法</b>。</li>
+    <li><b>④ 所有电气用接插件，不用焊接。</b>维修时能整块换 PCB 或单个电机，不用动烙铁。</li>
+    <li class="w"><b>⑤ 装配前检查 O 圈和沟槽有没有沙粒。</b>
+      这是静密封最常见的失效原因 —— 一粒 0.2 mm 的沙就能开出一条泄漏通道，
+      而这个缺陷在装配后完全看不出来。<b>装之前用压缩空气吹一遍，再用放大镜检查。</b></li>
+    <li><b>⑥ 每次开盖换干燥剂。</b>把干燥剂的位置做在盖板内侧一个明显的凹槽里，
+      让它成为"开盖流程"的一部分，不靠记性。</li>
+  </ul>
+
+  <table>
+    <thead><tr><th>维护项</th><th>周期</th><th>操作</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td><b>刷辊</b></td><td>50–100 h</td><td>按压卡扣，徒手抽出换新，10 秒</td></tr>
+      <tr class="hl"><td><b>刮条</b></td><td>200 h</td><td>捏住拔出，5 秒</td></tr>
+      <tr class="hl"><td><b>充电</b></td><td>每天 3 次以上，自动</td>
+        <td><b>无需人工干预</b>：每次作业前后自动回坞站，
+          缸外感应充电（见 <a href="dock.html">充电坞站设计</a> 第 3 节）。
+          <b>没有充电口，也不需要取出机器人。</b>
+          <br>这一行的周期从「2.5 周」改成「每天」不是指标变差了 ——
+          是电池不再需要撑那么久，<b>每次回来补 5 min 就够了</b>。</td></tr>
+      <tr><td>干燥剂</td><td>每次开盖 / 6 个月</td><td>换新包</td></tr>
+      <tr><td>O 圈</td><td>2 年 或 每次开盖检查</td><td>有压痕、变硬、发粘就换（EPDM 也会老化）</td></tr>
+      <tr><td>吸盘唇边</td><td>300 h</td><td>拆吸附单元更换，需螺丝刀</td></tr>
+      <tr><td>配重校准</td><td>首次装机</td><td>加减不锈钢片，调到有效重量 0.3–0.5 N</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════ 7 实施路线 ══════ -->
+<div class="card">
+  <h2 id="s7"><span class="n">7</span>实施路线</h2>
+  <p class="cap">密封和热都是"错了才知道"的问题，所以每一步都要有可测的判据。</p>
+
+  <ul class="pts">
+    <li><b>第一步：一个空的密封壳 + 一个湿度传感器。</b>
+      不装任何功能件，就一个铝壳、一块 POM 盖板、一条 O 圈，腔内放一个纽扣式温湿度记录仪。
+      <b>泡在鱼缸里一周，然后取出来放室温、再放回去，循环三次。</b>
+      <br><b>判据：</b>腔内相对湿度始终 &lt; 40%。如果爬到 80% 以上，说明结构或干燥剂有问题，
+      这时候改设计只花几十块。
+      <br><b>同一个壳里顺便把第二条曲线测了 —— 真空衰减。</b>
+      拿一只吸盘单元贴在<b>真实长藻的玻璃</b>上抽到 −25 kPa，
+      记 72 h 的压降；再换几个不同的<b>残余容积</b>各测一遍。
+      <br><b>判据：</b>拿到「压降速率 vs 残余容积」曲线，并且由它推出
+      <b>一次作业（2.1 min = 126 s）内压降多少</b> —— 只要远小于 −20 kPa 的阈值，作业中就不用补抽。
+      <br><span style="color:var(--ink-3);font-size:12.5px">
+      改动说明：这条曲线原来是用来算待机续航的（挂壁待机时补抽要花 5 mW，
+      见 <a href="ctrl.html">主控与传感器设计</a> 第 4 节 B）。
+      现在机器人<b>不作业就回坞站</b>，那一项归零，这条曲线转去判定<b>作业中的安全裕度</b> ——
+      它仍然是这个壳子里最值得测的一条线，只是判据换了。</span></li>
+    <li><b>第二步：装上电机，做热测试。</b>
+      7 个电机全部装进壳体，用导热硅脂锁在壳壁上。
+      <b>让它连续满载跑 30 分钟</b>（可以空转模拟），腔内和电机外壳各贴一个热电偶。
+      <br><b>判据：</b>电机外壳温升 &lt; 25 K（即水温 +25 °C 以内）。超标说明热通路没做好，
+      回去检查支架材质和接触面。</li>
+    <li><b>第三步：整机装配 + 配重校准。</b>
+      装齐所有零件，放进缸里（先不吸附，用手托着），加减配重片调到有效重量 0.3–0.5 N。
+      <br><b>判据：</b>松手后机器人缓慢下沉，不漂浮、不急沉。
+      <b>记录下最终的配重片数量</b> —— 这个数字要写回本文档的第 4 节。</li>
+  </ul>
+
+  <div class="formula w">
+    <b>最容易犯的错：先做功能，最后才管密封</b><br>
+    功能件装好之后再发现漏水，就要把所有东西拆出来重做结构 —— 前面的装配和调试全部推倒。
+    <br><b>第一步只花几十块钱和一星期，就能把这个风险消掉。</b>
+    湿度记录仪（几十块一个的温湿度计）是这个项目里性价比最高的一个零件。
+  </div>
+
+  <div class="formula">
+    <b>本文的数字都是估算，装机后要回来改</b><br>
+    <b>配重 253 g</b>、<b>排水体积 1056 cm³</b>、<b>热阻 3.5 K/W</b>、<b>平均功耗 3.75 W</b> ——
+    这四个数是互相咬合的估算值，任何一个实测出来偏差 20% 都要回头修正其他的。
+    <br><b>尤其是配重</b>：排水体积是设计变量，一旦主腔尺寸定了就应该实测一次
+    （把壳体放进量筒看排水量），再算配重，不要一路估到底。
+  </div>
+</div>
+
+<footer>
+  主体结构示意 · 非工程图纸 · 图中比例与形变幅度均已夸张处理<br>
+  配套文档：<a href="suction.html">吸附单元设计</a> · <a href="motion.html">运动单元设计</a> · <a href="work.html">作业机构设计</a> · <a href="dock.html">充电坞站设计</a> · <a href="ctrl.html">主控与传感器设计</a>
+</footer>
+</div>
+</main>
+<script src="assets/toc.js"></script>
+</body>
+</html>

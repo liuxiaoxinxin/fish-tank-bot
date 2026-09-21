@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>鱼缸壁面清洁机器人 — 充电坞站设计</title>
+<link rel="stylesheet" href="assets/notion.css">
+</head>
+<body>
+<nav class="side" id="side">
+  <div class="side-doc"><span class="side-icon">🔌</span><span class="side-name">充电坞站设计</span></div>
+  <div class="side-label">目录</div>
+  <ul class="side-list">
+    <li><a href="#s1" title="1 · 总体方案：缸外感应充电">1 · 总体方案：缸外感应充电</a></li>
+    <li><a href="#s2" title="2 · 为什么不用电极">2 · 为什么不用电极</a></li>
+    <li><a href="#s3" title="3 · 间隙预算与功率链路">3 · 间隙预算与功率链路</a></li>
+    <li><a href="#s4" title="4 · 对接定位：从壁面坐标到 ±5 mm">4 · 对接定位：从壁面坐标到 ±5 mm</a></li>
+    <li class="lv2"><a href="#s4a1" title="A · 粗定位 — 复用建图方案的第二层">A · 粗定位 — 复用建图方案的第二层</a></li>
+    <li class="lv2"><a href="#s4a2" title="B · 精定位 — 四象限光电伺服">B · 精定位 — 四象限光电伺服</a></li>
+    <li class="lv2"><a href="#s4a3" title="C · 回坞即重定位">C · 回坞即重定位</a></li>
+    <li><a href="#s5" title="5 · 坞站结构与安装">5 · 坞站结构与安装</a></li>
+    <li><a href="#s6" title="6 · 充电管理、安全与失效模式">6 · 充电管理、安全与失效模式</a></li>
+    <li><a href="#s7" title="7 · 对主体的修改要求">7 · 对主体的修改要求</a></li>
+    <li><a href="#s8" title="8 · 实施路线">8 · 实施路线</a></li>
+  </ul>
+</nav>
+<button class="side-btn" type="button" aria-label="目录">&#9776;</button>
+<main class="page">
+<div class="page-inner">
+
+<header>
+  <div class="page-icon">🔌</div>
+  <h1>鱼缸壁面清洁机器人 — 充电坞站设计</h1>
+  <p class="sub">缸外感应充电 · 缸内零电气 · 四象限光电对接 · 回坞即重定位</p>
+</header>
+
+<!-- ══════ 结论先行 ══════ -->
+<div class="keybox">
+  <h3>结论先行：坞站整个放在缸外</h3>
+  <p>
+    <b>一、缸内不加任何硬件。</b>坞站是一块贴在玻璃<b>外侧</b>的圆盘，能量靠磁场穿过玻璃送进去。
+    缸内的电气部分是<b>零</b> —— 没有电极、没有电压、没有可腐蚀的零件、没有要粘贴的塑料件、
+    没有洗不到的死角。<b>这是选它的首要理由，不是效率。</b>
+  </p>
+  <p>
+    <b>二、代价是线圈间隙 13 mm，玻璃就占了 5 mm。</b>这是整个方案唯一的技术风险点，
+    也是不能直接拿现成 Qi 模块怼上去的原因。必须按 13 mm 间隙专门设计线圈和频率 ——
+    好在功率只要 5 W，余量足够。<b>第一节实验就是测这个间隙能不能过 5 W。</b>
+  </p>
+  <p>
+    <b>三、对接精度靠四象限光电，不靠视觉。</b>坞站面装 4 个红外 LED，
+    机器人前窗装 4 个光电二极管，误差信号直接驱动机器人的腿。
+    <b>捕获 ±25 mm，定位 ±5 mm</b>，成本几块钱，不需要镜头、不需要标定。
+    视觉只在更外层回答"这是不是我要去的那面墙"，不参与伺服。
+  </p>
+  <p>
+    <b>附带收益：</b>回坞本身就是一次<b>全局重定位</b> —— 坞站的位置是已知的绝对坐标，
+    每次充电都把航迹推算的累积误差清零。它和"撞到缸角归零"是同一个机制，
+    只是坞站的精度高两个数量级。<b>主体那个水密 USB-C 穿舱口已经取消了</b> ——
+    第 7 节的修改清单里删掉了它，主体的维护表里那一行也换成了「无需人工干预」。
+  </p>
+</div>
+
+<!-- ══════ 1 总体方案 ══════ -->
+<div class="card">
+  <h2 id="s1"><span class="n">1</span>总体方案：缸外感应充电</h2>
+  <p class="cap">
+    机器人已经是一台"缸内只应该有它自己"的设备。坞站必须遵守同一条规矩。
+  </p>
+
+  <svg viewBox="0 0 720 470" role="img" aria-label="坞站系统剖面总览" style="width:100%;height:auto">
+    <defs>
+      <linearGradient id="d1Glass" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#cfe0ee"/><stop offset="1" stop-color="#aac7de"/>
+      </linearGradient>
+      <linearGradient id="d1Water" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#e7f3f8"/><stop offset="1" stop-color="#d5eaf4"/>
+      </linearGradient>
+      <marker id="d1Flux" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#d9730d"/>
+      </marker>
+    </defs>
+    <rect width="720" height="470" rx="14" fill="#fbfbfa"/>
+
+    <!-- 缸内水体 -->
+    <rect x="320" y="46" width="360" height="378" fill="url(#d1Water)"/>
+
+    <!-- 玻璃 -->
+    <rect x="300" y="46" width="20" height="378" fill="url(#d1Glass)"/>
+    <line x1="300" y1="46" x2="300" y2="424" stroke="#8fb4d6" stroke-width="1.6"/>
+    <line x1="320" y1="46" x2="320" y2="424" stroke="#8fb4d6" stroke-width="1.6"/>
+
+    <!-- ── 坞站（缸外）── -->
+    <rect x="186" y="118" width="114" height="234" rx="14"
+          fill="#cfe0d5" stroke="#5c8f6e" stroke-width="2"/>
+    <text x="243" y="102" text-anchor="middle" class="s-lbl">坞站</text>
+    <!-- 发射线圈 -->
+    <rect x="272" y="184" width="20" height="102" rx="10"
+          fill="#e0bb8c" stroke="#b5714a" stroke-width="1.8"/>
+    <text x="176" y="194" text-anchor="end" class="s-sub">发射线圈</text>
+    <text x="176" y="212" text-anchor="end" class="s-sub">Ø60 · 5 W</text>
+    <!-- 红外 LED -->
+    <circle cx="292" cy="152" r="5" fill="#c9615b"/>
+    <circle cx="292" cy="318" r="5" fill="#c9615b"/>
+    <text x="176" y="300" text-anchor="end" class="s-sub">红外 LED ×4</text>
+    <text x="176" y="318" text-anchor="end" class="s-sub">对接基准</text>
+    <!-- 电缆 -->
+    <path d="M186,235 L120,235" stroke="#8b8880" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <text x="176" y="254" text-anchor="end" class="s-sub">12 V 电源</text>
+    <text x="176" y="272" text-anchor="end" class="s-sub">（缸外，永不入水）</text>
+
+    <!-- 磁通 -->
+    <g fill="none" stroke="#d9730d" stroke-width="1.8" stroke-dasharray="6 4">
+      <path d="M290,196 C 306,196 322,204 354,216"/>
+      <path d="M290,220 C 306,220 322,224 354,228"/>
+      <path d="M290,244 C 306,244 322,244 354,240"/>
+      <path d="M290,268 C 306,268 322,262 354,252"/>
+    </g>
+    <text x="252" y="374" class="s-sub" style="fill:#a05f3c">磁通穿过玻璃</text>
+
+    <!-- ── 机器人（缸内）── -->
+    <!-- 吸盘：撑开 18 mm 的站立间隙 -->
+    <polygon points="320,86 320,124 392,132 392,78" fill="#cfe6e2"
+             stroke="#2f9d90" stroke-width="1.8" stroke-linejoin="round"/>
+    <polygon points="320,372 320,410 392,418 392,364" fill="#cfe6e2"
+             stroke="#2f9d90" stroke-width="1.8" stroke-linejoin="round"/>
+    <rect x="388" y="92" width="42" height="34" fill="#b8b5ae"/>
+    <rect x="388" y="378" width="42" height="34" fill="#b8b5ae"/>
+
+    <!-- 主腔 -->
+    <rect x="430" y="112" width="118" height="246" rx="12"
+          fill="#e4e2dd" stroke="#8b8880" stroke-width="2"/>
+
+    <!-- 前窗模块（导向罩）-->
+    <polygon points="430,172 352,198 352,272 430,298" fill="#d5e3da"
+             stroke="#5c8f6e" stroke-width="1.8" stroke-linejoin="round"/>
+    <!-- 接收线圈 -->
+    <rect x="356" y="216" width="18" height="38" rx="9"
+          fill="#e0bb8c" stroke="#b5714a" stroke-width="1.8"/>
+    <!-- 光电二极管 -->
+    <circle cx="362" cy="204" r="4.5" fill="#4a86b8"/>
+    <circle cx="362" cy="266" r="4.5" fill="#4a86b8"/>
+
+    <!-- 标注 -->
+    <text x="560" y="140" class="s-lbl">主腔</text>
+    <text x="560" y="158" class="s-sub">电池 / 主控</text>
+
+    <text x="344" y="322" class="s-lbl" style="fill:var(--green-fg)">前窗模块</text>
+    <text x="344" y="340" class="s-sub">POM 实体，非金属</text>
+
+    <text x="560" y="222" class="s-lbl" style="fill:#a05f3c">接收线圈</text>
+    <text x="560" y="240" class="s-sub">Ø50</text>
+
+    <text x="560" y="290" class="s-lbl" style="fill:var(--blue-fg)">光电二极管 ×4</text>
+    <text x="560" y="308" class="s-sub">共 4 只，看坞站 LED</text>
+
+    <text x="352" y="440" class="s-sub">缸内（水）</text>
+    <text x="196" y="440" class="s-sub">缸外（空气）</text>
+    <text x="286" y="440" class="s-sub">玻璃</text>
+  </svg>
+
+  <div class="formula">
+    <b>两个部分，一个在缸外，一个在机器人身上 —— 缸里什么都没有</b><br>
+    <b>① 坞站（缸外）：</b>一块 Ø90 × 22 mm 的塑料圆盘，贴/挂在玻璃<b>外侧</b>。
+    里面有发射线圈、驱动电路、4 个红外 LED，一根线接到缸外的 12 V 电源。
+    <b>它坏了、掉了、进水了，都不会影响鱼缸。</b>
+    <br><b>② 前窗模块（机器人身上）：</b>一个朝玻璃伸出的 POM 实体导向罩，
+    里面装接收线圈、天线和 4 个光电二极管。
+    <br><span style="color:var(--ink-3);font-size:12.5px">
+    注意第 ② 项是装在机器人上的，不是装在缸里的 —— 它跟着机器人到处走，
+    不会在缸壁上留死角，也不需要在缸里做任何固定。</span>
+  </div>
+
+  <div class="formula w">
+    <b>导向罩为什么要往玻璃方向伸出来</b><br>
+    主体第 1 节的厚度分层里，主腔的玻璃侧表面离玻璃有 <b>30 mm</b>（吸盘层 18 mm + 传动层 12 mm）。
+    接收线圈如果就装在那儿，线圈间隙会变成 <code>30 + 5 = 35 mm</code> —— 这个距离上
+    5 W 的感应传输效率会掉到个位数，等于没做。
+    <br><b>所以导向罩从 30 mm 处伸到离玻璃 2 mm</b>，把间隙压到 13 mm（见第 3 节）。
+    它是被动件，不承力，装在三条推杆之间的空当里。
+    <br><b>它的位置不在中线正中央。</b>要同时躲开三条推杆和刷辊，导向罩中心落在
+    机身中线<b>左侧 15 mm</b>、重心<b>之前 32 mm</b>，即主体坐标 <code>(−15, −32)</code>
+    （推导见 <a href="body.html">主体设计</a> 第 1 节）。<b>Ø90 的坞站圆盘必须跟着它一起偏心</b>，
+    否则线圈对不上。<br>
+    偏心之后圆盘会靠近<b>铰点座 a</b> —— 正前方右侧那个机身铰点 <code>(43.3, −25)</code>：
+    圆心距它 <b>58.7 mm</b>，减去盘半径 45 mm，<b>盘边到铰点中心还有 13.7 mm</b> ——
+    所以<b>铰点座只要不超过 ∅27 就不需要在盘上开缺口</b>，超了才要在盘边挖一个小弧。
+  </div>
+</div>
+
+<!-- ══════ 2 为什么不用电极 ══════ -->
+<div class="card">
+  <h2 id="s2"><span class="n">2</span>为什么不用电极</h2>
+  <p class="cap">
+    电极方案看起来简单得多：两个触点碰上就充电。但把它放进鱼缸，代价不在电气上，在别的地方。
+  </p>
+
+  <table>
+    <thead><tr><th>方案</th><th>缸内零件</th><th>腐蚀风险</th><th>清洗死角</th><th>结论</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td><b>缸外感应</b></td><td><b>无</b></td><td><b>无</b>（无电气件）</td><td><b>无</b></td>
+          <td>选它</td></tr>
+      <tr class="bad"><td>缸内电极触点</td><td>坞站本体 + 2 个触点 + 安装座</td>
+          <td>开路时惰性，但对接触水路径仍有 μA 级漏电</td><td>坞站背面与周边</td><td>淘汰</td></tr>
+      <tr class="bad"><td>缸内坞站 + 过缸壁电缆</td><td>坞站本体 + 一个穿玻璃的孔</td>
+          <td>穿玻璃处是永久漏水点</td><td>坞站背面与周边</td><td>淘汰</td></tr>
+      <tr class="bad"><td>水密插头（现在主体的方案）</td><td>机器人身上 1 个穿舱口</td>
+          <td>插拔磨损 + O 圈老化</td><td>无</td><td>被感应方案取代</td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula w">
+    <b>电极方案真正的代价不是腐蚀，是"缸内多了一个永久结构"</b><br>
+    用<b>钛</b>做电极、只在对接时通电，漏电流大约 <code>2 mA</code>，产物是氧气和氢气而不是金属离子 ——
+    <b>这个腐蚀风险其实是可以接受的</b>。真正的问题在后面：
+    <br>① 坞站要在缸壁内侧固定，任何固定方式都会在覆盖图上留下<b>永久不可清洁区</b>
+    <br>② 坞站与玻璃的接缝、螺丝、背面的缝隙，都是藻类和污物堆积的地方，而且<b>刷不到</b>
+    <br>③ 这些堆积物会反过来污染它周围的水质 —— 用户是要养鱼的
+    <br>④ 电极表面会缓慢长生物膜，接触电阻上升，充电变慢且不可预测
+    <br><span style="color:var(--ink-3);font-size:12.5px">
+    换句话说：电极方案是用<b>电气上的低复杂度</b>，换<b>机械和生物上的高复杂度</b>。
+    在这台机器上这笔账是亏的 —— 因为它整个设计前提就是"缸内只有机器人和鱼"。</span>
+  </div>
+</div>
+
+<!-- ══════ 3 间隙预算 ══════ -->
+<div class="card">
+  <h2 id="s3"><span class="n">3</span>间隙预算与功率链路</h2>
+  <p class="cap">
+    这一节是整个方案唯一真正需要验证的地方。其余部分都是常规工程。
+  </p>
+
+  <table>
+    <thead><tr><th>层（从发射线圈到接收线圈）</th><th>厚度 (mm)</th><th>能不能压</th></tr></thead>
+    <tbody>
+      <tr><td>坞站外壳（线圈前面那层壳）</td><td>1.5</td><td>可以减到 1.0，减了不划算</td></tr>
+      <tr><td>发射线圈自身灌封</td><td>1.5</td><td>不能压，压了就穿</td></tr>
+      <tr class="bad"><td><b>玻璃</b></td><td><b>5</b></td><td><b>完全不能动</b> —— 它是缸体</td></tr>
+      <tr class="hl"><td><b>水隙（导向罩尖端到玻璃内表面）</b></td><td><b>2.0</b></td><td><b>唯一可调的余量</b></td></tr>
+      <tr><td>导向罩壁 + 接收线圈灌封</td><td>1.5</td><td>不能压</td></tr>
+      <tr><td>接收线圈自身灌封</td><td>1.5</td><td>不能压</td></tr>
+      <tr class="hl"><td><b>合计线圈间隙</b></td><td><b>13.0</b></td><td>厚玻璃缸按 8 mm 算 → 16 mm</td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula">
+    <b>13 mm 间隙意味着不能用现成的 Qi 模块，但也不需要什么黑科技</b><br>
+    Qi（WPC）标称工作间隙是 <b>3–5 mm</b>，13 mm 直接超了两倍多，效率会掉到 10% 以下。
+    <br>但间隙损耗是靠 <b>线圈尺寸</b> 和 <b>频率</b> 换的，而这两样都归我们自己定：
+    <br>① 线圈加粗到 <b>发射 Ø60 / 接收 Ø50</b>（Qi 常见的 A11 是 Ø39）
+    <br>② 频率<b>下探到 60–100 kHz</b>，比 Qi 的 100–205 kHz 更容忍大间隙
+    <br>③ 发射功率提到 <b>5 W</b>，只取其中 2 W 进电池
+    <br>这个组合下耦合系数 <code>k ≈ 0.15–0.25</code>，端到端效率约 <b>45%</b>，
+    属于常规设计，不是实验室条件。
+  </div>
+
+  <table>
+    <thead><tr><th>项</th><th>数值</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>发射功率</td><td>5 W</td><td>12 V 输入，缸外电源适配器</td></tr>
+      <tr><td>端到端效率</td><td>≈ 45%</td><td>13 mm 间隙、k≈0.2、Q≈100</td></tr>
+      <tr class="hl"><td><b>入电池功率</b></td><td><b>≈ 2.2 W</b></td><td>其余 2.8 W 变成线圈和电路的热</td></tr>
+      <tr><td>电池规格</td><td>2S 1000 mAh / 7.4 Wh</td><td>可用容量按 80% 算 = 5.9 Wh</td></tr>
+      <tr><td>从空到满</td><td>≈ 2.7 h</td><td>5.9 Wh ÷ 2.2 W。<b>按现在的架构不会发生</b></td></tr>
+      <tr class="hl"><td><b>实际回坞频率</b></td><td><b>每天 3 次以上</b></td><td>见下方账</td></tr>
+      <tr class="hl"><td><b>每次停留</b></td><td><b>约 5 min</b></td><td>只需补回一次作业的电</td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula">
+    <b>5 W 够不够 —— 决定它的是平均功率，不是回坞频率</b><br>
+    主体第 5 节算过：<b>作业每天 0.4 Wh</b>（每周 2.8 Wh）。
+    一周总共约 <b>2.8 Wh</b>，摊到 168 h 是 <b>≈ 17 mW 平均</b>。
+    <br><b>机器人不作业就回坞站待着</b>（<a href="ctrl.html">主控与传感器设计</a> 第 4 节 B），
+    所以每次回来只要把上一次作业花的电补回去：<code>0.13 Wh ÷ 2.2 W ≈ 3.6 min</code>，
+    算上对准确认和收尾，<b>每次停留 5 min 量级</b>。一天三次，加上中途补电，一天充不到 30 min。
+    <br><b>结论：13 mm 间隙的论证完全不变。</b>线圈是按<b>平均功率</b>选的，
+    不是按「一次要充多久」选的 —— 回坞变频繁不改变平均功率，只改变每次的量。
+    电池实际上常年停在 90% 以上，2.5 周续航那个指标已经不需要了。
+    <br><span style="color:var(--ink-3);font-size:12.5px">
+    <b>这里推翻了本节初稿的一个预判。</b>初稿写的是「如果加一个每天回坞的高频清洁模式，
+    就得把发射功率提到 15 W 以上，间隙要重新算」—— 那个推论默认了<b>每次回坞都得充满 5.9 Wh</b>。
+    实际上每天补一点点，峰值功率反而比「2.5 周充一次、每次 3 小时」更低。
+    <b>间隙预算不用动。</b></span>
+  </div>
+
+  <div class="formula w">
+    <b>代价换了个地方：对接次数涨了 10 倍</b><br>
+    从「2.5 周做 1 次」变成「每天做 6 次以上」（出发 3 次 + 返回 3 次，中途补电再加）。
+    第 7 节的验收判据要跟着改：<b>从「连续 20 次成功率 ≥ 19」改成「连续 200 次成功率 ≥ 99%」</b>。
+    <br>新出现的失效模式都是<b>慢性的、和水质有关的</b>：导向罩积藻遮住光电二极管、
+    坞站信标透镜被水垢糊住、±5 mm 边缘反复对接磨损导向面。
+    <b>这三条都要有可清洁的设计和自检上报</b> —— 见 <a href="ctrl.html">主控与传感器设计</a> 第 10 节。
+  </div>
+
+  <div class="formula w">
+    <b>厚玻璃缸要单独算</b><br>
+    10 mm 以上的玻璃会把间隙推到 18 mm 以上，效率掉到 30% 以下，充电时间变成 4 小时以上。
+    <br><b>对策：坞站检测到接收功率偏低时，把发射功率临时提到 10 W</b>（线圈按 10 W 选型），
+    并在 App 里提示"缸壁较厚，充电较慢"。<b>不要靠把导向罩往玻璃上怼来解决</b> ——
+    那会在吸盘已经贴住玻璃的情况下把机器人顶开。
+  </div>
+</div>
+
+<!-- ══════ 4 对接定位 ══════ -->
+<div class="card">
+  <h2 id="s4"><span class="n">4</span>对接定位：从壁面坐标到 ±5 mm</h2>
+  <p class="cap">
+    坞站的绝对坐标是已知的，机器人只需要"走过去"再"对准"。
+    这两件事的时间尺度差三个数量级，所以分开做，不要用一个传感器硬扛。
+  </p>
+
+  <h3 id="s4a1"><span class="n">A</span>粗定位 — 复用建图方案的第二层</h3>
+  <p class="cap">
+    这一段不需要新东西，直接用已有的建图与定位方案。
+  </p>
+
+  <svg viewBox="0 0 720 366" role="img" aria-label="三层时间尺度融合" style="width:100%;height:auto">
+    <rect width="720" height="366" rx="14" fill="#fbfbfa"/>
+
+    <!-- 时间轴 -->
+    <line x1="128" y1="60" x2="128" y2="340" stroke="#9b9891" stroke-width="1.6"/>
+    <text x="112" y="86" text-anchor="end" class="s-sub">毫秒</text>
+    <text x="112" y="196" text-anchor="end" class="s-sub">秒</text>
+    <text x="112" y="306" text-anchor="end" class="s-sub">分钟</text>
+
+    <!-- 第一层 -->
+    <rect x="146" y="56" width="546" height="74" rx="10" fill="#e7f3f8" stroke="#4a86b8" stroke-width="1.6"/>
+    <text x="164" y="82" class="s-lbl" style="fill:var(--blue-fg)">L1 · 贴壁控制环</text>
+    <text x="164" y="104" class="s-sub">压力 / 碰撞传感器。维持与壁面的物理接触，为上层提供稳定的运动约束。</text>
+    <text x="164" y="121" class="s-sub">越界就转向，脱开就贴回。这一层不产生坐标。</text>
+
+    <!-- 第二层 -->
+    <rect x="146" y="146" width="546" height="94" rx="10" fill="#eef5ed" stroke="#5c8f6e" stroke-width="1.6"/>
+    <text x="164" y="172" class="s-lbl" style="fill:var(--green-fg)">L2 · 航迹推算与边界推算</text>
+    <text x="164" y="194" class="s-sub">IMU 积分 + 里程计数得到相对位移；碰到缸角时压力突变，触发位置重置。</text>
+    <text x="164" y="212" class="s-sub">累计四次转角推出整面壁尺寸，输出是"我在哪面壁、离坞站多远"。</text>
+    <text x="164" y="232" class="s-sub" style="fill:var(--green-fg)">精度：厘米级。对坞站来说，这就是"到达坞站附近"。</text>
+
+    <!-- 第三层 -->
+    <rect x="146" y="256" width="546" height="80" rx="10" fill="#fdf4e3" stroke="#d9730d" stroke-width="1.6"/>
+    <text x="164" y="282" class="s-lbl" style="fill:var(--orange-fg)">L3 · 对接伺服（本文新增）</text>
+    <text x="164" y="304" class="s-sub">四象限光电传感器给出二维误差，驱动机器人的腿，闭环收到 ±5 mm。</text>
+    <text x="164" y="322" class="s-sub" style="fill:var(--orange-fg)">捕获范围 ±25 mm —— 比 L2 宽一个数量级，两层之间不需要过渡。</text>
+  </svg>
+
+  <ul class="pts">
+    <li><b>坞站记在 L2 的局部地图上，是一个固定坐标点</b>（比如"前壁、距左角 320 mm、水面下 180 mm"）。
+      这个坐标在首次安装坞站时标定一次，之后不再变。</li>
+    <li><b>不需要为坞站做视觉识别。</b>L2 把机器人带到坞站附近 ±25 mm 以内即可，
+      剩下的交给 L3。<b>视觉在这里是多余的</b> —— 它慢、怕浑水、要算力，而四象限光电是模拟量直出。</li>
+    <li><b>如果缸不是矩形</b>（圆弧角、异形缸），L2 的转角重置失效，坞站坐标就不可靠。
+      退路是坞站面印一个<b>视觉标记</b>，让机器人做一次稀疏视觉确认 —— 这时才动用视觉，
+      而且只用来回答"坞站在这个方向"，不用来做伺服。</li>
+  </ul>
+
+  <h3 id="s4a2"><span class="n">B</span>精定位 — 四象限光电伺服</h3>
+  <p class="cap">
+    这是本文唯一新增的传感器，也是最便宜的一环。
+  </p>
+
+  <svg viewBox="0 0 720 400" role="img" aria-label="四象限光电对接原理" style="width:100%;height:auto">
+    <defs>
+      <marker id="d3Arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#4a86b8"/>
+      </marker>
+    </defs>
+    <rect width="720" height="400" rx="14" fill="#fbfbfa"/>
+
+    <!-- 左：坞站正面（缸外看进去） -->
+    <rect x="30" y="60" width="280" height="280" rx="12" fill="#cfe0d5" stroke="#5c8f6e" stroke-width="2"/>
+    <text x="170" y="46" text-anchor="middle" class="s-lbl">坞站面（缸外侧）</text>
+    <circle cx="170" cy="200" r="76" fill="none" stroke="#b5714a" stroke-width="2" stroke-dasharray="6 4"/>
+    <text x="170" y="204" text-anchor="middle" class="s-sub" style="fill:#a05f3c">发射线圈 Ø60</text>
+    <g fill="#c9615b">
+      <circle cx="122" cy="152" r="7"/><circle cx="218" cy="152" r="7"/>
+      <circle cx="122" cy="248" r="7"/><circle cx="218" cy="248" r="7"/>
+    </g>
+    <text x="170" y="316" text-anchor="middle" class="s-sub">红外 LED ×4　间距 ±20 mm</text>
+
+    <!-- 右：误差信号 -->
+    <rect x="380" y="60" width="310" height="280" rx="12" fill="#f1f1ef"/>
+    <text x="398" y="88" class="s-lbl">误差信号（机器人端解算）</text>
+
+    <g>
+      <rect x="398" y="106" width="66" height="66" fill="#e7f3f8" stroke="#4a86b8" stroke-width="1.6"/>
+      <rect x="464" y="106" width="66" height="66" fill="#eef5ed" stroke="#5c8f6e" stroke-width="1.6"/>
+      <rect x="398" y="172" width="66" height="66" fill="#e7f3f8" stroke="#4a86b8" stroke-width="1.6"/>
+      <rect x="464" y="172" width="66" height="66" fill="#eef5ed" stroke="#5c8f6e" stroke-width="1.6"/>
+    </g>
+    <text x="431" y="146" text-anchor="middle" class="s-lbl">A</text>
+    <text x="497" y="146" text-anchor="middle" class="s-lbl">B</text>
+    <text x="431" y="212" text-anchor="middle" class="s-lbl">C</text>
+    <text x="497" y="212" text-anchor="middle" class="s-lbl">D</text>
+    <circle cx="464" cy="172" r="4" fill="#c9615b"/>
+
+    <text x="552" y="196" class="s-sub" style="fill:var(--blue-fg)">e_x = (A+C) − (B+D)</text>
+    <text x="552" y="214" class="s-sub" style="fill:var(--blue-fg)">e_y = (A+B) − (C+D)</text>
+    <text x="398" y="266" class="s-sub">两个差分式直接就是横向和纵向的误差，</text>
+    <text x="398" y="284" class="s-sub">符号给方向，幅值给距离。<tspan font-weight="600" style="fill:var(--fg)">不需要成像。</tspan></text>
+
+    <!-- 捕获范围 -->
+    <rect x="30" y="356" width="660" height="30" rx="8" fill="#fdf4e3"/>
+    <text x="46" y="376" class="s-sub" style="fill:var(--orange-fg)">捕获范围 ±25 mm（L2 送到这里）　→　伺服收敛 ±5 mm（L3 交班）　→　功率余量还留 4 倍</text>
+  </svg>
+
+  <table>
+    <thead><tr><th>项</th><th>数值</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>传感器</td><td>光电二极管 ×4（机器人端）</td><td>不加镜头，靠宽视角拿捕获范围</td></tr>
+      <tr><td>信标</td><td>红外 LED ×4，940 nm（坞站端）</td><td>调制闪烁，避开环境光干扰</td></tr>
+      <tr class="hl"><td><b>捕获范围</b></td><td><b>±25 mm</b></td><td>由光电二极管视角决定</td></tr>
+      <tr class="hl"><td><b>伺服精度</b></td><td><b>±5 mm</b></td>
+        <td>受机械回差和推杆分辨率限制。
+          <b>指标是从 ±2 mm 放松过来的</b> —— 线圈本身在 ±12 mm 时功率才降 20%，
+          ±5 mm 已经留了 2.4 倍余量，而把要求收紧 2.5 倍会让腿的分辨率要求和
+          L2→L3 的交接难度都成倍上升。<b>够用就行，多出来的精度买不到东西。</b></td></tr>
+      <tr><td>线圈侧向容差</td><td>±12 mm 时功率降 &lt; 20%</td><td>所以 ±5 mm 有 2.4 倍余量</td></tr>
+      <tr><td>闭环执行器</td><td>三条推杆（复用运动单元）</td><td>不增加执行器</td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula">
+    <b>为什么不用视觉做伺服</b><br>
+    坞站对精度要求是 ±5 mm，这是<b>唯一</b>一个毫米级需求。用视觉去满足它，要付出：
+    镜头标定、水下折射修正、浑水鲁棒性、图像算力、以及"识别不到就趴窝"的失败模式。
+    <br>而四象限光电给出的<b>直接就是模拟误差量</b>，不需要标定（4 个管子的增益一致性靠装配保证），
+    <b>浑水不影响 940 nm 红外</b>（水在近红外衰减比可见光低），成本几块钱。
+    <br><span style="color:var(--ink-3);font-size:12.5px">
+    视觉在这个系统里的定位，见 <a href="ctrl.html">主控与传感器设计</a> 第 1 节 A。
+    简单说：<b>坞站相机不应该被当成定位传感器</b> —— 它装在自己要观测的那面玻璃上，
+    几何上看不见那面壁，而隔着水看对面壁又恰恰在浑水时失效，
+    也就是在最需要它的时候最不可靠。
+    <b>相机按「用 App 看鱼缸」这个功能留着；要绝对位置，用信标加同步检波。</b>
+    <br>顺带一条禁令：<b>任何缸内中继方案都不成立</b> ——
+    淡水在 2.4 GHz 的衰减是约 300 dB/m，穿 300 mm 水是 75–126 dB。<b>职责不要混，路径也不要混。</b></span>
+  </div>
+
+  <h3 id="s4a3"><span class="n">C</span>回坞即重定位</h3>
+  <div class="formula">
+    <b>坞站是一个绝佳的绝对锚点，别浪费它</b><br>
+    建图方案里，缸角是"物理约束"锚点，用来重置累积误差。坞站是同一类东西，
+    <b>但精度高两个数量级</b>：
+    <br>· 缸角：位置由压力信号的特征变化推断 → <b>厘米级</b>
+    <br>· 坞站：位置由四象限光电闭环确定 → <b>±5 mm</b>
+    <br><b>所以每次充电完成时，机器人知道自己的绝对坐标精确到了 ±5 mm。</b>
+    此刻把 L2 的航迹推算<b>归零</b>，累积误差清零，下一次任务的起点是干净的。
+    <br><span style="color:var(--ink-3);font-size:12.5px">
+    这条要写进控制逻辑：<b>对接成功 = 触发一次全局重定位</b>，而不是"充完电继续用旧的位姿"。
+    这是感应坞站方案顺带白捡的一个收益，电极坞站同样有，但前提是它能可靠地知道对接上了。</span>
+  </div>
+</div>
+
+<!-- ══════ 5 坞站结构 ══════ -->
+<div class="card">
+  <h2 id="s5"><span class="n">5</span>坞站结构与安装</h2>
+  <p class="cap">
+    坞站在缸外，所以它的工程约束比缸内松得多 —— 不需要防水，不需要无毒材料，坏了也不会死鱼。
+  </p>
+
+  <table>
+    <thead><tr><th>零件</th><th>选定</th><th>理由</th></tr></thead>
+    <tbody>
+      <tr><td>坞站外壳</td><td>ABS 或 PC，注塑/3D 打印</td><td>缸外，不接触水，不必用食品级材料</td></tr>
+      <tr><td>固定方式</td><td>硅胶吸盘 + 防坠绳</td><td>可反复拆装，不损伤玻璃；吸盘失效也不会摔坏</td></tr>
+      <tr><td>发射线圈</td><td>Ø60 mm，利兹线绕制</td><td>多股绞合抑制高频集肤效应</td></tr>
+      <tr class="hl"><td><b>对接窗口</b></td><td><b>坞站玻璃侧开一个 Ø70 的非金属区</b></td><td>外壳本身不能有金属，否则涡流把磁场吃掉</td></tr>
+      <tr><td>信标 LED</td><td>940 nm 红外 ×4</td><td>与光电二极管配对</td></tr>
+      <tr><td>状态指示</td><td>正面一颗双色 LED</td><td>待机 / 对接中 / 充电中 / 故障</td></tr>
+      <tr><td>电源</td><td>12 V / 1 A 适配器</td><td>常规件</td></tr>
+      <tr><td>控制与通信</td><td>ESP32-C6（网关）+ RV1106（视觉，可选）</td>
+        <td><b>电子分工见 <a href="ctrl.html">主控与传感器设计</a> 第 8 节</b>，
+          本节不重复，避免两处各写一份然后走样</td></tr>
+      <tr><td>逆变驱动</td><td>固定频率谐振逆变器</td>
+        <td>频率由 LC 定死，MCU 只做使能和调母线电压 ——
+          <b>不要让 MCU 直接生成 60–100 kHz 的 PWM</b>，LEDC 在那个频率只有 7 位分辨率</td></tr>
+    </tbody>
+  </table>
+
+  <ul class="pts">
+    <li><b>坞站装在玻璃外侧，位置在首次安装时标定。</b>建议贴在水面以下、靠近缸体一角
+      但离底砂至少 60 mm —— 太低会被底砂或装饰物挡住机器人的接近路径。</li>
+    <li><b>坞站不能装在缸壁的装饰贴纸或背景板后面</b>。非金属贴纸问题不大，
+      但带金属镀层的背景板会直接屏蔽磁场。</li>
+    <li class="w"><b>坞站外壳的玻璃侧不能有任何金属件 —— 包括螺钉。</b>
+      四个固定点如果用金属螺钉穿过线圈区域，涡流损耗会让效率掉一半以上。
+      <b>这一片的固定用塑料卡扣或双面胶，不要打螺钉。</b></li>
+    <li><b>坞站要能"看见"机器人是否在位。</b>不需要额外传感器：
+      检测发射线圈的<b>负载电流</b>即可 —— 有接收线圈靠近时电流和相位会变化，
+      这就是对接确认信号。这颗信号同时用来判断机器人是否已经离开。</li>
+  </ul>
+
+  <div class="formula w">
+    <b>安装位置一旦定了就不要随便挪</b><br>
+    坞站坐标是 L2 地图里的一个固定锚点，也是每次重定位的基准。
+    <b>用户把坞站挪到另一面壁之后，如果不重新标定，机器人会按照旧坐标去找，然后找不到。</b>
+    <br><b>对策：</b>坞站被移动或重新上电时，进入"待标定"状态（正面 LED 慢闪）；
+    机器人下一次靠近时用 L3 光电确认位置，并把这个新坐标写回地图。
+    <b>也就是让坞站自己宣告"我换地方了"。</b>
+  </div>
+</div>
+
+<!-- ══════ 6 安全与失效 ══════ -->
+<div class="card">
+  <h2 id="s6"><span class="n">6</span>充电管理、安全与失效模式</h2>
+
+  <table>
+    <thead><tr><th>项</th><th>方案</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>充电曲线</td><td>CC/CV，截止 8.4 V</td><td>2S 锂聚合物标准</td></tr>
+      <tr><td>均衡</td><td>被动均衡，100 mA</td><td>2S 必须做，否则半年后容量明显不平衡</td></tr>
+      <tr class="hl"><td><b>过温保护</b></td><td>NTC 贴电池，&gt; 45 °C 停充</td><td>水下散热好，正常不会触发</td></tr>
+      <tr class="hl"><td><b>过放保护</b></td><td>单体 3.0 V 强制停</td><td>停之前先返回并吸附在壁上待命，不要悬在半途</td></tr>
+      <tr class="hl"><td><b>停靠时的吸附</b></td><td><b>不需要——停留只有 5 min</b></td>
+        <td>吸盘保持不放即可，<b>停留时长小于漏气时间尺度</b>，全程不用补抽</td></tr>
+      <tr><td>停靠时的保位</td><td>丝杆自锁 + 吸盘</td>
+        <td>可选加一个<b>被动磁吸座</b>（坞站里一块永磁 + 前窗模块里一片钢），
+          让长时间停留也不依赖负压</td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula w">
+    <b>「停靠多久」决定了这一项是 0 还是超预算 5 倍</b><br>
+    初稿这里写的是「充电几小时里机器人靠吸盘挂在玻璃上，这段时间真空会缓慢泄漏，
+    要每 30 min 醒一次补抽」。那笔账按「每次都补、三只一起补」算是
+    <code>3 × 1.5 W × 2 s × 48 次/天 = 0.84 Wh/周 ≈ 5 mW</code> ——
+    <b>单独一项就是整机待机预算（1 mW）的五倍</b>，足以把「一次充电撑三周」否掉。
+    <br><b>现在这笔账不存在了，理由是停留时间：</b>
+    机器人每次回坞只要补回一次作业的电，<b>约 5 min</b>；
+    而 <code>suction.html</code> 第 5 节③ 说负压的衰减尺度是<b>几十分钟到几小时</b>。
+    5 min 远小于这个尺度，<b>停留期间根本不需要补抽</b>。
+    一天三次加起来不到 30 min，仍然在安全区里。
+    <br><span style="color:var(--ink-3);font-size:12.5px">
+    <b>唯一的风险是「停着不动了」</b> —— 对接失败、机器人卡在坞站上过夜。
+    那时候停留时间会超出衰减尺度，负压慢慢掉光。
+    <br><b>所以那一小块被动磁吸座值得加</b>：它不耗电、不需要控制，
+    让「停在坞站上」这件事在物理上不依赖负压。整机待机的完整账见
+    <a href="ctrl.html">主控与传感器设计</a> 第 4 节 B。</span>
+    <br><b>如果省掉这一步，失效模式是"充电到一半掉下来"</b> ——
+    因为整机接近中性浮力，掉下来不会摔坏，但会带着没充满的电池乱飘，用户第二天发现它在缸底。
+    这个体验比摔坏更糟。</span>
+  </div>
+
+  <table>
+    <thead><tr><th>失效模式</th><th>后果</th><th>对策</th></tr></thead>
+    <tbody>
+      <tr><td>对接错位</td><td>功率不足，充不进去</td><td>机器人检测接收功率，低于阈值 → 重新伺服；连续 3 次失败 → 放弃，停在壁上待命</td></tr>
+      <tr><td>玻璃太厚（&gt; 10 mm）</td><td>效率掉到 30% 以下</td><td>坞站自动提升发射功率到 10 W，App 提示充电较慢</td></tr>
+      <tr><td>坞站被挪走</td><td>按旧坐标找不到</td><td>坞站重新上电进入"待标定"状态，由机器人重标</td></tr>
+      <tr><td>坞站脱落</td><td>掉在缸外地上</td><td>防坠绳；机器人找不到 → 停在壁上待命并推送通知</td></tr>
+      <tr><td>停电</td><td>坞站无输出</td><td>机器人检测不到信标 → 不执行对接，正常作业</td></tr>
+      <tr class="hl"><td>鱼游进间隙</td><td><b>无任何后果</b></td><td>没有电气接触、没有夹持结构、没有发热面</td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula">
+    <b>对鱼的影响 —— 三条，都是安全的</b><br>
+    <b>① 磁场：</b>发射线圈近场在缸内几厘米范围内衰减掉，机器人所在位置的磁感应强度约
+    <code>1–5 mT</code>，频率 <code>60–100 kHz</code>。<b>这个量级和频段没有已知的鱼类伤害效应</b>，
+    而且它和地球磁场（约 50 µT）不同量级但都是静态或低频磁场，不属于电离辐射。
+    <br><b>② 发热：</b>坞站在缸外，2.8 W 的损耗直接散到空气里。
+    缸内只有接收端不到 0.5 W，散进水里等于零（相对整缸热容）。
+    <br><b>③ 电场与漏电：</b><b>不存在</b>。缸内没有任何导体与电源相连，
+    没有电流路径，也就没有电解、没有金属离子析出、没有"漏电麻鱼"的可能。
+    <br><span style="color:var(--ink-3);font-size:12.5px">
+    这一条是这个方案相对电极方案最实质的优势：<b>鱼缸里唯一带电的东西，就是机器人自己的电池。</b></span>
+  </div>
+</div>
+
+<!-- ══════ 7 对主体的修改要求 ══════ -->
+<div class="card">
+  <h2 id="s7"><span class="n">7</span>对主体的修改要求</h2>
+  <p class="cap">
+    坞站方案确定之后，主体文档里有三处必须同步改。这一节是清单。
+  </p>
+
+  <table>
+    <thead><tr><th>位置</th><th>原文</th><th>改成</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td><b>主体 §5 电气架构</b></td>
+          <td>穿舱点 1 个（水密 USB-C 充电）</td>
+          <td><b>穿舱点 0 个</b>。充电走缸外感应坞站；调试烧录走无线。
+              量产外壳可以做成完全无孔的焊接/一体结构</td></tr>
+      <tr class="hl"><td><b>主体 §5 天线朝向</b></td>
+          <td>天线朝缸内，路径「300 mm 水 + 5 mm 玻璃」≈ 7 dB</td>
+          <td><b>改为朝玻璃</b>，与接收线圈共用前窗模块的非金属窗口。
+              此时水程 ≈ 0，只剩 5 mm 玻璃 ≈ 1 dB，<b>比原方案好 6 dB</b></td></tr>
+      <tr class="hl"><td><b>主体 §1 / §4</b></td>
+          <td>无前窗模块；排水体积 996 cm³，配重 300 g</td>
+          <td><b>新增前窗模块</b>（POM 实体约 60 cm³）；排水体积 1056 cm³，
+              配重 <b>270–275 g</b>。总厚 64 mm 不变</td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula">
+    <b>前窗模块的浮力账（为什么配重反而降了）</b><br>
+    导向罩是 POM 实体：<b>体积 60 cm³ → 排水 60 g，自身质量 60 × 1.41 = 85 g</b>。
+    <br>净效果是<b>有效重量增加 25 g</b> —— 也就是说它自己就是一小块配重。
+    <br><code>排水体积 996 + 60 = 1056 cm³</code> → <code>目标质量 1056 + 41 = 1097 g</code>
+    <br><code>零件 738 + 85 = 823 g</code> → <code>需要配重 1097 − 823 = 274 g</code>
+    <br><span style="color:var(--ink-3);font-size:12.5px">
+    所以配重从 300 g 降到约 274 g。<b>POM 密度 1.41 大于水，所以导向罩越大配重越小</b> ——
+    但别为了省配重去加大它，它的尺寸是被线圈和间隙预算定的，不是被浮力定的。<br>
+    这一段记的是<b>坞站提出修改时</b>的账。之后<a href="ctrl.html">主控与传感器设计</a>
+    又给零件加了 21 g（传感器 + 更大的主控板），<b>823 → 844 g，配重 274 → 约 253 g</b>，
+    仍然在 ±100 g 可调范围内。最新的数以 <code>body.html</code> 第 4 节为准。</span>
+  </div>
+
+  <div class="formula w">
+    <b>天线改朝向这件事，顺便修正了主体里的一处判断错误</b><br>
+    主体 §5 原来写"天线朝缸内，不要朝玻璃"，理由是"信号要穿过 300 mm 水才能出去"。
+    <b>这个理由本身站不住：</b>接收端（手机）在缸外，
+    无论天线朝哪边，信号最终都要穿过玻璃进空气。
+    <br>· 朝玻璃：<b>水程 ≈ 0</b> → 约 1 dB
+    <br>· 朝缸内：要先横穿约 300 mm 水 → 约 3 dB，<b>再</b>穿玻璃 → 共约 4 dB
+    <br><b>朝玻璃严格更好，而且现在它还和充电线圈共用一个窗口，省掉一个非金属区。</b>
+    唯一的例外是接收端在缸内（比如一个水下中继），本方案没有这种东西。
+  </div>
+</div>
+
+<!-- ══════ 8 实施路线 ══════ -->
+<div class="card">
+  <h2 id="s8"><span class="n">8</span>实施路线</h2>
+  <p class="cap">
+    整个方案只有一个真正的未知数：13 mm 间隙能不能过 5 W。先用最低成本把它证伪或证实。
+  </p>
+
+  <ul class="pts">
+    <li><b>第一步：间隙实验（一天，几十块钱）。</b>
+      买一个现成的 5 W 无线充电模块，在发射和接收线圈之间垫 <b>5 mm 玻璃 + 8 mm 亚克力</b>
+      （凑够 13 mm），接一个 5 W 的负载（比如 5 Ω 功率电阻泡在水里散热）。
+      <br><b>判据：</b>负载上能拿到 <b>≥ 2 W</b>。拿不到就换更大的线圈或降频重试；
+      如果怎么都拿不到，整个方案要重新评估 —— 这时候改主意的成本还是几十块。</li>
+    <li><b>第二步：对接伺服（一周）。</b>
+      4 个 940 nm LED + 4 个光电二极管，对着玻璃两侧摆好，写一个
+      <code>e_x / e_y</code> 的闭环。先用手动平移台模拟机器人的腿。
+      <br><b>判据：</b>从 ±25 mm 的初始偏差收敛到 ±5 mm，用时 &lt; 10 s，不振荡。</li>
+    <li><b>第三步：整机对接（在主体样机之后）。</b>
+      把前窗模块装到主体样机上，让机器人自己走过去对接。
+      <br><b>判据：连续 200 次自动回坞，成功率 ≥ 99%</b>（即失败不超过 2 次），
+      单次耗时 &lt; 3 min。
+      <br><b>为什么是 200 次而不是 20 次：</b>机器人现在<b>每天对接 6 次以上</b>，
+      200 次只相当于一个月的运行。判据从「20 次过 19 次」收紧到「200 次过 198 次」，
+      是因为一次对接失败的代价变了 —— 它不再是 2.5 周一次的偶发事件，
+      而是<b>每天都要面对 6 次的常规动作</b>。
+      <br><b>记录每一次失败的原因</b> —— 这一条比成功率本身更有价值。</li>
+    <li><b>第四步：慢性污染测试（和第三步并行，几周）。</b>
+      让坞站和机器人<b>在真缸里连续跑一个月</b>，不清洁。
+      <br><b>判据：</b>光电二极管的信号幅值衰减 &lt; 30%，信标 LED 的驱动电流不需要上调。
+      超了说明积藻或水垢已经影响光学通道，导向罩和透镜要改成可清洁的。
+      <br>这一条是新架构带出来的：<b>对接次数涨了 10 倍，污染累积的速度也快 10 倍。</b></li>
+  </ul>
+
+  <div class="formula w">
+    <b>不要先做坞站外壳</b><br>
+    外壳、吸盘、LED 灯效这些做起来有成就感，但它们都不是风险。
+    <b>唯一会推翻方案的是那 13 mm 间隙</b>，而验证它只需要一天和几十块钱。
+    先做外壳的话，等发现间隙过不去，外壳要全部重画 —— 而且那时候已经投入了两周。
+    <br><b>第四步（污染测试）同样不能推到最后</b> —— 它要跑一个月，
+    是这条路线里唯一一个「越早开始越好」的步骤。
+  </div>
+
+  <div class="formula">
+    <b>本文的数字同样是估算，第一步做完就要回来改</b><br>
+    <b>间隙 13 mm</b>、<b>效率 45%</b>、<b>入电池 2.2 W</b>、<b>每次停留约 5 min</b> ——
+    这四个数串在一条链上，第一步实验测出真实效率之后，后面三个全部要重算。
+    <b>但回坞频率不会再变</b>：它现在是由「不作业就回坞」这条架构定的，
+    不是由电池容量定的。
+  </div>
+</div>
+
+<footer>
+  充电坞站结构示意 · 非工程图纸 · 数值为量级估算，需实测标定<br>
+  配套文档：<a href="body.html">主体设计</a> · <a href="suction.html">吸附单元设计</a> · <a href="motion.html">运动单元设计</a> · <a href="work.html">作业机构设计</a> · <a href="ctrl.html">主控与传感器设计</a>
+</footer>
+</div>
+</main>
+<script src="assets/toc.js"></script>
+</body>
+</html>

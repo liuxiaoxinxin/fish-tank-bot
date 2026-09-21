@@ -12,14 +12,13 @@
   <div class="side-label">目录</div>
   <ul class="side-list">
     <li><a href="#s1" title="1 · 运动单元总体构成">1 · 运动单元总体构成</a></li>
-    <li><a href="#s2" title="2 · 尺蠖步态时序">2 · 尺蠖步态时序</a></li>
+    <li><a href="#s2" title="2 · 三足步态时序">2 · 三足步态时序</a></li>
     <li><a href="#s3" title="3 · 剥离力矩分析 — 决定吸盘直径的关键">3 · 剥离力矩分析 — 决定吸盘直径的关键</a></li>
-    <li><a href="#s4" title="4 · 双吸盘的稳定性边界 — 以及为什么三足更稳">4 · 双吸盘的稳定性边界 — 以及为什么三足更稳</a></li>
-    <li><a href="#s5" title="5 · 三足到底怎么动 — 逐帧拆解">5 · 三足到底怎么动 — 逐帧拆解</a></li>
-    <li class="lv2"><a href="#s5a1" title="A · 一个工作周期 · 四帧">A · 一个工作周期 · 四帧</a></li>
+    <li><a href="#s4" title="4 · 为什么必须是三足 — 双足方案的稳定性边界">4 · 为什么必须是三足 — 双足方案的稳定性边界</a></li>
+    <li><a href="#s5" title="5 · 三足机构 — 3-RPR 为什么成立">5 · 三足机构 — 3-RPR 为什么成立</a></li>
     <li><a href="#s6" title="6 · 作业载荷 — 刷辊反力才是主要矛盾">6 · 作业载荷 — 刷辊反力才是主要矛盾</a></li>
     <li class="lv2"><a href="#s6a1" title="A · 降低刷辊反力的六条措施">A · 降低刷辊反力的六条措施</a></li>
-    <li><a href="#s7" title="7 · 转向机构与转向步态">7 · 转向机构与转向步态</a></li>
+    <li><a href="#s7" title="7 · 转向 — 差动即可，不需要任何额外机构">7 · 转向 — 差动即可，不需要任何额外机构</a></li>
     <li><a href="#s8" title="8 · 运动方案对比 + 六足蜘蛛方案评估">8 · 运动方案对比 + 六足蜘蛛方案评估</a></li>
     <li class="lv2"><a href="#s8a1" title="F · 六足蜘蛛方案 — 算完账之后不推荐">F · 六足蜘蛛方案 — 算完账之后不推荐</a></li>
     <li><a href="#s9" title="9 · 运动性能估算">9 · 运动性能估算</a></li>
@@ -34,24 +33,24 @@
 <header>
   <div class="page-icon">⚙️</div>
   <h1>鱼缸壁面清洁机器人 — 运动单元设计</h1>
-  <p class="sub">步进式爬壁 · 双吸盘尺蠖步态 · 绕吸盘轴回转转向</p>
+  <p class="sub">步进式爬壁 · 三足 3-RPR 并联平台 · 吸盘不松开就能平移与转向</p>
 </header>
 
 <!-- ══════ 结论先行 ══════ -->
 <div class="keybox">
-  <h3>⚠ 结论先行：两个约束决定了整个运动方案</h3>
-  <p><b>约束一：吸盘不能滑动。</b>你的吸附单元是封闭死容积负压，没有泵。吸盘一旦吸附，任何切向滑动都会破坏唇边密封，而且<b>没有任何机制能把真空补回来</b>。所以运动方式只能是"抬起 → 平移 → 落下"的步进式，绝对不能是连续滚动或滑移。（这也是为什么不能用履带式：履带的每个吸盘在滚动中都要经历滑动过渡。）</p>
-  <p><b>约束二：单吸盘支撑时，剥离力矩会要命。</b>机器人挂在单个吸盘上时，重力对吸盘产生剥离力矩 <code>M = G·h</code>（h = 重心离壁距离），而吸盘能提供的最大抗剥离力矩只有 <code>F_vac·R</code>。代入 ∅15 吸盘、−25 kPa、自重 2.5 N，得 h 必须小于 <b>4 mm</b> —— 物理上做不到。</p>
-  <p><b>破局点：把机器人做成接近中性浮力。</b>水下有效重量 <code>G_eff = (m − ρV)·g</code>，只要配重得当可以降到 0.3–0.5 N，剥离力矩直接降为 1/5 ~ 1/8。这是水下爬壁机器人相对于空气中爬壁机器人<b>最大的天然优势</b>，一定要用满。</p>
+  <h3>⚠ 结论先行：两个约束决定运动方案，方案已经定了</h3>
+  <p><b>约束一：吸盘不能滑动。</b>你的吸附单元是封闭死容积负压，没有泵。吸盘一旦吸附，任何切向滑动都会破坏唇边密封，而且<b>没有任何机制能把真空补回来</b>。所以不能是连续滚动或滑移。（这也是为什么不能用履带式：履带的每个吸盘在滚动中都要经历滑动过渡。）</p>
+  <p><b>约束二：n = 1 在物理上做不到。</b>机器人挂在单个吸盘上时，重力产生剥离力矩 <code>M = G·h</code>（h = 重心离壁距离），而吸盘能提供的最大抗剥离力矩只有 <code>F_vac·R</code>。代入 ∅15 吸盘、−25 kPa、自重 2.5 N，得 h 必须小于 <b>4 mm</b> —— 做不到。所以<b>任何时刻至少两只吸盘承载</b>，这条是硬约束。</p>
+  <p><b>结论：三足 3-RPR 并联平台。</b>三只吸盘成三角形贴在壁上，各由一根推杆撑住中间的刚性机身 —— 三根推杆的长度直接唯一确定机身的 (x, y, φ)。<b>机身靠改变推杆长度在壁面上移动，过程中一只吸盘都不松开。</b>整个方案里不存在单点支撑阶段，n ≥ 2 永远是硬约束、80% 的时间 n = 3。</p>
+  <p><b>另一个天然优势：接近中性浮力。</b>水下有效重量 <code>G_eff = (m − ρV)·g</code>，配重得当可以降到 0.3–0.5 N，剥离力矩降为 1/5 ~ 1/8。这是水下爬壁机器人相对于空气中爬壁机器人最大的优势，一定要用满。</p>
 </div>
 
 <!-- ══════ 图 1 ══════ -->
 <div class="card">
   <h2 id="s1"><span class="n">1</span>运动单元总体构成</h2>
-  <p class="cap">侧视图（玻璃在左）。两个吸盘单元装在一条沿壁面的直线滑轨上，各自带一个与吸盘同轴的回转关节，机身固定在滑轨上。</p>
+  <p class="cap">正视图（视线穿过水看向玻璃，玻璃在机器人背后）。三只吸盘成三角形，各由一根推杆撑住中间的刚性机身。<b>机身是"悬"在三只脚之间的</b>，不接触玻璃 —— 这一点和双足尺蠖方案根本不同。</p>
 
-  <div class="figrow">
-  <svg viewBox="0 0 660 580" role="img" aria-label="运动单元总体构成侧视图">
+  <svg viewBox="0 0 660 580" role="img" aria-label="三足运动单元总体构成正视图" style="width:100%;height:auto">
     <defs>
       <linearGradient id="m1Glass" x1="0" y1="0" x2="1" y2="0">
         <stop offset="0" stop-color="#c3e5f4"/><stop offset="1" stop-color="#8cc6e2"/>
@@ -62,200 +61,313 @@
       <linearGradient id="m1Mot" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stop-color="#7c8794"/><stop offset="1" stop-color="#4a5563"/>
       </linearGradient>
-      <pattern id="m1Yaw" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-        <rect width="6" height="6" fill="#dfe6ee"/><line x1="0" y1="0" x2="0" y2="6" stroke="#a5a29b" stroke-width="1.6"/>
-      </pattern>
+      <linearGradient id="m1Cup" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#2c7d75"/><stop offset=".45" stop-color="#4fb3a6"/><stop offset="1" stop-color="#276f68"/>
+      </linearGradient>
     </defs>
 
     <rect x="0" y="0" width="660" height="580" rx="14" fill="#e8f4fb"/>
-    <text x="600" y="30" text-anchor="end" class="s-sub" style="fill:var(--blue-fg)">H₂O · 整体浸没</text>
+    <text x="624" y="30" text-anchor="end" class="s-sub" style="fill:var(--blue-fg)">正视壁面 · 玻璃在背后</text>
+    <text x="36" y="34" class="s-sub" style="fill:var(--blue-fg)">H₂O · 整体浸没</text>
 
-    <!-- 玻璃 -->
-    <rect x="40" y="20" width="26" height="540" rx="4" fill="url(#m1Glass)" stroke="#7cb6d3" stroke-width="1.3"/>
+    <rect x="14" y="14" width="632" height="552" rx="14" fill="none" stroke="#7cb6d3" stroke-width="6" opacity=".35"/>
 
-    <!-- 直线滑轨 / 丝杆总成 -->
-    <rect x="200" y="104" width="26" height="258" rx="8" fill="#c8d1da" stroke="#68747f" stroke-width="1.5"/>
-    <g stroke="#a5a29b" stroke-width="1.2">
-      <line x1="200" y1="126" x2="226" y2="119"/><line x1="200" y1="142" x2="226" y2="135"/>
-      <line x1="200" y1="158" x2="226" y2="151"/><line x1="200" y1="174" x2="226" y2="167"/>
-      <line x1="200" y1="190" x2="226" y2="183"/><line x1="200" y1="206" x2="226" y2="199"/>
-      <line x1="200" y1="222" x2="226" y2="215"/><line x1="200" y1="238" x2="226" y2="231"/>
-      <line x1="200" y1="254" x2="226" y2="247"/><line x1="200" y1="270" x2="226" y2="263"/>
-      <line x1="200" y1="286" x2="226" y2="279"/><line x1="200" y1="302" x2="226" y2="295"/>
-      <line x1="200" y1="318" x2="226" y2="311"/><line x1="200" y1="334" x2="226" y2="327"/>
-      <line x1="200" y1="350" x2="226" y2="343"/>
-    </g>
+    <!-- ── 系绳（从机身尾右侧引出，画在机身下面） ── -->
+    <path d="M430,252 C486,232 520,232 556,240 C598,249 626,264 650,270"
+          fill="none" stroke="#a5a29b" stroke-width="3" stroke-linecap="round"/>
 
-    <!-- ── 单元 A（前） ── -->
-    <path d="M68,86 L100,98 L100,138 L68,150 Z" fill="#4a938a" stroke="#25665f" stroke-width="1.5"/>
-    <rect x="100" y="92" width="52" height="52" rx="8" fill="#95a1ad" stroke="#68747f" stroke-width="1.5"/>
-    <rect x="152" y="98" width="42" height="40" rx="6" fill="url(#m1Mot)" stroke="#39424f" stroke-width="1.4"/>
-    <text x="173" y="123" text-anchor="middle" font-size="10.5" font-weight="700" fill="#dfe7ef">M</text>
-    <circle cx="84" cy="118" r="9" fill="url(#m1Yaw)" stroke="#5f6b78" stroke-width="1.4"/>
-    <line x1="84" y1="109" x2="84" y2="127" stroke="#5f6b78" stroke-width="1.2"/>
-    <line x1="75" y1="118" x2="93" y2="118" stroke="#5f6b78" stroke-width="1.2"/>
-    <rect x="194" y="100" width="40" height="36" rx="6" fill="#aeb8c4" stroke="#5f6b78" stroke-width="1.5"/>
-
-    <!-- ── 单元 B（后） ── -->
-    <path d="M68,316 L100,328 L100,368 L68,380 Z" fill="#4a938a" stroke="#25665f" stroke-width="1.5"/>
-    <rect x="100" y="322" width="52" height="52" rx="8" fill="#95a1ad" stroke="#68747f" stroke-width="1.5"/>
-    <rect x="152" y="328" width="42" height="40" rx="6" fill="url(#m1Mot)" stroke="#39424f" stroke-width="1.4"/>
-    <text x="173" y="353" text-anchor="middle" font-size="10.5" font-weight="700" fill="#dfe7ef">M</text>
-    <circle cx="84" cy="348" r="9" fill="url(#m1Yaw)" stroke="#5f6b78" stroke-width="1.4"/>
-    <line x1="84" y1="339" x2="84" y2="357" stroke="#5f6b78" stroke-width="1.2"/>
-    <line x1="75" y1="348" x2="93" y2="348" stroke="#5f6b78" stroke-width="1.2"/>
-    <rect x="194" y="330" width="40" height="36" rx="6" fill="#aeb8c4" stroke="#5f6b78" stroke-width="1.5"/>
-
-    <!-- 机身 -->
-    <rect x="246" y="170" width="150" height="180" rx="16" fill="url(#m1Body)" stroke="#a5a29b" stroke-width="1.7"/>
-    <rect x="262" y="186" width="118" height="44" rx="7" fill="#7c8794"/>
-    <text x="321" y="213" text-anchor="middle" font-size="11.5" font-weight="600" fill="#fff">电池 · 配重</text>
-    <rect x="262" y="240" width="56" height="38" rx="6" fill="#9fb0bd"/>
-    <text x="290" y="263" text-anchor="middle" font-size="10.5" fill="#33414f">主控</text>
-    <rect x="324" y="240" width="56" height="38" rx="6" fill="#9fb0bd"/>
-    <text x="352" y="263" text-anchor="middle" font-size="10.5" fill="#33414f">驱动</text>
-    <rect x="262" y="288" width="118" height="38" rx="6" fill="#9fb0bd"/>
-    <text x="321" y="312" text-anchor="middle" font-size="10.5" fill="#33414f">深度 / 姿态传感</text>
-
-    <!-- 清洁刷辊 -->
-    <circle cx="100" cy="470" r="34" fill="#cdd8e2" stroke="#7c8794" stroke-width="1.6"/>
+    <!-- ── 刷辊（贴玻璃，画在最底层） ── -->
+    <rect x="250" y="322" width="160" height="68" rx="34" fill="#cdd8e2" stroke="#7c8794" stroke-width="1.6"/>
     <g stroke="#a8b6c4" stroke-width="2.2" stroke-linecap="round">
-      <line x1="100" y1="436" x2="100" y2="428"/><line x1="124" y1="446" x2="130" y2="441"/>
-      <line x1="134" y1="470" x2="142" y2="470"/><line x1="124" y1="494" x2="130" y2="499"/>
-      <line x1="100" y1="504" x2="100" y2="512"/><line x1="76"  y1="494" x2="70"  y2="499"/>
-      <line x1="66"  y1="470" x2="58"  y2="470"/><line x1="76"  y1="446" x2="70"  y2="441"/>
+      <line x1="250" y1="390" x2="250" y2="397"/><line x1="290" y1="390" x2="290" y2="397"/>
+      <line x1="330" y1="390" x2="330" y2="397"/><line x1="370" y1="390" x2="370" y2="397"/>
+      <line x1="410" y1="390" x2="410" y2="397"/>
     </g>
-    <circle cx="100" cy="470" r="11" fill="#7c8794"/>
-    <rect x="134" y="458" width="52" height="24" rx="6" fill="url(#m1Mot)" stroke="#39424f" stroke-width="1.3"/>
+    <circle cx="330" cy="356" r="10" fill="#7c8794"/>
+    <rect x="410" y="342" width="26" height="28" rx="5" fill="url(#m1Mot)" stroke="#39424f" stroke-width="1.3"/>
+    <rect x="250" y="398" width="160" height="9" rx="4.5" fill="#cfccc4" stroke="#a5a29b" stroke-width="1"/>
+    <text x="444" y="406" class="s-sub">刮条</text>
 
-    <!-- 系绳 -->
-    <path d="M396,300 C450,300 470,340 520,340 C570,340 590,300 650,300"
-          fill="none" stroke="#a5a29b" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 0"/>
-    <text x="452" y="284" class="s-sub">系绳 / 供电</text>
+    <!-- ── 机身 ── -->
+    <rect x="220" y="150" width="220" height="170" rx="16" fill="url(#m1Body)" stroke="#a5a29b" stroke-width="1.7"/>
+    <rect x="252" y="160" width="140" height="38" rx="7" fill="#7c8794"/>
+    <text x="322" y="184" text-anchor="middle" font-size="11" font-weight="600" fill="#fff">电池 · 配重</text>
+    <rect x="252" y="208" width="64" height="34" rx="6" fill="#9fb0bd"/>
+    <text x="284" y="230" text-anchor="middle" font-size="10.5" fill="#33414f">主控</text>
+    <rect x="328" y="208" width="64" height="34" rx="6" fill="#9fb0bd"/>
+    <text x="360" y="230" text-anchor="middle" font-size="10.5" fill="#33414f">驱动</text>
 
-    <!-- 编号 -->
+    <!-- ── 两个铰点圆：吸盘（绿）与机身铰点（黄），错开 60°。按真实比例 2 px/mm 画 ── -->
+    <polygon points="330.0,120.0 503.2,420.0 156.8,420.0" fill="none" stroke="#14786e" stroke-width="1.4" stroke-dasharray="6 5"/>
+    <polygon points="416.6,270.0 330.0,420.0 243.4,270.0" fill="none" stroke="#c08a2e" stroke-width="1.4" stroke-dasharray="4 4"/>
+
+    <!-- ── 铰点座 b 的跨梁：机身尾面在 y = 0，铰点座 b 在 y = +50 —— 中间隔着刷辊，
+         只能从刷辊上方跨过去（z 44–54），到机尾再下探到推杆那一层 ── -->
+    <rect x="321" y="312" width="18" height="108" rx="9" fill="#f2ddb0" stroke="#c08a2e" stroke-width="1.3"/>
+
+    <g fill="#c08a2e" stroke="#8a6010" stroke-width="1">
+      <circle cx="416.6" cy="270.0" r="4.5"/>
+      <circle cx="330.0" cy="420.0" r="4.5"/>
+      <circle cx="243.4" cy="270.0" r="4.5"/>
+    </g>
+
+    <!-- ── 推杆 a / b / c：一端在吸盘座上，一端在机身铰点座上 ── -->
+    <g stroke-linecap="round">
+      <line x1="330.0" y1="120.0" x2="416.6" y2="270.0" stroke="#a5a29b" stroke-width="9"/>
+      <line x1="330.0" y1="120.0" x2="375.0" y2="198.0" stroke="#cfccc4" stroke-width="9"/>
+      <line x1="503.2" y1="420.0" x2="330.0" y2="420.0" stroke="#a5a29b" stroke-width="9"/>
+      <line x1="503.2" y1="420.0" x2="413.1" y2="420.0" stroke="#cfccc4" stroke-width="9"/>
+      <line x1="156.8" y1="420.0" x2="243.4" y2="270.0" stroke="#a5a29b" stroke-width="9"/>
+      <line x1="156.8" y1="420.0" x2="201.8" y2="342.0" stroke="#cfccc4" stroke-width="9"/>
+    </g>
+
+    <circle cx="330" cy="320" r="5" fill="none" stroke="#37352f" stroke-width="1.6"/>
+    <line x1="321" y1="320" x2="339" y2="320" stroke="#37352f" stroke-width="1.2"/>
+    <line x1="330" y1="311" x2="330" y2="329" stroke="#37352f" stroke-width="1.2"/>
+
+    <!-- ── 三只吸盘 ── -->
+    <circle cx="330.0" cy="120.0" r="20" fill="url(#m1Cup)" stroke="#1d7a70" stroke-width="1.8"/>
+    <circle cx="330.0" cy="120.0" r="5.5" fill="#fff"/>
+    <circle cx="156.8" cy="420.0" r="20" fill="url(#m1Cup)" stroke="#1d7a70" stroke-width="1.8"/>
+    <circle cx="156.8" cy="420.0" r="5.5" fill="#fff"/>
+    <circle cx="503.2" cy="420.0" r="20" fill="url(#m1Cup)" stroke="#1d7a70" stroke-width="1.8"/>
+    <circle cx="503.2" cy="420.0" r="5.5" fill="#fff"/>
+
+    <text x="528" y="220" class="s-sub">系绳 / 供电</text>
+
+    <!-- ── 杆号：与第 5 节、body.html 同一套（a 前足 / b 机尾右 / c 机尾左） ── -->
     <g font-size="11.5" font-weight="700" text-anchor="middle">
-      <circle cx="126" cy="70"  r="11" fill="#37352f"/><text x="126" y="74"  fill="#fff">1</text>
-      <circle cx="126" cy="300" r="11" fill="#37352f"/><text x="126" y="304" fill="#fff">2</text>
-      <circle cx="76"  cy="164" r="11" fill="#37352f"/><text x="76"  y="168" fill="#fff">3</text>
-      <circle cx="213" cy="252" r="11" fill="#37352f"/><text x="213" y="256" fill="#fff">4</text>
-      <circle cx="321" cy="212" r="11" fill="#37352f"/><text x="321" y="216" fill="#fff">5</text>
-      <circle cx="100" cy="470" r="11" fill="#37352f"/><text x="100" y="474" fill="#fff">6</text>
-      <circle cx="186" cy="470" r="11" fill="#37352f"/><text x="186" y="474" fill="#fff">7</text>
-      <circle cx="540" cy="340" r="11" fill="#37352f"/><text x="540" y="344" fill="#fff">8</text>
-      <circle cx="53"  cy="44"  r="11" fill="#37352f"/><text x="53"  y="48"  fill="#fff">9</text>
+      <circle cx="373.3" cy="195" r="10" fill="#fbfbfa" stroke="#8b8880" stroke-width="1.2"/><text x="373.3" y="199" fill="#37352f">a</text>
+      <circle cx="416.6" cy="420" r="10" fill="#fbfbfa" stroke="#8b8880" stroke-width="1.2"/><text x="416.6" y="424" fill="#37352f">b</text>
+      <circle cx="200.1" cy="345" r="10" fill="#fbfbfa" stroke="#8b8880" stroke-width="1.2"/><text x="200.1" y="349" fill="#37352f">c</text>
+    </g>
+
+    <text x="330" y="484" text-anchor="middle" class="s-sub" style="fill:var(--green-fg)">绿虚线 = 吸盘外接三角形（R_t = 100 mm）；黄虚线 = 铰点圆（r = 50 mm），错开 60°</text>
+    <text x="330" y="506" text-anchor="middle" class="s-sub" style="fill:#9a6d18">推杆压在三角形的半边边上，杆 a / b / c 是同款零件转 120° 的关系</text>
+    <text x="330" y="528" text-anchor="middle" class="s-sub" style="fill:#9a6d18">推杆不指向圆心 —— 这是它能转向的前提（见第 5 节）</text>
+    <text x="330" y="550" text-anchor="middle" class="s-sub" style="fill:#a05f3c">★ 铰点座 b 与刷辊投影重叠，只能靠一根跨过刷辊上方的横梁吊到机尾</text>
+
+    <g font-size="11.5" font-weight="700" text-anchor="middle">
+      <circle cx="282" cy="96" r="11" fill="#37352f"/><text x="282" y="100" fill="#fff">1</text>
+      <circle cx="108" cy="420" r="11" fill="#37352f"/><text x="108" y="424" fill="#fff">2</text>
+      <circle cx="552" cy="420" r="11" fill="#37352f"/><text x="552" y="424" fill="#fff">2</text>
+      <line x1="390" y1="439" x2="394" y2="427" stroke="#37352f" stroke-width="1"/>
+      <circle cx="390" cy="450" r="11" fill="#37352f"/><text x="390" y="454" fill="#fff">3</text>
+      <circle cx="410" cy="190" r="11" fill="#37352f"/><text x="410" y="194" fill="#fff">4</text>
+      <circle cx="238" cy="180" r="11" fill="#37352f"/><text x="238" y="184" fill="#fff">5</text>
+      <circle cx="368" cy="356" r="11" fill="#37352f"/><text x="368" y="360" fill="#fff">6</text>
+      <circle cx="516" cy="264" r="11" fill="#37352f"/><text x="516" y="268" fill="#fff">7</text>
     </g>
   </svg>
 
   <div class="legend">
     <ol>
-      <li><b>吸盘单元 A（前足）</b><span>与 <a href="suction.html">suction.html</a> 中同一套膜片负压机构（∅25 吸盘 + ∅20 膜片）。前后各一，独立控制吸附／释放。</span></li>
-      <li><b>吸盘单元 B（后足）</b><span>步态中与 A 交替工作。<b>除换步瞬间外，任何时候必须至少一只处于吸附态。</b></span></li>
-      <li><b>回转关节（同轴）</b><span>轴承轴线<b>必须穿过吸盘接触面中心</b>。绕该轴转动时唇边只做周向滑移、不剥离，密封保持。转向靠它。</span></li>
-      <li><b>直线滑轨 + 丝杆驱动</b><span>行程 12–20 mm。导程取 2 mm 左右即可——<b>不需要自锁</b>，因为保位由已吸附的吸盘负责，滑轨只在换步瞬间受力。</span></li>
-      <li><b>机身密封舱</b><span>电池兼作配重。舱内留可调配重腔，用来把整体调到接近中性浮力。</span></li>
-      <li><b>清洁刷辊</b><span>低转速、低压力。刷辊的反作用力矩会直接变成吸盘的剥离力矩，见第 3 节。</span></li>
-      <li><b>刷辊电机</b><span>建议与主行走电机分开供电，清洗时可单独启停以降低干扰力矩。</span></li>
-      <li><b>系绳</b><span>强烈建议保留。既是供电／通讯，也是<b>最后的防坠保险</b>——双吸盘同时失效时不至于沉底或漂走。</span></li>
-      <li><b>鱼缸玻璃</b><span>竖直壁面。拐角处曲率会破坏唇边密封，机器人应避免贴边作业。</span></li>
+      <li><b>吸盘单元 A（前足）</b><span>正前方那一只。与 <a href="suction.html">suction.html</a> 中同一套膜片负压机构（∅25 吸盘 + ∅20 膜片）。三只完全同款，可互换。</span></li>
+      <li><b>吸盘单元 B · C（后足，机尾右 / 左各一）</b><span>三只吸盘成<b>等边三角形</b>外接圆 <code>R_t = 100 mm</code>。<b>除换步瞬间外，任何时候至少两只处于吸附态。</b></span></li>
+      <li><b>推杆 a · b · c（丝杆直线驱动）</b><span>一端铰接在机身铰点座上、一端铰接在吸盘座上。<b>三根长度直接唯一确定机身位姿 (x, y, φ)</b> —— 这是运动学正解，不是积分。行程 20–40 mm。<b>注意推杆不指向圆心</b>：机身铰点圆（黄虚线）与吸盘圆（绿虚线）<b>错开 60°</b>，理由见第 5 节。三条腿的编号见下表 —— 后面所有文档都按这套叫法。</span></li>
+      <li><b>机身（刚性平台）</b><span>悬在三只脚之间，<b>不接触玻璃</b>。厚度方向只需要容纳电池和一块主控板。</span></li>
+      <li><b>电池 · 配重</b><span>舱内留可调配重腔，把整体调到接近中性浮力。电池兼作配重，放在离壁最远的位置。</span></li>
+      <li><b>清洁刷辊</b><span>低转速、低压力。<b>它的接触区必须落在虚线三角形内部</b> —— 越出去就变成绕最近那条支撑边的剥离（第 6 节②）。刷辊的反作用力矩会直接变成吸盘的剥离力矩，见第 6 节。</span></li>
+      <li><b>系绳</b><span>强烈建议保留。既是供电／通讯，也是<b>最后的防坠保险</b> —— 万一三只吸盘同时失效，不至于沉底或漂走。</span></li>
     </ol>
   </div>
+
+  <table>
+    <thead><tr><th>杆</th><th>吸盘（脚）</th><th>机身铰点座</th><th>铰点位置（机身坐标，+x 向右、+y 向机尾）</th></tr></thead>
+    <tbody>
+      <tr><td><b>a</b></td><td>A · 前足（正前方 270°）</td><td>座 a</td><td class="hl">330°　(43.3, −25)　前右</td></tr>
+      <tr><td><b>b</b></td><td>B · 机尾右（30°）</td><td>座 b</td><td>90°　(0, +50)　正后</td></tr>
+      <tr><td><b>c</b></td><td>C · 机尾左（150°）</td><td>座 c</td><td>210°　(−43.3, −25)　前左</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    编号规则只有一句：<b>每个铰点座都落在它那根杆的吸盘方位 +60° 处</b>（铰点圆相对吸盘圆整体转 60°，就是第 5 节那个修法）。
+    于是 <b>a → b → c 是同一个零件绕机身中心转 120°</b> —— 三根杆完全同款、可互换，运动学也完全对称，
+    不存在"某一条腿特别吃力"这回事。俯视图里三条腿看着不像正三角形，是视角问题，不是布置问题。
+  </p>
+
+  <div class="formula w">
+    <b>但铰点座 b 有个结构代价，必须点出来</b><br>
+    座 a 和座 c 在 <code>(±43.3, −25)</code>，落在主腔的投影里，直接做在腔壁上就行。
+    <b>座 b 在 <code>(0, +50)</code>，比主腔尾面（y = 0）还靠后 50 mm，中间隔着刷辊</b>
+    （刷辊占 y = +1 ~ +35、z = 8 ~ 42 mm，刮条在 y ≈ +42）。
+    绕不过去：左侧那条路正是杆 c 压着的三角形边（<code>y = +18</code> 处三角形只有 136 mm 宽，杆 c 就压在其中一条边上）；右侧绕到 <code>y = +50</code> 又正好落在杆 b 自己的杆身上（杆 b 整条都压在 <code>y = +50</code>），只能从上面下来。<br>
+    <b>所以杆 b 的机身端只能靠一根从机身尾面跨过刷辊上方的横梁吊到机尾</b>，
+    到 y = +50 再下探到推杆那一层（z = 18 ~ 30）。俯视图里看着像"一条越过刷辊的拐弯臂"，说的就是它 ——
+    它在 z 向上是从刷辊顶上过去的，不与刷辊相交。主体侧的做法见
+    <a href="body.html">主体设计</a> 第 1 节。
+  </div>
+
+  <div class="formula">
+    <b>为什么"机身悬在脚之间"这件事很重要</b><br>
+    双足尺蠖方案里，机身是<b>骑在一条滑轨上</b>的，滑轨又贴着壁面 ——
+    机身的位姿由滑轨和两只脚的相对位置共同决定，而每次换步都会经过单点支撑。
+    <br>三足方案里，<b>三只脚都是壁面固定的基点，机身只是一个被三根杆撑着的平台</b>。
+    它离壁有一整个机身厚度的距离，但这一点不构成问题：
+    <b>推杆双向承载，拉得住也推得动</b>（见第 5 节）。
+    <br><span style="color:var(--ink-3);font-size:12.5px">
+    代价是机身重心离壁更远，剥离力矩的力臂 h 变大 ——
+    但那只影响单脚受力，而单点支撑在这个方案里根本不存在。</span>
   </div>
 </div>
 
 <!-- ══════ 图 2 步态 ══════ -->
 <div class="card">
-  <h2 id="s2"><span class="n">2</span>尺蠖步态时序</h2>
-  <p class="cap">正视壁面。一个完整循环机身前进一个步距 d。橙色框标出的是<b>只有单只吸盘工作的危险窗口</b>，这段时间内机器人全靠一只吸盘吊着。</p>
+  <h2 id="s2"><span class="n">2</span>三足步态时序</h2>
+  <p class="cap">
+    一个循环有<b>两个相</b>交替进行：<b>工作相</b>（三只脚全吸着，三根推杆推着机身走）和
+    <b>换步相</b>（抬起一只脚，把它挪到新位置再落下）。
+    <b>两个相里都不存在单点支撑</b> —— 这是三足方案最值钱的性质。
+  </p>
 
-  <svg viewBox="0 0 760 700" role="img" aria-label="尺蠖步态四步时序" style="width:100%;height:auto">
+  <svg viewBox="0 0 760 720" role="img" aria-label="三足运动四帧分解" style="width:100%;height:auto">
     <defs>
-      <marker id="m2Arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto">
+      <linearGradient id="f6Cup" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#2c7d75"/><stop offset=".45" stop-color="#4fb3a6"/><stop offset="1" stop-color="#276f68"/>
+      </linearGradient>
+      <linearGradient id="f6Body" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#e9e7e2"/><stop offset="1" stop-color="#c9c6be"/>
+      </linearGradient>
+      <marker id="f6Arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto">
         <path d="M0,0 L10,5 L0,10 z" fill="#14786e"/>
-      </marker>
-      <marker id="m2ArrO" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto">
-        <path d="M0,0 L10,5 L0,10 z" fill="#d9694a"/>
       </marker>
     </defs>
 
-    <!-- ── 面板 1 ── -->
+    <!-- ── 帧 1 ── -->
     <g transform="translate(20,20)">
-      <rect width="360" height="320" rx="12" fill="#fbfbfa" stroke="#e3e2dd"/>
+      <rect width="360" height="340" rx="12" fill="#fbfbfa" stroke="#e3e2dd"/>
       <circle cx="30" cy="30" r="13" fill="#37352f"/><text x="30" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">1</text>
-      <text x="52" y="35" class="s-lbl">双吸盘吸附 · 稳定</text>
-      <line x1="180" y1="70" x2="180" y2="274" stroke="#c6d0d9" stroke-width="3" stroke-dasharray="5 5"/>
-      <rect x="132" y="134" width="96" height="76" rx="10" fill="#dfe6ee" stroke="#a5a29b" stroke-width="1.6"/>
-      <circle cx="180" cy="70" r="18" fill="#2f9d90" stroke="#1d7a70" stroke-width="2"/>
-      <circle cx="180" cy="70" r="5" fill="#fff"/>
-      <circle cx="180" cy="274" r="18" fill="#2f9d90" stroke="#1d7a70" stroke-width="2"/>
-      <circle cx="180" cy="274" r="5" fill="#fff"/>
-      <text x="180" y="302" text-anchor="middle" class="s-sub">A 前足 · B 后足 均吸附</text>
+      <text x="52" y="35" class="s-lbl">三足吸附 · 起始位姿</text>
+      <g stroke-linecap="round">
+        <line x1="190.0" y1="105.3" x2="219.8" y2="157.0" stroke="#a5a29b" stroke-width="8"/>
+        <line x1="110.3" y1="208.7" x2="140.2" y2="157.0" stroke="#a5a29b" stroke-width="8"/>
+        <line x1="239.7" y1="226.0" x2="180.0" y2="226.0" stroke="#a5a29b" stroke-width="8"/>
+      </g>
+      <circle cx="180.0" cy="88.0" r="20" fill="url(#f6Cup)" stroke="#1d7a70" stroke-width="1.8"/>
+      <circle cx="180.0" cy="88.0" r="5.5" fill="#fff"/>      <circle cx="100.3" cy="226.0" r="20" fill="url(#f6Cup)" stroke="#1d7a70" stroke-width="1.8"/>
+      <circle cx="100.3" cy="226.0" r="5.5" fill="#fff"/>      <circle cx="259.7" cy="226.0" r="20" fill="url(#f6Cup)" stroke="#1d7a70" stroke-width="1.8"/>
+      <circle cx="259.7" cy="226.0" r="5.5" fill="#fff"/>
+      <polygon points="219.8,157.0 180.0,226.0 140.2,157.0" fill="url(#f6Body)" stroke="#a5a29b" stroke-width="1.8"/>
+      <g fill="#c08a2e" stroke="#8a6010" stroke-width="1">
+        <circle cx="219.8" cy="157.0" r="4"/><circle cx="180.0" cy="226.0" r="4"/><circle cx="140.2" cy="157.0" r="4"/>
+      </g>
+      <circle cx="180" cy="180" r="5" fill="none" stroke="#37352f" stroke-width="1.6"/>
+      <line x1="171" y1="180" x2="189" y2="180" stroke="#37352f" stroke-width="1.2"/>
+      <line x1="180" y1="171" x2="180" y2="189" stroke="#37352f" stroke-width="1.2"/>
+      <text x="180" y="300" text-anchor="middle" class="s-sub">三个推杆长度均为 L</text>
+      <text x="180" y="318" text-anchor="middle" class="s-sub">全部吸附 · n = 3</text>
     </g>
 
-    <!-- ── 面板 2 ── -->
+    <!-- ── 帧 2 ── -->
     <g transform="translate(400,20)">
-      <rect width="360" height="320" rx="12" fill="#fdf6f3" stroke="#edcdc2"/>
+      <rect width="360" height="340" rx="12" fill="#f2fbf9" stroke="#c7e8e2"/>
       <circle cx="30" cy="30" r="13" fill="#37352f"/><text x="30" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">2</text>
-      <text x="52" y="35" class="s-lbl">释放 A，A 前移一个行程 d</text>
-      <rect x="238" y="86" width="110" height="24" rx="6" fill="#fbe0d8" stroke="#e5a992"/>
-      <text x="293" y="103" text-anchor="middle" font-size="11" font-weight="700" fill="#b4522f">⚠ 单点支撑</text>
-      <line x1="180" y1="46" x2="180" y2="274" stroke="#c6d0d9" stroke-width="3" stroke-dasharray="5 5"/>
-      <circle cx="180" cy="70" r="18" fill="none" stroke="#b6c1cc" stroke-width="2" stroke-dasharray="4 4"/>
-      <text x="192" y="66" class="s-sub">原位置</text>
-      <rect x="132" y="134" width="96" height="76" rx="10" fill="#dfe6ee" stroke="#a5a29b" stroke-width="1.6"/>
-      <circle cx="180" cy="46" r="18" fill="#2f9d90" stroke="#1d7a70" stroke-width="2"/>
-      <circle cx="180" cy="46" r="5" fill="#fff"/>
-      <circle cx="180" cy="274" r="18" fill="#2f9d90" stroke="#1d7a70" stroke-width="2"/>
-      <circle cx="180" cy="274" r="5" fill="#fff"/>
-      <line x1="112" y1="70" x2="112" y2="46" stroke="#d9694a" stroke-width="2.6" marker-end="url(#m2ArrO)"/>
-      <text x="108" y="112" text-anchor="end" class="s-w">d</text>
-      <text x="180" y="302" text-anchor="middle" class="s-sub">机身不动，只有 A 抬起平移</text>
+      <text x="52" y="35" class="s-lbl">推杆伸缩 · 机身移动</text>
+      <g stroke-linecap="round">
+        <line x1="194.7" y1="101.6" x2="241.8" y2="145.0" stroke="#a5a29b" stroke-width="8"/>
+        <line x1="112.5" y1="210.1" x2="162.2" y2="145.0" stroke="#a5a29b" stroke-width="8"/>
+        <line x1="240.1" y1="221.9" x2="202.0" y2="214.0" stroke="#a5a29b" stroke-width="8"/>
+      </g>
+      <circle cx="180.0" cy="88.0" r="20" fill="url(#f6Cup)" stroke="#1d7a70" stroke-width="1.8"/>
+      <circle cx="180.0" cy="88.0" r="5.5" fill="#fff"/>      <circle cx="100.3" cy="226.0" r="20" fill="url(#f6Cup)" stroke="#1d7a70" stroke-width="1.8"/>
+      <circle cx="100.3" cy="226.0" r="5.5" fill="#fff"/>      <circle cx="259.7" cy="226.0" r="20" fill="url(#f6Cup)" stroke="#1d7a70" stroke-width="1.8"/>
+      <circle cx="259.7" cy="226.0" r="5.5" fill="#fff"/>
+      <polygon points="241.8,145.0 202.0,214.0 162.2,145.0" fill="url(#f6Body)" stroke="#a5a29b" stroke-width="1.8"/>
+      <g fill="#c08a2e" stroke="#8a6010" stroke-width="1">
+        <circle cx="241.8" cy="145.0" r="4"/><circle cx="202.0" cy="214.0" r="4"/><circle cx="162.2" cy="145.0" r="4"/>
+      </g>
+      <circle cx="202" cy="168" r="5" fill="none" stroke="#37352f" stroke-width="1.6"/>
+      <line x1="164" y1="214" x2="192" y2="199" stroke="#14786e" stroke-width="2.2" stroke-dasharray="4 3" marker-end="url(#f6Arr)"/>
+      <text x="180" y="300" text-anchor="middle" class="s-lbl" style="fill:var(--green-fg)">吸盘一步没动，机身动了</text>
+      <text x="180" y="318" text-anchor="middle" class="s-sub">仍然全部吸附 · n = 3</text>
     </g>
 
-    <!-- ── 面板 3 ── -->
-    <g transform="translate(20,360)">
-      <rect width="360" height="320" rx="12" fill="#fdf6f3" stroke="#edcdc2"/>
+    <!-- ── 帧 3 ── -->
+    <g transform="translate(20,370)">
+      <rect width="360" height="340" rx="12" fill="#fdf6f3" stroke="#edcdc2"/>
       <circle cx="30" cy="30" r="13" fill="#37352f"/><text x="30" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">3</text>
-      <text x="52" y="35" class="s-lbl">A 重新吸附，释放 B</text>
-      <rect x="238" y="86" width="110" height="24" rx="6" fill="#fbe0d8" stroke="#e5a992"/>
-      <text x="293" y="103" text-anchor="middle" font-size="11" font-weight="700" fill="#b4522f">⚠ 单点支撑</text>
-      <line x1="180" y1="46" x2="180" y2="274" stroke="#c6d0d9" stroke-width="3" stroke-dasharray="5 5"/>
-      <rect x="132" y="134" width="96" height="76" rx="10" fill="#dfe6ee" stroke="#a5a29b" stroke-width="1.6"/>
-      <circle cx="180" cy="46" r="18" fill="#2f9d90" stroke="#1d7a70" stroke-width="2"/>
-      <circle cx="180" cy="46" r="5" fill="#fff"/>
-      <circle cx="180" cy="274" r="18" fill="none" stroke="#b6c1cc" stroke-width="2" stroke-dasharray="4 4"/>
-      <text x="180" y="302" text-anchor="middle" class="s-sub">此刻起只有 A 承重</text>
+      <text x="52" y="35" class="s-lbl">抬起 1 足 · 换步</text>
+      <g stroke-linecap="round">
+        <line x1="214.6" y1="119.6" x2="241.8" y2="145.0" stroke="#d9b3a4" stroke-width="8" stroke-dasharray="6 4"/>
+        <line x1="112.5" y1="210.1" x2="162.2" y2="145.0" stroke="#a5a29b" stroke-width="8"/>
+        <line x1="240.1" y1="221.9" x2="202.0" y2="214.0" stroke="#a5a29b" stroke-width="8"/>
+      </g>
+      <circle cx="100.3" cy="226.0" r="20" fill="url(#f6Cup)" stroke="#1d7a70" stroke-width="1.8"/>
+      <circle cx="100.3" cy="226.0" r="5.5" fill="#fff"/>      <circle cx="259.7" cy="226.0" r="20" fill="url(#f6Cup)" stroke="#1d7a70" stroke-width="1.8"/>
+      <circle cx="259.7" cy="226.0" r="5.5" fill="#fff"/>
+      <circle cx="200" cy="106" r="20" fill="none" stroke="#d9694a" stroke-width="2" stroke-dasharray="5 4"/>
+      <text x="200" y="72" text-anchor="middle" class="s-w" font-size="11">这一只已抬起</text>
+      <polygon points="241.8,145.0 202.0,214.0 162.2,145.0" fill="url(#f6Body)" stroke="#a5a29b" stroke-width="1.8"/>
+      <g fill="#c08a2e" stroke="#8a6010" stroke-width="1">
+        <circle cx="241.8" cy="145.0" r="4"/><circle cx="202.0" cy="214.0" r="4"/><circle cx="162.2" cy="145.0" r="4"/>
+      </g>
+      <circle cx="202" cy="168" r="5" fill="none" stroke="#37352f" stroke-width="1.6"/>
+      <rect x="196" y="256" width="148" height="24" rx="6" fill="#fbe0d8" stroke="#e5a992"/>
+      <text x="270" y="273" text-anchor="middle" font-size="10.5" font-weight="700" fill="#b4522f">⚠ 两点支撑</text>
+      <text x="180" y="306" text-anchor="middle" class="s-sub">只摆动这条腿，但机身姿态不唯一确定</text>
+      <text x="180" y="324" text-anchor="middle" class="s-sub">n = 2 · 欠约束 1 个自由度</text>
     </g>
 
-    <!-- ── 面板 4 ── -->
-    <g transform="translate(400,360)">
-      <rect width="360" height="320" rx="12" fill="#f2fbf9" stroke="#c7e8e2"/>
+    <!-- ── 帧 4 ── -->
+    <g transform="translate(400,370)">
+      <rect width="360" height="340" rx="12" fill="#f2fbf9" stroke="#c7e8e2"/>
       <circle cx="30" cy="30" r="13" fill="#37352f"/><text x="30" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">4</text>
-      <text x="52" y="35" class="s-lbl">机身被拉前移 d，B 重新吸附</text>
-      <line x1="180" y1="46" x2="180" y2="250" stroke="#c6d0d9" stroke-width="3" stroke-dasharray="5 5"/>
-      <rect x="124" y="110" width="96" height="76" rx="10" fill="#dfe6ee" stroke="#a5a29b" stroke-width="1.6"/>
-      <circle cx="180" cy="46" r="18" fill="#2f9d90" stroke="#1d7a70" stroke-width="2"/>
-      <circle cx="180" cy="46" r="5" fill="#fff"/>
-      <circle cx="180" cy="250" r="18" fill="#2f9d90" stroke="#1d7a70" stroke-width="2"/>
-      <circle cx="180" cy="250" r="5" fill="#fff"/>
-      <line x1="300" y1="134" x2="300" y2="110" stroke="#14786e" stroke-width="2.6" marker-end="url(#m2Arr)"/>
-      <line x1="60"  y1="134" x2="60"  y2="110" stroke="#14786e" stroke-width="2.6" marker-end="url(#m2Arr)"/>
-      <text x="180" y="308" text-anchor="middle" class="s-lbl" style="fill:var(--green-fg)">循环完成 · 净前进 d</text>
+      <text x="52" y="35" class="s-lbl">落到新位置 · 恢复三足</text>
+      <g stroke-linecap="round">
+        <line x1="214.6" y1="88.0" x2="241.8" y2="145.0" stroke="#a5a29b" stroke-width="8"/>
+        <line x1="112.5" y1="210.1" x2="162.2" y2="145.0" stroke="#a5a29b" stroke-width="8"/>
+        <line x1="240.1" y1="221.9" x2="202.0" y2="214.0" stroke="#a5a29b" stroke-width="8"/>
+      </g>
+      <circle cx="100.3" cy="226.0" r="20" fill="url(#f6Cup)" stroke="#1d7a70" stroke-width="1.8"/>
+      <circle cx="100.3" cy="226.0" r="5.5" fill="#fff"/>      <circle cx="259.7" cy="226.0" r="20" fill="url(#f6Cup)" stroke="#1d7a70" stroke-width="1.8"/>
+      <circle cx="259.7" cy="226.0" r="5.5" fill="#fff"/>      <circle cx="206.0" cy="70.0" r="20" fill="url(#f6Cup)" stroke="#1d7a70" stroke-width="1.8"/>
+      <circle cx="206.0" cy="70.0" r="5.5" fill="#fff"/>
+      <polygon points="241.8,145.0 202.0,214.0 162.2,145.0" fill="url(#f6Body)" stroke="#a5a29b" stroke-width="1.8"/>
+      <g fill="#c08a2e" stroke="#8a6010" stroke-width="1">
+        <circle cx="241.8" cy="145.0" r="4"/><circle cx="202.0" cy="214.0" r="4"/><circle cx="162.2" cy="145.0" r="4"/>
+      </g>
+      <circle cx="202" cy="168" r="5" fill="none" stroke="#37352f" stroke-width="1.6"/>
+      <text x="180" y="300" text-anchor="middle" class="s-lbl" style="fill:var(--green-fg)">回到 n = 3，可继续推进</text>
+      <text x="180" y="318" text-anchor="middle" class="s-sub">重复 2→3→4 即可连续行进</text>
     </g>
   </svg>
 
-  <div class="formula w" style="margin-top:22px">
-    <b>危险窗口的量化</b><br>
-    面板 2、3 中机器人挂在单只吸盘上。此刻的剥离力矩 <code>M = G_eff · h</code>，
-    吸盘可提供的最大抗剥离力矩约 <code>F_vac · R</code>。要安全就需要 <code>G_eff · h ≤ F_vac · R / SF</code>。
-    <br>具体数字见下一节 —— <b>这是选择吸盘直径和配重方案的唯一依据。</b>
+  <p>
+    四帧连起来看：<b>帧 1 是起点，帧 2 是工作相，帧 3–4 是换步相</b>。
+    之后重复 2 → 3 → 4，机器人就连续走下去了。
+    <br><b>步距 d</b> 由推杆行程决定：三根推杆各走一个行程，机身净位移大约是行程的
+    <code>1/√3 ≈ 0.58</code> 倍 —— 行程 20–40 mm 对应步距 <b>约 12–23 mm</b>。
+    想要步距大就加行程，代价是推杆变长、压杆稳定性变差（见第 5 节）。
+  </p>
+
+  <table>
+    <thead><tr><th>吸附的足数 n</th><th>机身自由度</th><th>能做什么</th><th>控制规则</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td><b>n = 3</b>（工作相，约 80% 时间）</td><td>3（x, y, φ 全可控）</td>
+          <td>3 个推杆电机协同 → 机身平滑走任意平面轨迹</td><td>正常驱动，走清扫路径</td></tr>
+      <tr><td><b>n = 2</b>（换步相，约 20% 时间）</td><td><b>3 个自由度里只有 2 个被约束，剩 1 个未约束</b></td>
+          <td>只把抬起的那条腿摆到新位置。<b>但机身姿态在这一相并不唯一确定</b></td>
+          <td>禁止主动移动机身；<b>位置推算在这一相要单列，不能用正解</b></td></tr>
+      <tr class="bad"><td><b>n ≤ 1</b></td><td>不可控</td><td>—</td><td><b>硬互锁禁止</b>，电气层实现</td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula">
+    <b>这正好满足你说的"运行时一定要有 n 个角吸附"</b><br>
+    <b>n ≥ 2 是硬约束，且 80% 的时间 n = 3。</b>整个方案里<b>不存在单点支撑阶段</b> ——
+    这是三足相对于双足尺蠖最大的价值（双足方案每次换步都必须单点支撑 1–2 秒）。
+    <br>电机总数：<b>3 个推杆电机 + 3 个吸附电机 = 6 个</b>。
   </div>
 </div>
 
 <!-- ══════ 图 3 受力 ══════ -->
 <div class="card">
   <h2 id="s3"><span class="n">3</span>剥离力矩分析 — 决定吸盘直径的关键</h2>
-  <p class="cap">左：单吸盘支撑时的危险状态。右：双吸盘同时吸附时，重力力矩由两只吸盘的力偶承担，情况完全不同。</p>
+  <p class="cap">
+    左：<b>单吸盘支撑</b>时的危险状态。右：两只吸盘同时承载时，重力力矩由两只吸盘的力偶承担。
+    <b>这一节的结论不是"选双足还是三足"，而是"n 永远不能等于 1"。</b>
+  </p>
 
   <svg viewBox="0 0 720 400" role="img" aria-label="单吸盘与双吸盘的受力对比" style="width:100%;height:auto">
     <defs>
@@ -375,16 +487,17 @@
   </table>
 
   <div class="formula">
-    <b>旁注：双吸盘阶段完全不是问题</b><br>
-    两只吸盘同时吸附时，对机身做力矩平衡会得到：<b>上面那只受拉 hG/D，下面那只受压 hG/D</b>（D = 两吸盘间距）。
+    <b>旁注：n = 2 的两个工作方向完全不是问题</b><br>
+    只剩两只吸盘吸附时，对机身做力矩平衡会得到：<b>一只受拉 hG/D，另一只受压 hG/D</b>（D = 两吸盘间距）。
     受压那只由唇边直接承载，毫无风险；受拉那只只要 <code>hG/D ≤ F_vac</code> 就行。
     代 G=2.5 N、h=20 mm、D=80 mm，得 0.63 N —— 相对 ∅25 吸盘的 12.3 N 可以忽略。
-    <br><b>所以危险只存在于换步的单支撑窗口。</b>控制逻辑的全部重点都应该压在那 1–2 秒上。
+    <br><b>所以危险只存在于 n = 1。</b>而三足方案保证 n ≥ 2，<b>整条时间线上这个窗口不存在</b> ——
+    这是第 4 节对比表里"永远两点 ✓"那一行的由来。
   </div>
 
   <div class="formula w">
     <b>怎么读这张表</b><br>
-    <b>✗</b> = 单吸盘支撑在物理上做不到，必须走三足方案。<b>△</b> = 勉强可行，但机身必须做得极扁（总厚度 &lt; 20 mm）且配重严格。<b>✓</b> = 双足尺蠖步态可以直接用。<br>
+    <b>✗</b> = 单吸盘支撑在物理上做不到。<b>△</b> = 勉强可行，但机身必须做得极扁（总厚度 &lt; 20 mm）且配重严格。<b>✓</b> = 三足方案在这一档吸盘下余量充裕。<br>
     <b>推荐组合：∅25 吸盘 + 近中性浮力配重 + 机身厚度控制。</b> 前者解决抗剥离，后者解决所有其余问题，两个一起做才安全。
   </div>
 
@@ -399,8 +512,11 @@
 
 <!-- ══════ 稳定性 ══════ -->
 <div class="card">
-  <h2 id="s4"><span class="n">4</span>双吸盘的稳定性边界 — 以及为什么三足更稳</h2>
-  <p class="cap">双吸盘有<b>三个独立</b>的不稳来源。前两个可以靠参数优化压下去，<b>第三个不能</b>。</p>
+  <h2 id="s4"><span class="n">4</span>为什么必须是三足 — 双足方案的稳定性边界</h2>
+  <p class="cap">
+    方案已经定三足（第 8 节表里的 C 行）。这一节保留下来，是为了说清楚<b>双足到底输在哪</b> ——
+    它有三个独立的不稳来源，前两个可以靠参数优化压下去，<b>第三个不能</b>。
+  </p>
 
   <svg viewBox="0 0 680 440" role="img" aria-label="双吸盘与三吸盘的支撑构型对比" style="width:100%;height:auto">
     <defs>
@@ -491,36 +607,38 @@
   </div>
 
   <table>
-    <thead><tr><th>对比项</th><th>双吸盘尺蠖</th><th>三吸盘三角步态</th></tr></thead>
+    <thead><tr><th>对比项</th><th>双吸盘尺蠖</th><th>三足 3-RPR（已选定）</th></tr></thead>
     <tbody>
       <tr><td>换步时的支撑点</td><td class="bad">1 点</td><td class="hl"><b>2 点</b></td></tr>
       <tr><td>抗倾覆来源</td><td>单只吸盘 F_vac·R</td><td class="hl">力偶 F_vac·D</td></tr>
-      <tr><td>所需的吸盘直径</td><td class="bad">≥ ∅25</td><td class="hl">∅12–15 即可</td></tr>
+      <tr><td>所需的吸盘直径</td><td class="bad">≥ ∅25</td><td class="hl">∅15 就够；为与吸附单元通用仍取 ∅25</td></tr>
       <tr><td>绕支撑连线的滚动</td><td class="bad">未被约束，持续漂移</td><td class="hl">被三点构型约束</td></tr>
       <tr><td>单点失效的后果</td><td class="bad">坠落</td><td class="hl">剩两点仍能维持</td></tr>
       <tr><td>转向实现</td><td>需要回转关节</td><td class="hl">三足差动即可，无需回转关节</td></tr>
       <tr><td>行走电机 / 吸附电机</td><td>1 / 2</td><td>3 / 3</td></tr>
-      <tr class="hl"><td><b>倾覆安全系数</b>（G_eff=0.5 N, h=30 mm, R_t=50 mm）</td>
-          <td class="bad">∅25 时 3.4<br><span style="font-size:11.5px">依赖参数全部做到位</span></td>
-          <td><b>∅15 时 19.6</b><br><span style="font-size:11.5px">即便用最小的吸盘也远够</span></td></tr>
+      <tr class="hl"><td><b>抗倾覆力矩</b>（∅25，R_t = 100 mm）</td>
+          <td class="bad">0.31 N·m<br><span style="font-size:11.5px">绕两盘连线方向只剩唇边自己在扛</span></td>
+          <td><b>1.06 N·m</b><br><span style="font-size:11.5px">= 0.866 · F_vac · R_t（第 6 节）</span></td></tr>
     </tbody>
   </table>
 
   <div class="formula">
-    <b>怎么选</b><br>
-    <b>要最稳 → 直接上三足。</b>容错空间大一个数量级，吸盘还能做小（∅12–15），
-    连带膜片、电机、丝杆全都可以小一号，未必比双足贵多少。
-    <br><b>要最简 → 双吸盘 + ∅25 吸盘 + 近中性浮力。</b>倾覆安全系数 3.4，可用。
-    但必须接受"没有冗余"这一条。
-    <br><b>折中方案：双吸盘 + 一个被动第三点。</b>第三点用一个不带电机、不带膜片的<b>被动吸盘</b>，
-    靠机身压下时自然排气吸附，用一个小凸轮把它剥下来。它只需要提供 1–2 N，
-    却能把"1 点支撑"变成"2 点支撑"，成本远低于一整套主动吸附单元。
+    <b>选型结论：三足，理由不是"更稳"而是"没有单点支撑相"</b><br>
+    表里双足那个方案的抗倾覆力矩其实也够用（0.31 N·m，是自重力矩的 20 倍）。<b>三足赢的地方在别处：</b>
+    <br>· <b>换步时不需要单点支撑。</b>双足每次换步必须用一只脚吊住整机 1–2 秒，
+      三足永远 n ≥ 2 —— 这是数量级上的差别，不是系数上的。
+    <br>· <b>转向靠差动，不需要回转关节。</b>省掉一套机构和一个自由度。
+    <br>· <b>吸盘可以做小。</b>载荷摊到三只脚上，连带膜片、电机、丝杆都能小一号。
+    <br><span style="color:var(--ink-3);font-size:12.5px">
+    双足方案留在这里只作为对照。「双足 + 一个被动第三点」那个折中曾经很有吸引力 ——
+    但既然已经决定做三足，多出来的那套主动吸附单元换到的是<b>可恢复性和可标定性</b>
+    （三根推杆给出运动学正解），这笔账划得来。</span>
   </div>
 </div>
 
 <!-- ══════ 三足怎么动 ══════ -->
 <div class="card">
-  <h2 id="s5"><span class="n">5</span>三足到底怎么动 — 逐帧拆解</h2>
+  <h2 id="s5"><span class="n">5</span>三足机构 — 3-RPR 为什么成立</h2>
   <p class="cap">
     关键的心智转换：<b>三条腿不是"腿"，是三个推杆。</b>
     机身被三根推杆撑在壁面上，改变三根推杆的长度，机身就在壁面上平移 + 旋转。
@@ -535,211 +653,148 @@
       <linearGradient id="f5Body" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stop-color="#e9e7e2"/><stop offset="1" stop-color="#c9c6be"/>
       </linearGradient>
-      <marker id="f5Rot" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <marker id="f5Rot" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto">
         <path d="M0,0 L10,5 L0,10 z" fill="#d9694a"/>
       </marker>
     </defs>
 
     <rect x="0" y="0" width="660" height="440" rx="14" fill="#fbfbfa"/>
 
+    <!-- 两个铰点圆 -->
+    <polygon points="200.0,100.0 295.3,265.0 104.7,265.0" fill="none" stroke="#14786e" stroke-width="1.4" stroke-dasharray="6 5"/>
+    <polygon points="247.6,182.5 200.0,265.0 152.4,182.5" fill="none" stroke="#c08a2e" stroke-width="1.4" stroke-dasharray="4 4"/>
+
+    <!-- 中心处的 60° 夹角标注 -->
+    <line x1="200" y1="210" x2="200.0" y2="138.0" stroke="#14786e" stroke-width="1.1" stroke-dasharray="3 3"/>
+    <line x1="200" y1="210" x2="262.4" y2="174.0" stroke="#c08a2e" stroke-width="1.1" stroke-dasharray="3 3"/>
+    <path d="M200.0,138.0 A 72 72 0 0 1 262.4,174.0" fill="none" stroke="#d9694a" stroke-width="2" marker-end="url(#f5Rot)"/>
+    <text x="248" y="150" font-size="11.5" font-weight="700" fill="#b4522f">60°</text>
+
     <!-- 推杆 -->
     <g stroke-linecap="round">
-      <line x1="180" y1="150" x2="180" y2="90"  stroke="#a5a29b" stroke-width="9"/>
-      <line x1="136.7" y1="225" x2="84.7" y2="255" stroke="#a5a29b" stroke-width="9"/>
-      <line x1="223.3" y1="225" x2="275.3" y2="255" stroke="#a5a29b" stroke-width="9"/>
-      <line x1="180" y1="150" x2="180" y2="117"  stroke="#cfccc4" stroke-width="9"/>
-      <line x1="136.7" y1="225" x2="108.9" y2="241" stroke="#cfccc4" stroke-width="9"/>
-      <line x1="223.3" y1="225" x2="251.1" y2="241" stroke="#cfccc4" stroke-width="9"/>
+      <line x1="211.0" y1="119.1" x2="247.6" y2="182.5" stroke="#a5a29b" stroke-width="9"/>
+      <line x1="211.0" y1="119.1" x2="232.4" y2="156.2" stroke="#cfccc4" stroke-width="9"/>
+      <line x1="115.7" y1="245.9" x2="152.4" y2="182.5" stroke="#a5a29b" stroke-width="9"/>
+      <line x1="115.7" y1="245.9" x2="137.2" y2="208.8" stroke="#cfccc4" stroke-width="9"/>
+      <line x1="273.3" y1="265.0" x2="200.0" y2="265.0" stroke="#a5a29b" stroke-width="9"/>
+      <line x1="273.3" y1="265.0" x2="230.4" y2="265.0" stroke="#cfccc4" stroke-width="9"/>
     </g>
 
-    <!-- 机身 -->
-    <polygon points="180,150 136.7,225 223.3,225" fill="url(#f5Body)" stroke="#a5a29b" stroke-width="1.8"/>
-    <circle cx="180" cy="200" r="5" fill="none" stroke="#37352f" stroke-width="1.6"/>
-    <line x1="171" y1="200" x2="189" y2="200" stroke="#37352f" stroke-width="1.2"/>
-    <line x1="180" y1="191" x2="180" y2="209" stroke="#37352f" stroke-width="1.2"/>
-    <text x="192" y="204" font-size="10.5" fill="#37352f">重心</text>
+    <!-- 杆号（与第 1 节同一套：a 前足 / b 机尾右 / c 机尾左） -->
+    <g font-size="11" font-weight="700" text-anchor="middle">
+      <circle cx="216.3" cy="158.3" r="10" fill="#fbfbfa" stroke="#8b8880" stroke-width="1.2"/><text x="216.3" y="162" fill="#37352f">a</text>
+      <circle cx="236.7" cy="250.0" r="10" fill="#fbfbfa" stroke="#8b8880" stroke-width="1.2"/><text x="236.7" y="254" fill="#37352f">b</text>
+      <circle cx="121.1" cy="206.7" r="10" fill="#fbfbfa" stroke="#8b8880" stroke-width="1.2"/><text x="121.1" y="210.7" fill="#37352f">c</text>
+    </g>
 
-    <!-- 吸盘 + 自转符号 -->
-    <g>
-      <circle cx="180" cy="90" r="21" fill="url(#f5Cup)" stroke="#1d7a70" stroke-width="1.8"/>
-      <circle cx="180" cy="90" r="6" fill="#fff"/>
-      <path d="M158,64 A 32 32 0 0 1 202,64" fill="none" stroke="#d9694a" stroke-width="2" marker-end="url(#f5Rot)"/>
+    <!-- 机身（平台） -->
+    <polygon points="247.6,182.5 200.0,265.0 152.4,182.5" fill="url(#f5Body)" stroke="#a5a29b" stroke-width="1.8"/>
+    <circle cx="200" cy="210" r="5" fill="none" stroke="#37352f" stroke-width="1.6"/>
+    <line x1="191" y1="210" x2="209" y2="210" stroke="#37352f" stroke-width="1.2"/>
+    <line x1="200" y1="201" x2="200" y2="219" stroke="#37352f" stroke-width="1.2"/>
+    <text x="212" y="214" font-size="10.5" fill="#37352f">重心</text>
+
+    <g fill="#c08a2e" stroke="#8a6010" stroke-width="1">
+      <circle cx="247.6" cy="182.5" r="4.5"/>
+      <circle cx="200.0" cy="265.0" r="4.5"/>
+      <circle cx="152.4" cy="182.5" r="4.5"/>
     </g>
-    <g>
-      <circle cx="84.7" cy="255" r="21" fill="url(#f5Cup)" stroke="#1d7a70" stroke-width="1.8"/>
-      <circle cx="84.7" cy="255" r="6" fill="#fff"/>
-      <path d="M56,240 A 32 32 0 0 1 74,284" fill="none" stroke="#d9694a" stroke-width="2" marker-end="url(#f5Rot)"/>
-    </g>
-    <g>
-      <circle cx="275.3" cy="255" r="21" fill="url(#f5Cup)" stroke="#1d7a70" stroke-width="1.8"/>
-      <circle cx="275.3" cy="255" r="6" fill="#fff"/>
-      <path d="M286,284 A 32 32 0 0 1 304,240" fill="none" stroke="#d9694a" stroke-width="2" marker-end="url(#f5Rot)"/>
-    </g>
+
+    <!-- 三只吸盘 -->
+    <circle cx="200.0" cy="100.0" r="22" fill="url(#f5Cup)" stroke="#1d7a70" stroke-width="1.8"/>
+    <circle cx="200.0" cy="100.0" r="6" fill="#fff"/>
+    <circle cx="104.7" cy="265.0" r="22" fill="url(#f5Cup)" stroke="#1d7a70" stroke-width="1.8"/>
+    <circle cx="104.7" cy="265.0" r="6" fill="#fff"/>
+    <circle cx="295.3" cy="265.0" r="22" fill="url(#f5Cup)" stroke="#1d7a70" stroke-width="1.8"/>
+    <circle cx="295.3" cy="265.0" r="6" fill="#fff"/>
 
     <!-- 标注 -->
-    <text x="196" y="150" font-size="11" font-weight="700" fill="#6b6862">L₁</text>
-    <text x="98"  y="228" font-size="11" font-weight="700" fill="#6b6862">L₂</text>
-    <text x="248" y="228" font-size="11" font-weight="700" fill="#6b6862">L₃</text>
+    <line x1="176" y1="322" x2="118" y2="287" stroke="#8fd8ce" stroke-width="1.2"/>
+    <text x="72" y="340" font-size="11.5" fill="#14786e" font-weight="600">吸盘固定在壁面上</text>
+    <line x1="346" y1="196" x2="256" y2="184" stroke="#d8b463" stroke-width="1.2"/>
+    <text x="352" y="196" font-size="11.5" fill="#9a6d18" font-weight="600">机身铰点</text>
+    <text x="352" y="214" font-size="11" fill="#6b6862">（黄虚线圆，r = 50 mm）</text>
 
-    <line x1="330" y1="60" x2="380" y2="90" stroke="#a5a29b" stroke-width="1.2"/>
-    <text x="386" y="94" font-size="12" fill="#37352f">推杆（丝杆直线驱动）</text>
-    <line x1="330" y1="132" x2="380" y2="140" stroke="#a5a29b" stroke-width="1.2"/>
-    <text x="386" y="144" font-size="12" fill="#37352f">机身（刚性平台）</text>
-    <line x1="330" y1="210" x2="360" y2="230" stroke="#a5a29b" stroke-width="1.2"/>
-    <text x="366" y="234" font-size="12" fill="#37352f">吸盘：绕自身轴自由转动</text>
-    <text x="366" y="252" font-size="11" fill="#d9694a">↑ 红色箭头就是机身的"旋转自由度"</text>
-
-    <rect x="330" y="290" width="300" height="120" rx="10" fill="#e6f5f3" stroke="#8fd8ce"/>
-    <text x="350" y="316" font-size="12" font-weight="700" fill="#14786e">这是标准机构：平面 3-RPR 并联平台</text>
-    <text x="350" y="340" font-size="11.5" fill="#6b6862">三条腿 = 转动铰 + 直线推杆 + 转动铰</text>
-    <text x="350" y="360" font-size="11.5" fill="#6b6862">三只吸盘固定 → 机身还剩 3 个自由度</text>
-    <text x="350" y="380" font-size="11.5" fill="#6b6862">3 个推杆电机 = 精确控制机身的 x, y, φ</text>
-    <text x="350" y="400" font-size="11.5" fill="#14786e" font-weight="600">推杆一伸一缩，机身就动了，吸盘纹丝不动</text>
+    <rect x="348" y="250" width="292" height="150" rx="10" fill="#e6f5f3" stroke="#8fd8ce"/>
+    <text x="366" y="274" font-size="12" font-weight="700" fill="#14786e">这是标准机构：平面 3-RPR 并联平台</text>
+    <text x="366" y="296" font-size="11.5" fill="#6b6862">三条腿 a / b / c = 转动铰 + 直线推杆 + 转动铰</text>
+    <text x="366" y="314" font-size="11.5" fill="#6b6862">吸盘被壁面锁死 → 机身还剩 3 个自由度</text>
+    <text x="366" y="332" font-size="11.5" fill="#6b6862">3 个推杆电机 = 精确控制机身的 x, y, φ</text>
+    <text x="366" y="358" font-size="11.5" fill="#b4522f" font-weight="600">★ 两个铰点圆必须错开，不能同角度</text>
+    <text x="366" y="376" font-size="11.5" fill="#b4522f" font-weight="600">否则三条腿汇交于一点，转不动</text>
+    <text x="366" y="394" font-size="11" fill="#6b6862">（第 5 节正文给出这条的推导）</text>
   </svg>
 
-  <h3 id="s5a1"><span class="n">A</span>一个工作周期 · 四帧</h3>
-  <p class="cap">注意看：<b>三只吸盘的位置在整幅图里从头到尾没变过</b>，变的只是三根推杆的长度。</p>
+  <p>
+    这一节只讲机构本身。<b>步态时序（一个循环怎么走）在第 2 节</b>，
+    两处不要各写一份。
+  </p>
 
-  <svg viewBox="0 0 760 720" role="img" aria-label="三足运动四帧分解" style="width:100%;height:auto">
-    <defs>
-      <linearGradient id="f6Cup" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0" stop-color="#2c7d75"/><stop offset=".45" stop-color="#4fb3a6"/><stop offset="1" stop-color="#276f68"/>
-      </linearGradient>
-      <linearGradient id="f6Body" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#e9e7e2"/><stop offset="1" stop-color="#c9c6be"/>
-      </linearGradient>
-      <marker id="f6Arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto">
-        <path d="M0,0 L10,5 L0,10 z" fill="#14786e"/>
-      </marker>
-      <g id="f6Feet">
-        <circle cx="180" cy="88"  r="20" fill="url(#f6Cup)" stroke="#1d7a70" stroke-width="1.8"/>
-        <circle cx="180" cy="88"  r="5.5" fill="#fff"/>
-        <circle cx="100.3" cy="226" r="20" fill="url(#f6Cup)" stroke="#1d7a70" stroke-width="1.8"/>
-        <circle cx="100.3" cy="226" r="5.5" fill="#fff"/>
-        <circle cx="259.7" cy="226" r="20" fill="url(#f6Cup)" stroke="#1d7a70" stroke-width="1.8"/>
-        <circle cx="259.7" cy="226" r="5.5" fill="#fff"/>
-      </g>
-    </defs>
-
-    <!-- ── 帧 1 ── -->
-    <g transform="translate(20,20)">
-      <rect width="360" height="340" rx="12" fill="#fbfbfa" stroke="#e3e2dd"/>
-      <circle cx="30" cy="30" r="13" fill="#37352f"/><text x="30" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">1</text>
-      <text x="52" y="35" class="s-lbl">三足吸附 · 起始位姿</text>
-      <g stroke-linecap="round">
-        <line x1="180" y1="138" x2="180" y2="88" stroke="#a5a29b" stroke-width="8"/>
-        <line x1="143.6" y1="201" x2="100.3" y2="226" stroke="#a5a29b" stroke-width="8"/>
-        <line x1="216.4" y1="201" x2="259.7" y2="226" stroke="#a5a29b" stroke-width="8"/>
-      </g>
-      <use href="#f6Feet"/>
-      <polygon points="180,138 143.6,201 216.4,201" fill="url(#f6Body)" stroke="#a5a29b" stroke-width="1.8"/>
-      <circle cx="180" cy="180" r="5" fill="none" stroke="#37352f" stroke-width="1.6"/>
-      <text x="180" y="300" text-anchor="middle" class="s-sub">三个推杆长度均为 L</text>
-      <text x="180" y="318" text-anchor="middle" class="s-sub">全部吸附 · n = 3</text>
-    </g>
-
-    <!-- ── 帧 2 ── -->
-    <g transform="translate(400,20)">
-      <rect width="360" height="340" rx="12" fill="#f2fbf9" stroke="#c7e8e2"/>
-      <circle cx="30" cy="30" r="13" fill="#37352f"/><text x="30" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">2</text>
-      <text x="52" y="35" class="s-lbl">推杆伸缩 · 机身移动</text>
-      <g stroke-linecap="round">
-        <line x1="202" y1="126" x2="180" y2="88" stroke="#a5a29b" stroke-width="8"/>
-        <line x1="165.6" y1="189" x2="100.3" y2="226" stroke="#a5a29b" stroke-width="8"/>
-        <line x1="238.4" y1="189" x2="259.7" y2="226" stroke="#a5a29b" stroke-width="8"/>
-      </g>
-      <use href="#f6Feet"/>
-      <polygon points="202,126 165.6,189 238.4,189" fill="url(#f6Body)" stroke="#a5a29b" stroke-width="1.8"/>
-      <circle cx="202" cy="168" r="5" fill="none" stroke="#37352f" stroke-width="1.6"/>
-      <line x1="162" y1="168" x2="202" y2="168" stroke="#14786e" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#f6Arr)"/>
-      <text x="180" y="300" text-anchor="middle" class="s-lbl" style="fill:var(--green-fg)">吸盘一步没动，机身动了</text>
-      <text x="180" y="318" text-anchor="middle" class="s-sub">仍然全部吸附 · n = 3</text>
-    </g>
-
-    <!-- ── 帧 3 ── -->
-    <g transform="translate(20,370)">
-      <rect width="360" height="340" rx="12" fill="#fdf6f3" stroke="#edcdc2"/>
-      <circle cx="30" cy="30" r="13" fill="#37352f"/><text x="30" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">3</text>
-      <text x="52" y="35" class="s-lbl">抬起 1 足 · 换步</text>
-      <g stroke-linecap="round">
-        <line x1="202" y1="126" x2="200" y2="108" stroke="#d9b3a4" stroke-width="8" stroke-dasharray="6 4"/>
-        <line x1="165.6" y1="189" x2="100.3" y2="226" stroke="#a5a29b" stroke-width="8"/>
-        <line x1="238.4" y1="189" x2="259.7" y2="226" stroke="#a5a29b" stroke-width="8"/>
-      </g>
-      <circle cx="100.3" cy="226" r="20" fill="url(#f6Cup)" stroke="#1d7a70" stroke-width="1.8"/>
-      <circle cx="100.3" cy="226" r="5.5" fill="#fff"/>
-      <circle cx="259.7" cy="226" r="20" fill="url(#f6Cup)" stroke="#1d7a70" stroke-width="1.8"/>
-      <circle cx="259.7" cy="226" r="5.5" fill="#fff"/>
-      <circle cx="200" cy="106" r="20" fill="none" stroke="#d9694a" stroke-width="2" stroke-dasharray="5 4"/>
-      <text x="214" y="102" class="s-w" font-size="11">已抬起</text>
-      <polygon points="202,126 165.6,189 238.4,189" fill="url(#f6Body)" stroke="#a5a29b" stroke-width="1.8"/>
-      <circle cx="202" cy="168" r="5" fill="none" stroke="#37352f" stroke-width="1.6"/>
-      <rect x="196" y="256" width="148" height="24" rx="6" fill="#fbe0d8" stroke="#e5a992"/>
-      <text x="270" y="273" text-anchor="middle" font-size="10.5" font-weight="700" fill="#b4522f">⚠ 两点支撑</text>
-      <text x="180" y="306" text-anchor="middle" class="s-sub">机身保持不动,只摆动这条腿</text>
-      <text x="180" y="324" text-anchor="middle" class="s-sub">n = 2 · 时间很短</text>
-    </g>
-
-    <!-- ── 帧 4 ── -->
-    <g transform="translate(400,370)">
-      <rect width="360" height="340" rx="12" fill="#f2fbf9" stroke="#c7e8e2"/>
-      <circle cx="30" cy="30" r="13" fill="#37352f"/><text x="30" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">4</text>
-      <text x="52" y="35" class="s-lbl">落到新位置 · 恢复三足</text>
-      <g stroke-linecap="round">
-        <line x1="202" y1="126" x2="206" y2="72" stroke="#a5a29b" stroke-width="8"/>
-        <line x1="165.6" y1="189" x2="100.3" y2="226" stroke="#a5a29b" stroke-width="8"/>
-        <line x1="238.4" y1="189" x2="259.7" y2="226" stroke="#a5a29b" stroke-width="8"/>
-      </g>
-      <circle cx="100.3" cy="226" r="20" fill="url(#f6Cup)" stroke="#1d7a70" stroke-width="1.8"/>
-      <circle cx="100.3" cy="226" r="5.5" fill="#fff"/>
-      <circle cx="259.7" cy="226" r="20" fill="url(#f6Cup)" stroke="#1d7a70" stroke-width="1.8"/>
-      <circle cx="259.7" cy="226" r="5.5" fill="#fff"/>
-      <circle cx="206" cy="70" r="20" fill="url(#f6Cup)" stroke="#1d7a70" stroke-width="1.8"/>
-      <circle cx="206" cy="70" r="5.5" fill="#fff"/>
-      <polygon points="202,126 165.6,189 238.4,189" fill="url(#f6Body)" stroke="#a5a29b" stroke-width="1.8"/>
-      <circle cx="202" cy="168" r="5" fill="none" stroke="#37352f" stroke-width="1.6"/>
-      <text x="180" y="300" text-anchor="middle" class="s-lbl" style="fill:var(--green-fg)">回到 n = 3，可继续推进</text>
-      <text x="180" y="318" text-anchor="middle" class="s-sub">重复 2→3→4 即可连续行进</text>
-    </g>
-  </svg>
-
-  <div class="formula">
-    <b>为什么吸盘可以"转"</b><br>
-    唇边是<b>轴对称</b>的。吸盘绕自身轴线转动时，密封线（那个圆）在壁面上的位置根本不移动，
-    只是唇边材料在<b>周向</b>上滑移 —— 所以密封不破。
-    <br>这就是"吸附着的足还能提供旋转自由度"的物理依据，也是三足机构能成立的前提。
+  <div class="formula w">
+    <b>★ 初稿的一个几何错误：三条腿不能汇交于一点</b><br>
+    初稿把<b>机身铰点放在与吸盘相同的角度上</b>（图里的黄虚线圆若与绿虚线圆同角度），
+    也就是三根推杆都<b>指向圆心</b>。这个布局恰好是 3-RPR 的<b>奇异位形</b>。<br>
+    <b>为什么：</b>设机身绕中心转 <code>Δφ</code>，铰点沿<b>切向</b>移动 <code>r·Δφ</code>。
+    推杆是径向的，切向位移与杆轴<b>垂直</b> —— 一阶上完全不改变杆长。
+    数值上，<code>R_t = 100</code>、<code>r = 50</code> 时雅可比行列式 <b>恒等于 0</b>（与 r 取多少无关）。<br>
+    <b>后果有两层，都不能接受：</b><br>
+    · <b>转动不受控</b> —— 机身沿转角方向没有约束刚度，任何残余力矩都能让它自由转；<br>
+    · <b>误差放大约 10 倍</b> —— 转 5.7° 只需要 0.5 mm 的杆长变化，
+    反过来说 <b>0.5 mm 的丝杆回差就能让机身姿态歪掉 5.7°</b>。<br>
+    <b>修法：把机身的三个铰点圆相对吸盘圆整体转 60°</b>（图里的黄虚线）。
+    这时转动变成<b>一阶可控</b>，而且极其干净：<b>转 Δφ，杆 a · b · c 等量变化
+    <code>ΔL = r · Δφ</code></b>（正负号取决于把哪个方向定为 +φ）。<br>
+    <b>系数正好等于 <code>r</code>，不是近似</b>：杆长是
+    <code>L(Δφ) = √(R_t² + r² − 2·R_t·r·cos(60° + Δφ))</code>，
+    求导得 <code>dL/dΔφ = R_t·r·sin60° / L₀ = 100 × 50 × 0.866 / 86.603 = 50.000 = r</code>。
+    这个「正好」来自本设计取的 <code>R_t = 2r</code>。第 7 节的转向公式就是这个式子。
     <br><span style="color:var(--ink-3);font-size:12.5px">
-    代价：需要扭矩 <code>τ ≈ μ·F_vac·R</code> 来克服唇边摩擦（∅25 吸盘约 0.12 N·m），而且会磨损唇边。
-    所以转向和三足运动都应该用<b>低摩擦唇边</b>，并且把转动分散到三只足上，别让一只一直转。</span>
+    偏角不是随便取的。每个偏角对应一个<b>力矩臂</b>：从机身中心到某条腿的延长线的垂距是
+    <code>d = R_t·r·sinβ / L</code>。这条线一定穿过半径 <code>r</code> 的铰点，所以 <code>d ≤ r</code> 恒成立，
+    而<b>上限 <code>d = r</code> 恰好在 <code>β = arccos(r/R_t)</code> 取到</b> ——
+    此时三根杆的延长线都<b>与铰点圆相切</b>，转动的力臂最大。
+    本设计取了 <code>R_t = 2r</code>，所以这个角度<b>正好是 60°</b>（与上面 <code>dL/dΔφ = r</code> 是同一件事）。
+    <code>β = 0°</code> 和 <code>β = 180°</code> 时 <code>d = 0</code>，三条线汇交于圆心 —— <b>这就是奇异</b>。<br>
+    换个口径扫一遍 0–360°，把雅可比的三行<b>按单位方向向量归一化</b>后取行列式：
+    <code>0° → 0</code>（奇异）、<code>15° → 63.1</code>、<code>30° → 104.8</code>、
+    <code>45° → 124.7</code>、<b><code>60° → 129.9</code></b>、<code>75° → 126.0</code>、
+    <code>90° → 116.2</code>、<code>105° → 102.2</code>、<code>120° → 85.0</code>、
+    <code>150° → 44.7</code>、<code>180° → 0</code>（奇异），300° 与 60° 同为最大。<br>
+    <b>行列式的数值依赖归一口径</b>（不归一化、直接拿杆向量当行，极值会挪到 120°），
+    <b>但零点与口径无关 —— 奇异的只有 0° 和 180°</b>。本设计取 <b>60°</b>。<br>
+    这一条<b>不改变机构的任何其它结论</b>：仍然是 3 个电机对 3 个自由度，
+    仍然 n ≥ 2，步距也仍然是行程的约 0.58 倍。</span>
   </div>
-
-  <table>
-    <thead><tr><th>吸附的足数 n</th><th>机身自由度</th><th>能做什么</th><th>控制规则</th></tr></thead>
-    <tbody>
-      <tr class="hl"><td><b>n = 3</b>（工作相，约 80% 时间）</td><td>3（x, y, φ 全可控）</td>
-          <td>3 个推杆电机协同 → 机身平滑走任意平面轨迹</td><td>正常驱动，走清扫路径</td></tr>
-      <tr><td><b>n = 2</b>（换步相，约 20% 时间）</td><td>理论上仍有 3，但只有 2 个推杆在线</td>
-          <td>机身保持不动，只把抬起的那条腿摆到新位置</td><td>禁止移动机身，只动抬起的腿</td></tr>
-      <tr class="bad"><td><b>n ≤ 1</b></td><td>不可控</td><td>—</td><td><b>硬互锁禁止</b>，电气层实现</td></tr>
-    </tbody>
-  </table>
 
   <div class="formula">
-    <b>这正好满足你说的"运行时一定要有 n 个角吸附"</b><br>
-    <b>n ≥ 2 是硬约束，且 80% 的时间 n = 3。</b>整个方案里<b>不存在单点支撑阶段</b> ——
-    这是三足相对于双足尺蠖最大的价值（双足方案每次换步都必须单点支撑 1–2 秒）。
-    <br>电机总数：<b>3 个推杆电机 + 3 个吸附电机 = 6 个</b>。
+    <b>自由度的账：为什么三个推杆就够</b><br>
+    平面机构一共 3 个自由度 <code>(x, y, φ)</code>。三只吸盘吸住之后，<b>它们各自被壁面锁死
+    —— 连自转都被唇边摩擦锁住</b>，三个"脚"贡献 0 个自由度；机身相对壁面还剩 3 个。
+    三条腿各给一个约束（长度），于是 <code>3 约束 = 3 自由度</code>，<b>不多不少，一个电机管一个自由度。</b>
+    <br><span style="color:var(--ink-3);font-size:12.5px">
+    <b>这里推翻了初稿的一个前提。</b>初稿（双足方案）靠"吸盘能绕自身轴自由转"来获得旋转自由度，
+    为此要处理回转供电、要付出 <code>τ ≈ μ·F_vac·R ≈ 0.12 N·m</code> 的唇边摩擦扭矩，
+    还要承受唇边的周向磨损。<b>三足方案里这三件事一起消失了</b> ——
+    吸盘不需要转，只需要被压住，旋转自由度由推杆的差动提供（见第 7 节）。</span>
   </div>
+
+
+
+
 
   <div class="formula w">
     <b>三个必须注意的机构问题</b><br>
-    <b>① 奇异位形。</b>三条推杆共线或接近共线时，机构会失去一个方向的控制能力（雅可比降秩）。
-    布局上避免三足呈细长三角形，尽量接近等边；控制上避开推杆长度接近极值的区段，
+    <b>① 奇异位形。</b>3-RPR 的奇异条件是<b>三条腿的延长线汇交于一点或互相平行</b> ——
+    注意不是"共线"。汇交这一条在初稿里踩到了，修法见上一个红框。
+    除此之外还要：布局上避免三足呈细长三角形，尽量接近等边；控制上避开推杆长度接近极值的区段，
     感觉快"顶死"了就换步。<br>
     <b>② 推杆只能推不能拉？</b>不行。机身重心离壁，总有力矩要抵抗，推杆必须能<b>双向承载</b>。
     丝杆天然双向，但要注意细长推杆的<b>压杆失稳</b>——行程 30 mm 的 ∅4 推杆问题不大，更长就要加粗或改结构。<br>
-    <b>③ 足端铰链的布置。</b>吸盘必须能绕自身轴自由转，所以它的安装座要在轴承上，
-    整个吸附单元（含电机）跟着转。这需要处理供电 —— 用<b>柔性线缆留一个回转圈</b>即可，行程小，不必上滑环。
+    <b>③ 吸盘不自转，所以足端最省事。</b>吸盘被永久压死在壁面上，<b>它的安装座是刚性的，
+    不装在轴承上，吸附单元（含电机、含丝杆）跟着机身走但不绕自己的轴转</b> ——
+    于是没有回转供电问题，不需要滑环，也不需要留柔性线缆的回转圈。
+    推杆两端才是铰链：壁面端的铰链轴线<b>垂直于玻璃</b>，机身上的同理；两处都只是让推杆"摆"一下，
+    摆角范围按第 7 节的最大 φ 加 20° 余量选，<b>普通球头或销轴铰链就够，不是精密件</b>。
   </div>
 </div>
 
@@ -922,70 +977,86 @@
 
 <!-- ══════ 图 7 转向 ══════ -->
 <div class="card">
-  <h2 id="s7"><span class="n">7</span>转向机构与转向步态</h2>
-  <p class="cap">关键几何条件：回转轴必须穿过吸盘接触面中心。这样绕轴转动时唇边只做周向滑移、不产生剥离，密封得以保持。</p>
+  <h2 id="s7"><span class="n">7</span>转向 — 差动即可，不需要任何额外机构</h2>
+  <p class="cap">
+    双足方案需要一套<b>绕吸盘轴回转的关节</b>，还要处理它的驱动、供电和唇边磨损。
+    三足方案把这一整套机构省掉了：<b>让三个推杆走一段"旋转"的逆解，机身就在原地转。</b>
+  </p>
 
-  <div class="figrow">
-  <svg viewBox="0 0 620 380" role="img" aria-label="转向步态三步骤">
+  <svg viewBox="0 0 620 360" role="img" aria-label="三足差动转向" style="width:100%;height:auto">
     <defs>
-      <marker id="m4Arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <linearGradient id="m7Body" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#e9e7e2"/><stop offset="1" stop-color="#c9c6be"/>
+      </linearGradient>
+      <linearGradient id="m7Cup" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#2c7d75"/><stop offset=".45" stop-color="#4fb3a6"/><stop offset="1" stop-color="#276f68"/>
+      </linearGradient>
+      <marker id="m7Arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto">
         <path d="M0,0 L10,5 L0,10 z" fill="#d9694a"/>
       </marker>
     </defs>
 
-    <!-- 步骤 1 -->
-    <g transform="translate(0,0)">
-      <rect x="14" y="14" width="184" height="250" rx="11" fill="#fbfbfa" stroke="#e3e2dd"/>
-      <text x="30" y="40" font-size="12" font-weight="700" fill="#6b6862">① 双足吸附</text>
-      <line x1="106" y1="72" x2="106" y2="212" stroke="#c6d0d9" stroke-width="2.5" stroke-dasharray="5 5"/>
-      <rect x="78" y="122" width="56" height="42" rx="8" fill="#dfe6ee" stroke="#a5a29b" stroke-width="1.4"/>
-      <circle cx="106" cy="72" r="14" fill="#2f9d90" stroke="#1d7a70" stroke-width="1.8"/>
-      <circle cx="106" cy="72" r="3" fill="#fff"/>
-      <circle cx="106" cy="212" r="14" fill="#2f9d90" stroke="#1d7a70" stroke-width="1.8"/>
-      <circle cx="106" cy="212" r="3" fill="#fff"/>
-      <text x="106" y="248" text-anchor="middle" class="s-sub">机身轴向 = φ</text>
+    <!-- 转动前的机身位置（幽灵） -->
+    <polygon points="193.3,155.0 150.0,230.0 106.7,155.0" fill="none" stroke="#9fb0bd" stroke-width="1.8" stroke-dasharray="6 4"/>
+    <g fill="none" stroke="#9fb0bd" stroke-width="1.4">
+      <circle cx="193.3" cy="155.0" r="3.5"/><circle cx="150.0" cy="230.0" r="3.5"/><circle cx="106.7" cy="155.0" r="3.5"/>
     </g>
 
-    <!-- 步骤 2 -->
-    <g transform="translate(214,0)">
-      <rect x="14" y="14" width="184" height="250" rx="11" fill="#f2fbf9" stroke="#c7e8e2"/>
-      <text x="30" y="40" font-size="12" font-weight="700" fill="#14786e">② 释放 B，绕 A 轴转 Δθ</text>
-      <circle cx="106" cy="72" r="14" fill="#2f9d90" stroke="#1d7a70" stroke-width="1.8"/>
-      <circle cx="106" cy="72" r="3" fill="#fff"/>
-      <circle cx="106" cy="72" r="22" fill="none" stroke="#14786e" stroke-width="1.3" stroke-dasharray="3 3"/>
-      <g transform="rotate(32 106 72)">
-        <rect x="78" y="122" width="56" height="42" rx="8" fill="#dfe6ee" stroke="#a5a29b" stroke-width="1.4"/>
-        <circle cx="106" cy="212" r="14" fill="none" stroke="#b6c1cc" stroke-width="1.8" stroke-dasharray="4 4"/>
-      </g>
-      <path d="M140,50 A 46 46 0 0 1 132,102" fill="none" stroke="#d9694a" stroke-width="2.2" marker-end="url(#m4Arr)"/>
-      <text x="150" y="80" font-size="11" font-weight="700" fill="#b4522f">Δθ</text>
-      <text x="106" y="248" text-anchor="middle" class="s-sub">轴线穿过 A 的接触中心</text>
+    <!-- 推杆 -->
+    <g stroke-linecap="round">
+      <line x1="157.9" y1="100.0" x2="200.0" y2="180.0" stroke="#a5a29b" stroke-width="9"/>
+      <line x1="76.8" y1="213.1" x2="125.0" y2="136.7" stroke="#a5a29b" stroke-width="9"/>
+      <line x1="215.3" y1="226.8" x2="125.0" y2="223.3" stroke="#a5a29b" stroke-width="9"/>
     </g>
 
-    <!-- 步骤 3 -->
-    <g transform="translate(428,0)">
-      <rect x="14" y="14" width="178" height="250" rx="11" fill="#f2fbf9" stroke="#c7e8e2"/>
-      <text x="30" y="40" font-size="12" font-weight="700" fill="#14786e">③ B 吸附，机身已转 Δθ</text>
-      <g transform="rotate(32 103 72)">
-        <rect x="75" y="122" width="56" height="42" rx="8" fill="#dfe6ee" stroke="#a5a29b" stroke-width="1.4"/>
-        <circle cx="103" cy="212" r="14" fill="#2f9d90" stroke="#1d7a70" stroke-width="1.8"/>
-        <circle cx="103" cy="212" r="3" fill="#fff"/>
-      </g>
-      <circle cx="103" cy="72" r="14" fill="#2f9d90" stroke="#1d7a70" stroke-width="1.8"/>
-      <circle cx="103" cy="72" r="3" fill="#fff"/>
-      <text x="103" y="248" text-anchor="middle" class="s-sub">下一轮绕 B 轴同向转 → 累积</text>
+    <!-- 转动后的机身 -->
+    <polygon points="200.0,180.0 125.0,223.3 125.0,136.7" fill="url(#m7Body)" stroke="#a5a29b" stroke-width="1.8"/>
+    <g fill="#c08a2e" stroke="#8a6010" stroke-width="1">
+      <circle cx="200.0" cy="180.0" r="4.5"/>
+      <circle cx="125.0" cy="223.3" r="4.5"/>
+      <circle cx="125.0" cy="136.7" r="4.5"/>
     </g>
+
+    <!-- 三只吸盘：转动前后位置完全相同 -->
+    <circle cx="150.0" cy="85.0" r="17" fill="url(#m7Cup)" stroke="#1d7a70" stroke-width="1.7"/>
+    <circle cx="150.0" cy="85.0" r="4.5" fill="#fff"/>
+    <circle cx="67.7" cy="227.5" r="17" fill="url(#m7Cup)" stroke="#1d7a70" stroke-width="1.7"/>
+    <circle cx="67.7" cy="227.5" r="4.5" fill="#fff"/>
+    <circle cx="232.3" cy="227.5" r="17" fill="url(#m7Cup)" stroke="#1d7a70" stroke-width="1.7"/>
+    <circle cx="232.3" cy="227.5" r="4.5" fill="#fff"/>
+
+    <!-- 转角 φ -->
+    <circle cx="150" cy="180" r="4" fill="none" stroke="#37352f" stroke-width="1.5"/>
+    <line x1="193.3" y1="155.0" x2="210.6" y2="145.0" stroke="#9fb0bd" stroke-width="1.4" stroke-dasharray="4 4"/>
+    <path d="M210.6,145.0 A 70 70 0 0 1 220.0,180.0" fill="none" stroke="#d9694a" stroke-width="2.2" marker-end="url(#m7Arr)"/>
+    <text x="230.0" y="186.0" font-size="13" font-weight="700" fill="#b4522f">φ</text>
+
+    <text x="150" y="272" text-anchor="middle" class="s-sub">三只吸盘在转动前后位置完全不变</text>
+    <text x="150" y="292" text-anchor="middle" class="s-lbl" style="fill:var(--green-fg)">杆 a · b · c 等量伸长，机身就转了</text>
+    <text x="150" y="320" text-anchor="middle" class="s-sub" style="fill:#9a6d18">灰虚线 = 转动前的位置</text>
   </svg>
 
   <div class="legend">
     <ul>
-      <li><b>为什么能累积转向</b><span>每完成一次"绕 A 转 Δθ → B 落 → 绕 B 转 Δθ → A 落"，机身净转 2Δθ。两次回转必须同向，否则会互相抵消。</span></li>
-      <li><b>回转驱动力矩</b><span>唇边在真空下被压紧，转动需要克服摩擦扭矩 <code>τ ≈ μ·F_vac·R</code>。∅25 吸盘、−25 kPa、μ=0.4 时 τ ≈ 0.12 N·m，需要减速比 ≥ 50 的微型减速电机（如 ∅10 空心杯 + 行星减速）。</span></li>
-      <li><b>唇边磨损</b><span>转向时唇边做周向滑移，是最主要的磨损来源。建议唇边外缘做一圈低摩擦涂层，或把转向限制在清洁路径的端点（每次作业只转几十次）。</span></li>
-      <li><b>清扫路径</b><span>弓字形（boustrophedon）。竖直来回清扫，到边界原地转 90° 横向平移一个刷宽，再反向。600×400 缸壁约需 4 趟竖直 + 3 次横移。</span></li>
-      <li><b>更省事的替代方案</b><span>如果不想做回转关节，可以让滑轨方向在安装时决定：机器人只做竖直爬升／下降，横向移动靠手动重新吸附。适合第一版验证机。</span></li>
+      <li><b>为什么不需要回转关节</b><span>机身的转动是相对<b>推杆两端的铰链</b>发生的，不是相对吸盘轴线。吸盘从头到尾只是被压在那里，<b>既不平移也不自转</b>。</span></li>
+      <li><b>代价在铰链上</b><span>推杆两端的铰链要能吸收这个转角，摆角范围按最大 φ 再加 20° 余量选。<b>普通球头或销轴铰链就够</b>，不是精密件。</span></li>
+      <li><b>唇边因此不磨损</b><span>双足方案的唇边磨损主要来自转向时的周向滑移。三足方案里这个动作消失了 —— <b>唇边只在换步时被压紧、松开，不做切向滑移。</b></span></li>
     </ul>
   </div>
+
+  <div class="formula w">
+    <b>行程是有限的，所以 φ 不能无限累积 —— 这是三足方案唯一的新约束</b><br>
+    机身转 Δφ 时，杆 a · b · c<b>等量</b>变化 <code>ΔL = r · Δφ</code>（<code>r</code> = 机身铰点分布半径 = 50 mm）。
+    <b>这个式子只在第 5 节那个"错开 60°"的布置下成立</b> —— 径向布置时等号右边一阶为零，
+    根本转不动。系数正好等于 <code>r</code> 也来自那个错开，见第 5 节的推导。
+    代入 <code>r = 50 mm</code>、行程 <code>±15 mm</code>（从中位算）：
+    <br><code>Δφ_max = 15 / 50 = 0.3 rad ≈ ±17°</code>
+    <br><b>所以每转十几度就必须"归零"一次</b>：在换步相里把三只脚重新落位，
+    让三根推杆回到中位，然后再继续转。<b>归零的动作就是普通的换步，不额外花时间。</b>
+    <br><span style="color:var(--ink-3);font-size:12.5px">
+    换句话说：<b>想转 90°，不是一口气转 90°，而是分 6 次、每次转 15° 再归零。</b>
+    弓字形清扫路径需要 3 次横移，也就是 3 次 90° 转向 —— 合计 18 次换步归零，
+    相对每次作业 40–60 次的换步总量，占比很小。</span>
   </div>
 </div>
 
@@ -1003,13 +1074,16 @@
         <td>A · 双足尺蠖（最简）</td><td>1 直线</td><td>3</td><td>单点 ✗</td><td>不能</td>
         <td>结构最简但危险。仅当吸盘 ≥∅25 <b>且</b>中性浮力时才可行。</td>
       </tr>
-      <tr class="hl">
-        <td>B · 双足尺蠖 + 回转关节<br><b>（推荐首选）</b></td><td>1 直线 + 1 回转</td><td>5</td><td>单点 △</td><td>能</td>
-        <td>用最小复杂度换到完整平面作业能力。前提是配重做到近中性浮力 + 吸盘 ≥∅20。</td>
+      <tr class="bad">
+        <td>B · 双足尺蠖 + 回转关节</td><td>1 直线 + 1 回转</td><td>5</td><td>单点 △</td><td>能</td>
+        <td>能用最小复杂度换到完整平面作业能力，<b>但换步时仍然要单点支撑 1–2 秒</b>。
+          这就是它输给方案 C 的唯一原因，也是决定性原因。</td>
       </tr>
       <tr class="hl">
-        <td>C · 三足三角步态</td><td>3 径向（120° 分布）</td><td>6</td><td><b>永远两点 ✓</b></td><td>能（差动，无需回转关节）</td>
-        <td><b>倾覆安全系数 19.6（∅15 吸盘）</b>，比双足高一个数量级，而且吸盘、膜片、电机、丝杆全部可以小一号。三足构型还顺带约束了绕支撑线的滚动自由度。代价是 3 套吸附单元 + 三足协调控制。</td>
+        <td><b>C · 三足 3-RPR 并联平台</b><br><b>（已选定）</b></td><td>3 推杆<br>（铰点圆错开 60°）</td><td>6</td><td><b>永远两点 ✓</b></td><td>能（差动，无需回转关节）</td>
+        <td><b>不存在单点支撑相</b>，n ≥ 2 是硬约束、80% 时间 n = 3。三根推杆的长度还直接给出运动学正解 (x, y, φ)，
+          让位置推算从积分漂移变成有界误差。代价是 3 套吸附单元 + 三足协调控制，<b>这笔账划得来</b>。
+          <br><b>注意：腿不能径向布置</b>，机身铰点必须与吸盘错开 60°，否则雅可比奇异、转不动（第 5 节）。</td>
       </tr>
       <tr class="bad">
         <td>D · 真空履带</td><td>连续</td><td>2</td><td>连续 ✓</td><td>靠差速</td>
@@ -1113,21 +1187,23 @@
 <!-- ══════ 表：性能估算 ══════ -->
 <div class="card">
   <h2 id="s9"><span class="n">9</span>运动性能估算</h2>
-  <p class="cap">步进式机构的速度上限就是"步距 ÷ 单步周期"，没办法靠加大电机功率突破。这是方案 A/B 的固有代价。</p>
+  <p class="cap">步进式机构的速度上限就是"步距 ÷ 单步周期"，没办法靠加大电机功率突破。这是并联步进方案的固有代价，三足也不例外 —— 三足买到的是稳定性和转向能力，不是速度。</p>
 
   <table>
     <thead><tr><th>参数</th><th>保守值</th><th>优化值</th><th>说明</th></tr></thead>
     <tbody>
-      <tr><td>步距 d</td><td>10 mm</td><td>20 mm</td><td>受滑轨长度和机身尺寸限制</td></tr>
+      <tr><td>推杆行程</td><td>20 mm</td><td>40 mm</td><td>受压杆稳定性和机身尺寸限制</td></tr>
+      <tr><td>步距 d</td><td>12 mm</td><td>23 mm</td><td><code>≈ 行程 / √3</code>，见第 2 节</td></tr>
       <tr><td>释放吸盘</td><td>0.5 s</td><td>0.25 s</td><td>电机反转推开薄膜，卸掉真空</td></tr>
-      <tr><td>抬起 + 平移</td><td>0.8 s</td><td>0.4 s</td><td>丝杆导程决定，可换大导程加速</td></tr>
+      <tr><td>抬起 + 摆腿</td><td>0.8 s</td><td>0.4 s</td><td>丝杆导程决定，可换大导程加速</td></tr>
       <tr><td>落下 + 吸附</td><td>0.8 s</td><td>0.4 s</td><td>需等真空建立到 −20 kPa 以上</td></tr>
-      <tr><td>稳定 / 确认</td><td>0.4 s</td><td>0.2 s</td><td>电流检测确认吸附成功</td></tr>
+      <tr><td>稳定 / 确认</td><td>0.4 s</td><td>0.2 s</td>
+        <td><b>真空开关确认吸附成功</b>；电流只确认膜片行程到底（见下）</td></tr>
       <tr class="hl"><td><b>单步周期</b></td><td><b>2.5 s</b></td><td><b>1.25 s</b></td><td>一个完整循环 = 2 个半步</td></tr>
       <tr class="hl"><td><b>行走速度</b></td><td><b>8 mm/s</b></td><td><b>32 mm/s</b></td><td>机身净前进速度</td></tr>
       <tr><td>竖直一趟 400 mm</td><td>50 s</td><td>13 s</td><td>—</td></tr>
       <tr><td>600×400 全壁清扫</td><td>≈ 5 min</td><td>≈ 1.5 min</td><td>4 趟竖直 + 3 次横移转向</td></tr>
-      <tr><td>转 90°</td><td>≈ 18 s</td><td>≈ 6 s</td><td>每步 Δθ≈10°，需 9 步</td></tr>
+      <tr><td>转 90°</td><td>≈ 15 s</td><td>≈ 8 s</td><td>分 6 次转，每次 Δφ≈15° 后靠一次换步归零（第 7 节）</td></tr>
     </tbody>
   </table>
 
@@ -1135,6 +1211,17 @@
     <b>速度不是关键指标</b><br>
     无人值守的清洁机器人 5 分钟扫完一缸完全可接受。真正决定成败的是<b>不掉下来</b>。
     如果发现速度不够，优先加大步距 d，而不是缩短吸附确认时间 —— 后者会显著提高脱落概率。
+  </div>
+
+  <div class="formula w">
+    <b>两个关于「确认」的更正</b><br>
+    <b>一、电流检测确认不了吸附。</b>上表原来写「电流检测确认吸附成功」，这句不成立。
+    电流抬升只说明<b>膜片走到了行程末端</b>，它完全不说明唇边有没有贴合 ——
+    <b>一个漏气的吸盘和一个好吸盘产生同样的电流波形。</b>
+    确认吸附只有<b>机械真空开关</b>能做，而那个开关本来就是第 10 节⑤ 要求的互锁必需件。
+    <br><b>二、编码器不会让这一行变快。</b>上表的确认时间是被「真空建立到 −20 kPa」限制的
+    <b>流体时间</b>，不是位置时间。给推杆加角度传感器买到的是精度与复位可恢复性，
+    <b>一秒都省不下来</b>。详见 <a href="ctrl.html">主控与传感器设计</a> 第 3 节 D。
   </div>
 </div>
 
@@ -1166,31 +1253,60 @@
       <br><b>对策优先级：</b>一对反向旋转的刷辊（力矩自抵消）&gt; 把刷辊装在两吸盘连线的中点 &gt; 降低刷丝压力 &gt; 用固定刮条替代旋转刷。
       <br>另外：<b>刷辊必须在吸盘吸附确认之后才能启动</b>，换步过程中要停转。控制时序里这是硬约束。</li>
 
-    <li><b>④ 回转轴必须穿过吸盘接触中心。</b>
-      <br>这是转向机构唯一的几何要求，也是最容易做错的地方。轴线一偏，转动就会带着吸盘横向拖拽，
-      唇边立刻剥离。装配时用一个穿过吸盘中心的销轴定位即可保证。
-      <br>另外，转向只能安排在<b>两只吸盘都确认吸附</b>的时刻开始，且转动过程中被抬起的那只必须完全离开壁面。</li>
+    <li><b>④ 推杆的铰链轴线必须垂直于玻璃，且穿过吸盘接触中心。</b>
+      <br>这是三足机构唯一的几何要求，也是最容易做错的地方。铰链轴线一偏，推杆伸缩就会带着吸盘横向拖拽或者顶出剥离力，
+      唇边立刻漏气。<b>装配时用一个从上往下穿过吸盘中心的定位销装铰链座即可保证。</b>
+      <br>另外，<b>机身转动（φ）只能安排在 n = 3 的时刻做</b>，而且受行程限制 ——
+      见第 7 节的 <code>Δφ_max ≈ ±17°</code>，转十几度就要靠一次普通换步把推杆归零。</li>
 
-    <li><b>⑤ 控制逻辑里必须有"至少一只吸附"的硬互锁。</b>
-      <br>软件层：释放 B 之前先确认 A 的吸附电流已经稳定；任何一次吸附确认超时，立即停止步态并保持原位。
-      <br>硬件层：更保险的做法是给两只吸盘各加一个微型真空开关（几块钱的机械式负压开关即可），
-      直接串在对方的释放回路里 —— <b>纯电气互锁，软件挂了也不会两只同时松开。</b></li>
+    <li><b>⑤ 控制逻辑里必须有"至少两只吸附"的硬互锁。</b>
+      <br>软件层：释放任何一只之前，先确认<b>另外两只</b>的吸附状态稳定；
+      任何一次吸附确认超时，立即停止步态并保持原位。
+      <br>硬件层：给<b>三只吸盘各加一个微型真空开关</b>（几块钱的机械式负压开关即可）。
+      三足方案的不变量是 <b>n ≥ 2</b>，所以<b>释放 A 要被「B 与 C 都吸着」门控</b> ——
+      每只开关的触点要用在两处（<b>DPST</b>），或者加一片 CD4081 与门（关断时零功耗）。
+      <br><b>要写清楚它防的是什么：</b>它防的是<b>连锁失效</b> —— 已经丢了一只，还去放第二只。
+      <b>它不保证释放命令互斥</b>：A、B 此刻都吸着的时候，两个门都满足，
+      软件仍然可以一次性放掉两只。<b>互斥是软件层的责任，硬件只兜住最坏的那一步。</b></li>
 
     <li><b>⑥ 保留系绳，并且定期检修唇边。</b>
-      <br>双吸盘同时失效时，机器人会掉进缸里或者被水流冲走。系绳兼作供电和通讯，
+      <br><b>两只以上吸盘同时失效时</b>，机器人会掉进缸里或者被水流冲走。系绳兼作供电和通讯，
       是成本最低的防坠手段。如果一定要无线，至少在机身里加一个小的浮力块，让它失效后能浮到水面便于打捞。
-      <br>唇边是消耗件。转向的周向滑移 + 玻璃上的细微划痕会持续磨损它，
-      建议把唇边做成可拆卸的卡扣式，方便定期更换。</li>
+      <br>唇边的磨损来源在<b>三足方案里已经换了一个</b>：转向的周向滑移没有了，
+      剩下的只是<b>每次换步压紧／松开的那一下</b>，加上玻璃上的细微划痕。
+      按每天 3 次作业、每次 40–60 次换步算，一天不到 200 次压合 —— 比双足方案的磨损条件轻，
+      但<b>唇边仍然是消耗件</b>，做成可拆卸的卡扣式，方便定期更换。</li>
 
     <li><b>⑦ 玻璃拐角处不要贴边作业。</b>
       <br>鱼缸的竖直棱边有圆角，曲率会破坏唇边的线接触密封。控制上给壁面四周留 30–40 mm 的安全边距，
       刷辊也相应地不要伸到边缘。<b>这一步同时还能避免刷辊把缸角的硅胶密封胶刮坏。</b></li>
+
+    <li class="w"><b>⑧ 三个推杆电机要带磁角度传感器（AS5600 级）。</b>
+      <br>三足 3-RPR 有一个白拿的性质：三只吸盘都吸住时，<b>三根推杆的长度唯一确定机身位姿
+      <code>(x, y, φ)</code></b> —— 这是运动学正解，不是积分。
+      加上反馈之后，位置误差从「陀螺零偏积分」（随时间累积、几十毫米、无上界）
+      变成「标定系数 + 丝杆回差」（<b>有界</b>、10 mm 级、不随运行时间增长）。
+      <br>三条真正的理由，按重要性：<b>① ±5 mm 的对接伺服在开环下根本不可能实现</b>
+      （有刷直流电机没有「步距」这个概念）；<b>② 看门狗复位后腿的位置未知</b>，
+      没有限位开关可以回零，没有编码器这个步态无法恢复；
+      <b>③ 正解给出的 φ 和加速度计给出的绝对 φ 之差就是吸盘滑移探测器</b> ——
+      唇边滑移 1 mm 只有 0.57°，而 1 mg 的加速度计分辨率是 0.06°，信噪比接近 10。
+      <b>而「吸盘缓慢爬移」正是第 4 节说「否则看不见」的那个失效。</b>
+      <br><b>再强调一次：这是精度与可恢复性收益，不是速度收益。</b>
+      <br>接口细节（地址冲突、I2C mux）见 <a href="ctrl.html">主控与传感器设计</a> 第 3 节 D。</li>
+
+    <li class="w"><b>⑨ 推杆电机的扭矩需求还没有推导过 —— 选型前必须补。</b>
+      <br>本文档给了吸附电机 1.25 mN·m 的完整推导（见 ②-b），
+      但推杆电机只有一句「峰值 2.0 W」，<b>没有力、没有导程、没有效率</b>。
+      而它的功耗是吸附电机的三倍。
+      <br>这个推导会直接决定三件事：电机要不要减速箱、丝杆导程取多少、
+      以及<b>「推杆电机与吸附电机统一型号」这条备件通用性还成不成立</b>。</li>
   </ul>
 </div>
 
 <footer>
   运动单元设计示意 · 非工程图纸 · 数值为量级估算，需实测标定<br>
-  配套文档：<a href="suction.html">吸附单元设计</a> · <a href="work.html">作业机构设计</a>
+  配套文档：<a href="suction.html">吸附单元设计</a> · <a href="work.html">作业机构设计</a> · <a href="body.html">主体设计</a> · <a href="dock.html">充电坞站设计</a> · <a href="ctrl.html">主控与传感器设计</a>
 </footer>
 </div>
 </main>

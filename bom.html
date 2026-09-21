@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>鱼缸壁面清洁机器人 — Demo 样机物料清单</title>
+<link rel="stylesheet" href="assets/notion.css">
+</head>
+<body>
+<nav class="side" id="side">
+  <div class="side-doc"><span class="side-icon">🧾</span><span class="side-name">物料清单</span></div>
+  <div class="side-label">目录</div>
+  <ul class="side-list">
+    <li><a href="#s1" title="1 · 采购分四批，上一批没过就不下下一批">1 · 采购分四批，上一批没过就不下下一批</a></li>
+    <li><a href="#s2" title="2 · 先跑四个实验 —— 再下整机的单">2 · 先跑四个实验 —— 再下整机的单</a></li>
+    <li><a href="#s3" title="3 · 吸附单元（×3）">3 · 吸附单元（×3）</a></li>
+    <li><a href="#s4" title="4 · 运动单元">4 · 运动单元</a></li>
+    <li><a href="#s5" title="5 · 作业机构">5 · 作业机构</a></li>
+    <li><a href="#s6" title="6 · 主体与密封">6 · 主体与密封</a></li>
+    <li><a href="#s7" title="7 · 坞站（缸外，不入水）">7 · 坞站（缸外，不入水）</a></li>
+    <li><a href="#s8" title="8 · 主控 · 驱动 · 传感器">8 · 主控 · 驱动 · 传感器</a></li>
+    <li><a href="#s9" title="9 · 3D 打印件清单">9 · 3D 打印件清单</a></li>
+    <li><a href="#s10" title="10 · 3D 打印替掉铝壳，丢的是三样">10 · 3D 打印替掉铝壳，丢的是三样</a></li>
+    <li class="lv2"><a href="#s10a1" title="A · 导热：205 → 0.2 W/(m·K)">A · 导热：205 → 0.2 W/(m·K)</a></li>
+    <li class="lv2"><a href="#s10a2" title="B · 密封：层纹本身就是漏气通道">B · 密封：层纹本身就是漏气通道</a></li>
+    <li class="lv2"><a href="#s10a3" title="C · 螺纹：M3 必须热熔铜螺母">C · 螺纹：M3 必须热熔铜螺母</a></li>
+    <li><a href="#s11" title="11 · 文档没定、先别下单的">11 · 文档没定、先别下单的</a></li>
+  </ul>
+</nav>
+<button class="side-btn" type="button" aria-label="目录">&#9776;</button>
+<main class="page">
+<div class="page-inner">
+
+<header>
+  <div class="page-icon">🧾</div>
+  <h1>鱼缸壁面清洁机器人 — Demo 物料清单</h1>
+  <p class="sub">样机：结构件走 3D 打印，控制走现成开发板，定制 PCB 以后再说。分四批下单，前一批不通过就不下后一批。</p>
+</header>
+
+<div class="keybox">
+  <h3>结论先行</h3>
+  <p>这份清单按两条前提写：壳体等结构件全部 3D 打印，主控与驱动全部用现成开发板。这两条替换掉设计里的三样东西 —— <strong>导热、密封、整机质量</strong>，第 10 节逐条说明，动工前先读那一节。</p>
+  <p><strong>但清单不能一次买齐。</strong>设计里有四个数字到现在还是估算：膜片要多大行程才能拉到 −25 kPa、13 mm 间隙能传多少瓦、四象限光电能不能把 ±25 mm 收到 ±5 mm、刷丝能不能把藻膜擦掉。这四个数决定了后面几乎所有零件的选型。先花一周、几百块把它们验掉，再下整机的单；顺序反了，就是拿几千块去赌四个未知数。</p>
+</div>
+
+<h2 id="s1"><span class="n">1</span>采购分四批，上一批没过就不下下一批</h2>
+<p class="cap">每批都有自己的通过判据。判据没到就往下走，等于把问题推到更难定位的地方。</p>
+
+<svg viewBox="0 0 720 150" role="img" aria-label="采购分批路线" style="width:100%;height:auto">
+  <defs>
+    <marker id="b1Arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#9b9891"/>
+    </marker>
+  </defs>
+  <rect width="720" height="150" rx="14" fill="#fbfbfa"/>
+
+  <text x="24" y="22" class="s-lbl">采购分批 —— 前一批的判据没过，不要下后一批</text>
+
+  <g>
+    <rect x="24" y="36" width="150" height="84" rx="10" style="fill:var(--orange-bg);stroke:var(--orange-fg)" stroke-width="1.6"/>
+    <text x="99" y="66" text-anchor="middle" class="s-lbl">① 实验件</text>
+    <text x="99" y="87" text-anchor="middle" class="s-sub">4 个实验，约 1 周</text>
+    <text x="99" y="106" text-anchor="middle" class="s-sub" style="fill:var(--orange-fg)">几百元</text>
+  </g>
+  <line x1="178" y1="78" x2="194" y2="78" stroke="#9b9891" stroke-width="1.6" marker-end="url(#b1Arr)"/>
+
+  <g>
+    <rect x="198" y="36" width="150" height="84" rx="10" style="fill:var(--blue-bg);stroke:var(--blue-fg)" stroke-width="1.6"/>
+    <text x="273" y="66" text-anchor="middle" class="s-lbl">② 单腿样机</text>
+    <text x="273" y="87" text-anchor="middle" class="s-sub">1 个吸附单元</text>
+    <text x="273" y="106" text-anchor="middle" class="s-sub">+ 1 根推杆</text>
+  </g>
+  <line x1="352" y1="78" x2="368" y2="78" stroke="#9b9891" stroke-width="1.6" marker-end="url(#b1Arr)"/>
+
+  <g>
+    <rect x="372" y="36" width="150" height="84" rx="10" style="fill:var(--blue-bg);stroke:var(--blue-fg)" stroke-width="1.6"/>
+    <text x="447" y="66" text-anchor="middle" class="s-lbl">③ 三足整机</text>
+    <text x="447" y="87" text-anchor="middle" class="s-sub">3 腿 + 刷辊 + 主控</text>
+    <text x="447" y="106" text-anchor="middle" class="s-sub">1097 g 那份配置</text>
+  </g>
+  <line x1="526" y1="78" x2="542" y2="78" stroke="#9b9891" stroke-width="1.6" marker-end="url(#b1Arr)"/>
+
+  <g>
+    <rect x="546" y="36" width="150" height="84" rx="10" style="fill:var(--green-bg);stroke:var(--green-fg)" stroke-width="1.6"/>
+    <text x="621" y="66" text-anchor="middle" class="s-lbl">④ 坞站</text>
+    <text x="621" y="87" text-anchor="middle" class="s-sub">感应充电 + 光电对接</text>
+    <text x="621" y="106" text-anchor="middle" class="s-sub">缸外，不入水</text>
+  </g>
+</svg>
+
+<table>
+  <thead>
+    <tr><th style="white-space:nowrap">批次</th><th>买什么</th><th>通过判据</th><th style="white-space:nowrap">量级</th></tr>
+  </thead>
+  <tbody>
+    <tr class="hl">
+      <td style="white-space:nowrap">① 实验件</td>
+      <td>见第 2 节四行。全部是通用件，跟最终构型无关，买错了也不浪费</td>
+      <td>四个实验全部给出确定数字</td>
+      <td style="white-space:nowrap">¥ 几百</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">② 单腿样机</td>
+      <td>1 个吸附单元 + 1 根推杆 + 1 块 ESP32-S3 开发板 + 1 组驱动</td>
+      <td>吸住 −25 kPa 并保压；断电靠丝杆自锁不掉；推杆推得动、回得了零</td>
+      <td style="white-space:nowrap">¥ 几百</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">③ 三足整机</td>
+      <td>② 的量 ×3，加刷辊、7 路驱动、传感器套件、电池、全部打印件</td>
+      <td>能走完一面 600 × 400 的壁，换行不漏步</td>
+      <td style="white-space:nowrap">¥ 2–4 k</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">④ 坞站</td>
+      <td>线圈、逆变、ESP32-C6、RV1106、外壳</td>
+      <td>13 mm 间隙入电池 ≥ 2 W；±25 → ±5 mm 在 10 s 内收敛不振荡</td>
+      <td style="white-space:nowrap">¥ 几百</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="formula w">
+  <p><strong>③ 的打印件要在 ① 之前就想清楚一件事：</strong>整机那份配置里，配重 253 g 是配着 <em>200 g 铝壳</em>算出来的。换成打印件以后壳体轻了大约一半（估），浮力账跟着变，配重得重算。别照着 253 g 直接买片。见第 10 节 A。</p>
+</div>
+
+<h2 id="s2"><span class="n">2</span>先跑四个实验 —— 再下整机的单</h2>
+<p class="cap">四个实验都在文档里写明了，只是一直没做。它们各自卡着一个选型。</p>
+
+<table>
+  <thead>
+    <tr><th style="white-space:nowrap">#</th><th>实验</th><th>怎么搭</th><th>判据</th></tr>
+  </thead>
+  <tbody>
+    <tr class="hl">
+      <td style="white-space:nowrap">①</td>
+      <td><strong>拉膜</strong><br>膜片要多大行程才拉得动</td>
+      <td>1 只吸盘 + 1 块玻璃 + 几个膜片 + 弹簧秤；或直接在膜片上方贴一片薄膜压力传感器</td>
+      <td>能稳定产生 <strong>−25 kPa</strong>（至少 −20 kPa）；同时标出 <em>行程</em>、<em>保压时间</em>、<em>漏气率</em> 三个数</td>
+    </tr>
+    <tr class="hl">
+      <td style="white-space:nowrap">②</td>
+      <td><strong>间隙</strong><br>13 mm 能传多少瓦</td>
+      <td>现成 5 W 无线充电模块 + 5 mm 玻璃 + 8 mm 亚克力（凑满 13 mm）+ 5 Ω 功率电阻泡水里当负载</td>
+      <td>负载上测到 <strong>≥ 2 W</strong>。一天，几十块钱</td>
+    </tr>
+    <tr class="hl">
+      <td style="white-space:nowrap">③</td>
+      <td><strong>对接</strong><br>四象限光电够不够用</td>
+      <td>4 只 940 nm LED（间距 ±20 mm）+ 4 只光电二极管 + 一台手动平移台</td>
+      <td>从 <strong>±25 mm</strong> 收到 <strong>±5 mm</strong> 在 <strong>10 s 内</strong>收敛且不振荡。一周</td>
+    </tr>
+    <tr class="hl">
+      <td style="white-space:nowrap">④</td>
+      <td><strong>刷丝</strong><br>能不能把藻膜擦掉</td>
+      <td>0.15 / 0.2 / 0.25 mm 三种丝径各做一根，用手推着擦</td>
+      <td>藻膜被擦掉。这一条不成立，后面全白做</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="formula">
+  <p>实验 ① 的另半个任务在文档里：吸盘单元贴真实长藻的玻璃、抽到 −25 kPa、<strong>记 72 h 压降</strong>。这是待机策略唯一的输入 —— 不作业就回坞待机这条前提，靠的就是「停留 5 min 远小于漏气衰减的几十分钟尺度」。没有这条曲线，那个前提是猜的。</p>
+</div>
+
+<h2 id="s3"><span class="n">3</span>吸附单元（×3）</h2>
+<p class="cap">整机三只，完全同款可互换。表中数量是整机用量，不是单只。</p>
+
+<table>
+  <thead>
+    <tr><th style="white-space:nowrap">件</th><th>规格与要求（文档给的）</th><th style="white-space:nowrap">数量</th><th>怎么来</th><th>卡点</th></tr>
+  </thead>
+  <tbody>
+    <tr class="hl">
+      <td style="white-space:nowrap">驱动膜片</td>
+      <td>∅20 mm；PDMS 或铂金硅胶；厚 0.2–0.3 mm；Shore A 10–30</td>
+      <td style="white-space:nowrap">3 + 打样 9 组</td>
+      <td>自制 / 打样</td>
+      <td>要打 0.2/0.3/0.5 mm × Shore A 10/20/30 共 9 组，从 0.25 mm / Shore A 20 起试。四周必须<strong>压环 + O 圈</strong>固定，不许纯粘接 —— 反复形变会把粘接边缘剥开</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">柔性吸盘</td>
+      <td>开口 ∅25 mm；唇边 Shore A 5–15 极软硅胶；内侧一圈微凸密封筋</td>
+      <td style="white-space:nowrap">3</td>
+      <td>需打样</td>
+      <td>货架真空吸盘普遍是 Shore A 40–60，太硬。这里要的是<strong>抗剪唇边</strong>（不允许滑动），不是普通密封圈。唇边是消耗件，做成卡扣可拆</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">吸盘刚性座</td>
+      <td>尺寸文档未给（模型里是示意值）</td>
+      <td style="white-space:nowrap">3</td>
+      <td>3D 打印</td>
+      <td>膜片以上那半个腔<strong>必须通水或充硅油</strong>，否则会形成第二个真空腔把膜片往下顶。开孔处加防水透气膜。载荷路径必须是 壁面 → 唇边 → 刚性座 → 机身，<strong>膜片绝不能进外部载荷路径</strong></td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">空心杯电机</td>
+      <td>∅12 × 24 mm；6–12 V；带霍尔编码器；≥ 1.25 mN·m</td>
+      <td style="white-space:nowrap">3</td>
+      <td>采购</td>
+      <td><span class="tag w">难买</span>∅12 空心杯带霍尔编码器不是货架组合。demo 用 N20 类减速电机可以顶，代价是<strong>减速箱回差</strong> —— 丝杆回差 0.5 mm 就能让机身姿态歪 5.7°，减速箱只会更差</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">丝杆 + 螺母滑块</td>
+      <td>导程 <strong>0.3 mm</strong>（不是 0.5）；行程 3–5 mm；η ≈ 0.3；必须自锁</td>
+      <td style="white-space:nowrap">3</td>
+      <td>采购</td>
+      <td><span class="tag w">难买</span>0.3 mm 导程不是货架规格。货架最近的替代是 <strong>M3 细牙螺距 0.35</strong>，扭矩升到约 1.46 mN·m（+17%），仍在 ∅12 的能力内。自锁条件是 η &lt; 0.5，0.3–0.5 mm 导程都满足</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">连接杆</td>
+      <td>尺寸文档未给</td>
+      <td style="white-space:nowrap">3</td>
+      <td>打印 / 机加工</td>
+      <td>穿顶盖处要动密封</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">顶盖动密封</td>
+      <td>O 型圈 <em>或</em> 波纹管，<strong>二选一未定</strong></td>
+      <td style="white-space:nowrap">3</td>
+      <td>采购</td>
+      <td>文档没拍定用哪个，先按 O 圈买</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">膜片压环</td>
+      <td>尺寸文档未给</td>
+      <td style="white-space:nowrap">3 套</td>
+      <td>3D 打印</td>
+      <td>配 O 圈压紧膜片四周</td>
+    </tr>
+    <tr class="hl">
+      <td style="white-space:nowrap">机械负压开关</td>
+      <td>跳闸点对应 −20 kPa 以上；几块钱</td>
+      <td style="white-space:nowrap">3</td>
+      <td>采购</td>
+      <td><strong>吸附确认只有它能做</strong> —— 电流检测确认不了。它同时是运动单元电气互锁的必需件，也是 RTC 唤醒源。要用两组独立触点（DPST）或镀金触点，微安级电流击不穿氧化膜</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">差压传感器</td>
+      <td>量程 −100…0 kPa；参考端接各自的上腔；采样 1 kHz</td>
+      <td style="white-space:nowrap">3</td>
+      <td>采购</td>
+      <td><span class="tag w">型号未给</span>要自行选型。参考口<strong>不能拿主体壳内的空气当基准</strong>，必须接水腔</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="formula w">
+  <p><strong>吸盘直径这一项不要省钱。</strong>抗剥离力矩 ∝ R³，∅15 → ∅25 允许的重心离壁距离提高 4.6 倍。这是整份设计里唯一一条「花钱就能买到安全」的途径。同时<strong>不要加大膜片</strong>：膜片拉力才是电机要扛的，∅25 膜片会把扭矩顶到 1.95 mN·m，∅12 电机拉不动。</p>
+</div>
+
+<h2 id="s4"><span class="n">4</span>运动单元</h2>
+<p class="cap">三足 3-RPR 并联平台。三条腿的零件完全同款 —— 每条腿的铰点座都落在它那根杆的吸盘方位 +60° 处，所以整条腿绕机身中心转 120° 就是下一条。</p>
+
+<table>
+  <thead>
+    <tr><th style="white-space:nowrap">件</th><th>规格与要求（文档给的）</th><th style="white-space:nowrap">数量</th><th>怎么来</th><th>卡点</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="white-space:nowrap">推杆</td>
+      <td>∅4 mm；行程 20–40 mm；丝杆直线驱动；<strong>必须双向承载</strong></td>
+      <td style="white-space:nowrap">3</td>
+      <td>采购 / 自制</td>
+      <td>文档没写外购成品还是自制，从「导程要从 0.5 收到 0.3」「压杆失稳校核」看是自研件。行程 30 mm 时 ∅4 的稳定性没问题，更长要加粗</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">推杆电机</td>
+      <td>峰值 2.0 W</td>
+      <td style="white-space:nowrap">3</td>
+      <td>采购</td>
+      <td><span class="tag w">先别买</span><strong>扭矩需求在全仓库里从未推导过</strong> —— 没有力、没有导程、没有效率。选型前必须补。它决定三件事：要不要减速箱、丝杆导程取多少、「推杆电机与吸附电机统一型号」这条备件通用性还成不成立</td>
+    </tr>
+    <tr class="hl">
+      <td style="white-space:nowrap">磁角度传感器</td>
+      <td>AS5600（I2C，12 位）；≈ ¥5–6/只</td>
+      <td style="white-space:nowrap">3</td>
+      <td>采购</td>
+      <td>每根推杆一个。位置误差从「陀螺零偏积分」变成「标定系数 + 丝杆回差」，有界。加上共 +8 g</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">I2C 多路复用</td>
+      <td>TCA9548A；≈ ¥3</td>
+      <td style="white-space:nowrap">1</td>
+      <td>采购</td>
+      <td>AS5600 地址固定 0x36，三只挂一条总线会冲突。替代方案是换 SPI 的 MT6701 用三根独立 CS，未定</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">铰链</td>
+      <td>球头 <em>或</em> 销轴；摆角按 ±17° 再加 20° 余量</td>
+      <td style="white-space:nowrap">6</td>
+      <td>采购</td>
+      <td>文档原话「不是精密件」。但<strong>铰链轴线必须垂直于玻璃、且穿过吸盘接触中心</strong> —— 这是三足机构唯一的几何要求，也是最容易做错的地方。装配时用一个从上往下穿过吸盘中心的定位销保证</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">铰点座 a / b / c</td>
+      <td>坐标 a (43.3, −25) / b (0, +50) / c (−43.3, −25)</td>
+      <td style="white-space:nowrap">3</td>
+      <td>3D 打印</td>
+      <td>a、c 落在主腔投影里，直接做在腔壁上；<strong>b 比主腔尾面还靠后 50 mm，中间隔着刷辊</strong>，只能靠跨梁吊过去</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">跨梁</td>
+      <td>从刷辊上方跨过 z 44–54，到 y = +50 再下探到 z 18–30</td>
+      <td style="white-space:nowrap">1</td>
+      <td>3D 打印</td>
+      <td>左边绕不过去（那正是杆 c 压着的三角形边，y = +18 处只有 136 mm 宽），右边落在杆 b 自己的杆身上。只能从上面下来</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">可调配重</td>
+      <td>不锈钢片，每片 25 g；总量 ≈ 253 g；±100 g 可调</td>
+      <td style="white-space:nowrap">约 10 片</td>
+      <td>采购</td>
+      <td><strong>不要铅</strong>（密度虽高，但粉尘有毒，密封一旦失效就溶进缸里）。目标是把水下有效重量调到 0.3–0.5 N，比中性略重，绝不能到正浮力</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">系绳</td>
+      <td>文档未给</td>
+      <td style="white-space:nowrap">1</td>
+      <td>采购</td>
+      <td>文档「强烈建议保留」—— 既是供电通讯，也是最后的防坠保险。不需要滑环，也不需要留回转圈</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="formula">
+  <p>腿的编号与坐标（<code>+x</code> 向右、<code>+y</code> 向机尾）：杆 <strong>a</strong> 吸盘 A 前足 270°、铰点座 330°；杆 <strong>b</strong> 吸盘 B 机尾右 30°、铰点座 90°；杆 <strong>c</strong> 吸盘 C 机尾左 150°、铰点座 210°。吸盘圆 <code>R_t = 100 mm</code>，铰点圆 <code>r = 50 mm</code>，两圆错开 60°。这个 60° 是硬约束 —— 两圆对齐就是径向布置，雅可比矩阵奇异。</p>
+</div>
+
+<h2 id="s5"><span class="n">5</span>作业机构</h2>
+<p class="cap">主机与作业头分层。作业头上没有电气、没有密封、直接泡水，全靠磁耦合隔着壳壁带。</p>
+
+<table>
+  <thead>
+    <tr><th style="white-space:nowrap">件</th><th>规格与要求（文档给的）</th><th style="white-space:nowrap">数量</th><th>怎么来</th><th>卡点</th></tr>
+  </thead>
+  <tbody>
+    <tr class="hl">
+      <td style="white-space:nowrap">刷辊</td>
+      <td>∅34 × 80 mm；有效扫宽 75 mm；350 rpm</td>
+      <td style="white-space:nowrap">3–5 根</td>
+      <td>采购 / 定制</td>
+      <td>就是「一根 20 块钱」那种。文档建议一次备五根。长度被杆 c 的扫掠包络卡死，不是被三角形宽度卡 —— 原定 120 mm 在任何工况下都装不下</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">刷丝</td>
+      <td>尼龙 PA6 / PBT；∅0.15–0.25 mm；丝长 6–10 mm；尖端磨圆；稀疏植毛</td>
+      <td style="white-space:nowrap">打样 3 根</td>
+      <td>植毛</td>
+      <td><strong>绝对禁用金属丝。</strong>第一版只验证一件事：刷丝规格能不能把藻膜擦掉。所以先做 0.15 / 0.2 / 0.25 三种丝径对比</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">硅胶刮条</td>
+      <td>铂金硫化硅胶；Shore A 40 左右；寿命 200 h；装在刷辊下游</td>
+      <td style="white-space:nowrap">1</td>
+      <td>采购 / 自制</td>
+      <td>不要过氧化物硫化硅胶（残留物可能析出），不要硬质聚氨酯（硬刃口遇砂粒直接划玻璃）。刃口角度和硬度都还没定，先用一块硅胶板手动刮</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">导流罩</td>
+      <td>尺寸文档未给</td>
+      <td style="white-space:nowrap">1</td>
+      <td>3D 打印</td>
+      <td><strong>不是可选项。</strong>不罩住的话刷辊把藻打成微粒散到整缸，水会发绿发浑。罩壳下方开口朝后</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">POM 滑动轴承</td>
+      <td>水润滑；规格文档未给</td>
+      <td style="white-space:nowrap">2</td>
+      <td>采购 / 机加工</td>
+      <td>作业头无源、无密封的极简配置：一根刷辊 + 两个轴承 + 一个磁铁盘</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">磁耦合磁铁</td>
+      <td>4 极钕磁铁；磁盘 ∅30 mm；气隙 1.2 mm；传递 ≥ 0.1 N·m</td>
+      <td style="white-space:nowrap">8 块 + 盘体 2</td>
+      <td>采购 + 3D 打印</td>
+      <td>极性 N–S–N–S 交替，两侧极面都朝壳壁。文档只写「钕磁铁」，牌号（N35/N42）没给。气隙越大传递扭矩按平方掉</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">壳壁 + 静密封</td>
+      <td>POM 或 PEEK；厚 1.0–1.5 mm；一条 O 圈静密封</td>
+      <td style="white-space:nowrap">1 套</td>
+      <td>采购 / 机加工</td>
+      <td>磁耦合消掉了穿轴动密封，壳壁上只剩一条静密封线</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">预压弹簧</td>
+      <td>预压力 1.5–3 N（推荐 2 N）；按 20 mm 额外行程选</td>
+      <td style="white-space:nowrap">1</td>
+      <td>采购</td>
+      <td>对接时坞站顶块把作业头顶离玻璃 20 mm，出坞后这根弹簧把它推回贴壁位置。刚度、自由长都没给</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">直线滑槽</td>
+      <td>一对，提供 20 mm 直线自由度</td>
+      <td style="white-space:nowrap">1 对</td>
+      <td>采购</td>
+      <td>退让靠机械，不靠电。代价是这 20 mm 里刷辊必须完全离开玻璃</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">快换接口 L1</td>
+      <td>定位销 ∅3 × 2；弹簧卡扣 × 1；磁耦合盘</td>
+      <td style="white-space:nowrap">1 套</td>
+      <td>采购 + 打印</td>
+      <td>L1 不需要任何电气，所以刷辊头可以完全泡水。换刷辊：按压卡扣整根抽出，10 秒</td>
+    </tr>
+    <tr class="bad">
+      <td style="white-space:nowrap">pogo pin L2</td>
+      <td>4 只，5 V / 500 mA</td>
+      <td style="white-space:nowrap">一期 0</td>
+      <td>—</td>
+      <td>一期不上吸污头，<strong>不买</strong>。而且引脚定义已经改版：+5 V 不引出、ID 改无源识别、SIG 移交前窗模块。淡水里 1–2 mm 间距的裸 pogo 之间是几 kΩ，+5 V 会持续电解、长生物膜</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="formula w">
+  <p><strong>刷辊只在换步相 n = 3 时转，换步时必须停。</strong>启停要和吸附确认信号做<strong>硬互锁</strong>，启动要做 0.5 s 斜坡 —— 启动转矩是稳态的几倍，直接全速启动会在爬壁方向上踹机器人一脚。</p>
+</div>
+
+<h2 id="s6"><span class="n">6</span>主体与密封</h2>
+<p class="cap">壳体是唯一一个「3D 打印换不掉」的件。表里列着原设计，第 10 节说明换掉之后会丢什么。</p>
+
+<table>
+  <thead>
+    <tr><th style="white-space:nowrap">件</th><th>规格与要求（文档给的）</th><th style="white-space:nowrap">数量</th><th>怎么来</th><th>卡点</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="white-space:nowrap">壳体</td>
+      <td>6061 铝 + 阳极氧化；壁厚 1.5 mm；主腔 110 × 85 × 64 mm；质量 200 g</td>
+      <td style="white-space:nowrap">1</td>
+      <td><span class="tag w">改 3D 打印</span></td>
+      <td>原设计靠铝的导热 205 W/(m·K) 当散热器。换打印件后这条链断掉，见第 10 节</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">POM 盖板</td>
+      <td>占 z 58–64 层（6 mm）；防呆定位销；内侧干燥剂凹槽</td>
+      <td style="white-space:nowrap">1</td>
+      <td>3D 打印</td>
+      <td><strong>前窗模块必须和盖板做成一体</strong>（同一块料铣出，或同一圈螺钉压在一起）—— 每多一个零件就多一条密封线，而这条线正好在水最深的地方</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">前窗模块</td>
+      <td>POM 实体；62 cm³ / 85 g；中心 (−15, −32)；罩壁 1.5 mm；伸到距玻璃 2 mm</td>
+      <td style="white-space:nowrap">1</td>
+      <td>CNC POM 优先</td>
+      <td>必须<strong>非金属</strong> —— 它包着接收线圈和天线，金属会同时屏蔽磁场和射频。POM 几乎不能 3D 打印（低表面能、翘曲大）</td>
+    </tr>
+    <tr class="hl">
+      <td style="white-space:nowrap">O 圈</td>
+      <td>EPDM；线径 ∅2.0 mm；Shore A 70；矩形环；压缩率 20%；槽宽 2.6 / 槽深 1.6 mm</td>
+      <td style="white-space:nowrap">1 条</td>
+      <td>采购</td>
+      <td><strong>不要 NBR</strong> —— 长期泡水会水解，3–6 个月开始渗漏。∅2.0 是最好买的线径。装配前涂硅脂（防扭转、防粘连）。按密封面周长买，文档没给周长</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">螺钉</td>
+      <td>316 不锈钢 M3；间距 ≤ 25 mm；周圈约 10 个</td>
+      <td style="white-space:nowrap">10+</td>
+      <td>采购</td>
+      <td><strong>不要碳钢、不要 304。</strong>每个螺钉下加尼龙垫圈、螺钉柱里加尼龙套筒。对角顺序分两轮拧</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">电机座绝缘垫片</td>
+      <td>规格未给</td>
+      <td style="white-space:nowrap">7</td>
+      <td>采购 / 自制</td>
+      <td>7 个电机外壳电位不同，彼此导通又接触铝壳会形成微电池</td>
+    </tr>
+    <tr class="hl">
+      <td style="white-space:nowrap">电池</td>
+      <td>2S 锂聚合物；1000 mAh；7.4 V / 7.4 Wh；55 g</td>
+      <td style="white-space:nowrap">1</td>
+      <td>采购</td>
+      <td><strong>1000 mAh 现在明显偏大</strong>（真正要扛的只有 0.1–0.2 Wh，是它的 40 倍），但改它要连排水体积和配重一起重算，不能单独改。demo 先按 1000 mAh 买</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">电池保护板</td>
+      <td>DW01A + FS8205；保护 MOS 按 ≥ 8 A 选</td>
+      <td style="white-space:nowrap">1</td>
+      <td>采购</td>
+      <td>电池 + 保护 MOS + 走线阻抗约 150–200 mΩ，4–5 A 冲击就掉 0.8 V，足以触发过流比较器。一旦触发，电池组闩锁关断，机器人没法自己走回坞站复位</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">干燥剂</td>
+      <td>硅胶包；10 g 能吸约 1 g 水；腔体 0.5 L</td>
+      <td style="white-space:nowrap">1</td>
+      <td>采购</td>
+      <td><strong>不用生石灰。</strong>判据是腔内相对湿度 &lt; 40%，爬到 80% 以上说明有问题。每 3–6 个月换</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">三防漆</td>
+      <td>PCB 保形涂覆；几块钱</td>
+      <td style="white-space:nowrap">1</td>
+      <td>采购</td>
+      <td>绝对不要油浸或灌封整腔</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">缸外磁铁</td>
+      <td>按住 10 s 进 OTA 恢复模式；几毛钱</td>
+      <td style="white-space:nowrap">1</td>
+      <td>采购</td>
+      <td>穿舱点 0 个，所以这是唯一的外部入口 —— 能穿过非磁性铝壳和 5 mm 玻璃</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">温湿度记录仪</td>
+      <td>纽扣式；几十块</td>
+      <td style="white-space:nowrap">1</td>
+      <td>采购</td>
+      <td>封盖前丢进腔里，用来验漏。热电偶也要 2 个（腔内和电机外壳各一），判据是外壳温升 &lt; 25 K</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="s7"><span class="n">7</span>坞站（缸外，不入水）</h2>
+<p class="cap">挂在缸外壁上。不需要防水、不需要食品级，但玻璃侧那一面不能有任何金属 —— 磁场和射频都要穿过去。</p>
+
+<table>
+  <thead>
+    <tr><th style="white-space:nowrap">件</th><th>规格与要求（文档给的）</th><th style="white-space:nowrap">数量</th><th>怎么来</th><th>卡点</th></tr>
+  </thead>
+  <tbody>
+    <tr class="hl">
+      <td style="white-space:nowrap">发射线圈</td>
+      <td>∅60 mm；利兹线绕制；5 W，<strong>按 10 W 选型</strong>；60–100 kHz；Q ≈ 100</td>
+      <td style="white-space:nowrap">1</td>
+      <td>自己绕</td>
+      <td>匝数、线径、电感、谐振电容<strong>文档全部没给</strong>，要绕了才知道。不能直接拿现成 Qi 模块 —— Qi 的工作间隙是 3–5 mm，A11 线圈只有 ∅39</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">接收线圈</td>
+      <td>∅50 mm；自身灌封 1.5 mm；侧向容差 ±12 mm 时功率降 &lt; 20%</td>
+      <td style="white-space:nowrap">1</td>
+      <td>自己绕</td>
+      <td>装在前窗模块里，和天线共用同一个非金属窗口。Ø90 是坞站圆盘的外径，<strong>不是线圈直径</strong></td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">谐振逆变</td>
+      <td>固定频率 60–100 kHz；5 W 谐振回路；MCU 只给使能脚 + 调母线电压</td>
+      <td style="white-space:nowrap">1 套</td>
+      <td>采购</td>
+      <td>专用驱动 IC <em>或</em> 自激振荡，<strong>方案未定</strong>。绝对不要用 MCU 直接生成驱动波形 —— LEDC 在 100 kHz 下只剩 7 位分辨率</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">灌封胶</td>
+      <td>三处各 1.5 mm：发射线圈自身、接收线圈自身、导向罩壁 + 接收线圈</td>
+      <td style="white-space:nowrap">1 批</td>
+      <td>采购</td>
+      <td>牌号未给。这 1.5 mm 不能压 —— 压了就穿</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">坞站外壳</td>
+      <td>∅90 × 22 mm；玻璃侧壁厚 1.5 mm；Ø70 非金属窗口</td>
+      <td style="white-space:nowrap">1 套</td>
+      <td>3D 打印</td>
+      <td>外壳不能有金属否则涡流吃掉磁场；<strong>玻璃侧的四个固定点不能用螺钉</strong>，只能塑料卡扣或双面胶</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">940 nm 信标 LED</td>
+      <td>4 只；间距 ±20 mm；1–2 kHz 调制</td>
+      <td style="white-space:nowrap">4</td>
+      <td>采购</td>
+      <td>浑水不影响 940 nm</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">双色指示灯</td>
+      <td>状态：待机 / 对接中 / 充电中 / 故障</td>
+      <td style="white-space:nowrap">1</td>
+      <td>采购</td>
+      <td>移动或重新上电后进「待标定」态，正面 LED 慢闪</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">电源适配器</td>
+      <td>12 V / 1 A</td>
+      <td style="white-space:nowrap">1</td>
+      <td>采购</td>
+      <td>缸外永不入水</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">网关</td>
+      <td>ESP32-C6；≈ ¥12</td>
+      <td style="white-space:nowrap">1</td>
+      <td>采购</td>
+      <td>BLE 外设 + MQTT/TLS 上云 + 充电状态机 + 信标锁相解调</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">视觉模组</td>
+      <td>RV1106；摄像头型号未给</td>
+      <td style="white-space:nowrap">1（可选）</td>
+      <td>采购</td>
+      <td>文档标为<strong>可选</strong>。它坏掉时充电与对接必须完全不受影响</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">固定方式</td>
+      <td>硅胶吸盘 + 防坠绳</td>
+      <td style="white-space:nowrap">1 套</td>
+      <td>采购</td>
+      <td>建议贴在水面以下、近缸体一角，但离底砂至少 60 mm</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">顶块</td>
+      <td>把作业头顶离玻璃 20 mm</td>
+      <td style="white-space:nowrap">1</td>
+      <td>3D 打印</td>
+      <td>只在 body.html 出现，dock.html 全文没提。尺寸材料都没给</td>
+    </tr>
+    <tr class="bad">
+      <td style="white-space:nowrap">被动磁吸座</td>
+      <td>坞站里一块永磁 + 前窗模块里一片钢</td>
+      <td style="white-space:nowrap">0</td>
+      <td>—</td>
+      <td>文档写「<strong>可选</strong>加一个」，不耗电不需控制。demo 先不做</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="formula">
+  <p>13.0 mm 间隙预算（从坞站往机器人方向）：坞站外壳 1.5 + 发射线圈灌封 1.5 + <strong>玻璃 5.0</strong> + 水隙 2.0 + 导向罩壁与接收线圈灌封 1.5 + 接收线圈自身灌封 1.5。其中<strong>只有水隙那 2.0 mm 是可调余量</strong>，其余五层都是被零件和玻璃占死的。</p>
+</div>
+
+<h2 id="s8"><span class="n">8</span>主控 · 驱动 · 传感器</h2>
+<p class="cap">全部用现成开发板和模块。这一节要接受一个损失：开发板满足不了 1 mW 的待机预算。</p>
+
+<div class="formula w">
+  <p><strong>开发板验不了待机预算这一条。</strong>ESP32-S3 裸芯片深度睡眠是 7 µA，但任何一块开发板都带 USB-UART 桥和 LDO，实测是 mA 级。整个待机目标是 135 µA 的板级预算。<strong>demo 阶段直接放弃 1 mW 这条指标</strong>，把它留到定制 PCB。能在 demo 阶段验证的是：通道数够不够、7 路电机能不能同时驱动、传感器读数对不对。</p>
+</div>
+
+<table>
+  <thead>
+    <tr><th style="white-space:nowrap">件</th><th>规格与要求（文档给的）</th><th style="white-space:nowrap">数量</th><th>卡点</th></tr>
+  </thead>
+  <tbody>
+    <tr class="hl">
+      <td style="white-space:nowrap">机器人主控</td>
+      <td>ESP32-S3-WROOM-1-<strong>N4 或 N8</strong>；模块 ¥18–25</td>
+      <td style="white-space:nowrap">1</td>
+      <td><span class="tag w">必须无 PSRAM</span>不要 N8R2 / N8R8。带 PSRAM 的型号在低功耗下要多耗 40–200 µA，单独一项就超预算 1.4 倍。存储需求只有 4 MB flash 剩下的三个数量级</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">I/O 扩展</td>
+      <td>TCA9535</td>
+      <td style="white-space:nowrap">1</td>
+      <td>7 路 DIR + 3 路真空开关全挪过去，共省 10 根 GPIO。不做这件事直接超 36 根</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">电机驱动</td>
+      <td>H 桥 × 7 路；推杆 ×3 走 MCPWM，膜片 ×3 + 刷辊走 LEDC</td>
+      <td style="white-space:nowrap">4 片双路</td>
+      <td><span class="tag w">型号未给</span>文档只给了路数和拓扑，没给芯片。全是有刷直流，双路 H 桥 4 片正好 8 路</td>
+    </tr>
+    <tr class="hl">
+      <td style="white-space:nowrap">主 buck</td>
+      <td>TPS62903；2 A；Iq 1.5 µA；2S 直接降到 3.3 V 单轨</td>
+      <td style="white-space:nowrap">1</td>
+      <td>这一条没有便宜的余地。<strong>不要 MP2315</strong>（静态 200 µA = 1.4 倍预算）、<strong>不要 AMS1117</strong>（毫安级，单项 5 倍预算）。也不要 5 V 轨，所以不需要 5 V 负载开关</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">IMU</td>
+      <td>BMI270 <em>或</em> QMI8658（二选一未定）；¥8–12</td>
+      <td style="white-space:nowrap">1</td>
+      <td>挂 I2C。1 mg 的加速度计分辨率约 0.06°。<strong>不要磁力计</strong> —— 坞站线圈的 60–100 kHz 磁场会把它淹掉</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">深度计</td>
+      <td>MS5837-02BA；绝对精度 ±50 mbar；相对分辨率约 0.2 mbar</td>
+      <td style="white-space:nowrap">1</td>
+      <td>真正用法是水线，不是绝对深度 —— 跨水线是一个 3.9 kPa 的硬台阶</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">电流采样</td>
+      <td>INA181 × 7 + 74HC4067 八选一；100 Hz 级</td>
+      <td style="white-space:nowrap">7 + 1</td>
+      <td>低边采样电阻的阻值和 INA181 的增益<strong>文档都没给</strong>。明确否掉两片 ADS1115 做七路 —— 860 SPS 下轮询七路会和 PWM 拍频</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">四象限光电二极管</td>
+      <td>4 只，不加镜头靠宽视角；捕获 ±25 mm；伺服 ±5 mm</td>
+      <td style="white-space:nowrap">4</td>
+      <td><span class="tag w">型号未给</span>用四只独立 PIN 光电二极管排成四象限即可。<strong>不能用一体化 IR 接收头</strong> —— 那种内部已经解调整形，输出高低电平，e_x / e_y 直接没了。e_x = (A+C)−(B+D)，e_y = (A+B)−(C+D)，用两个差分放大器并成 2 路</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">IR 反射对管</td>
+      <td>循迹小车那种；几块钱；掠射角看前方 20–50 mm</td>
+      <td style="white-space:nowrap">1 对</td>
+      <td>二期（脏污检测）用。它是整个作业机构里最大的效率杠杆：先空跑一遍建脏污地图，再只擦需要的区域，整面墙 2.1 min → 1 min</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">NTC</td>
+      <td>10 kΩ</td>
+      <td style="white-space:nowrap">1</td>
+      <td><strong>必须 GPIO 供电</strong> —— 10k/10k 直接跨 3.3 V 是 165 µA，单项就超预算 22%</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">上拉电阻</td>
+      <td>1 MΩ 外部上拉（磁控开关用）</td>
+      <td style="white-space:nowrap">1</td>
+      <td>片内 45 kΩ 上拉是 73 µA，占掉预算的 54%。外部 1 MΩ 只有 3.3 µA</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">电机轨电容</td>
+      <td>470–1000 µF 低 ESR 电解</td>
+      <td style="white-space:nowrap">1</td>
+      <td>抑制 4–5 A 的启动冲击</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">门控 MOSFET</td>
+      <td>电池分压用</td>
+      <td style="white-space:nowrap">1</td>
+      <td>100k/100k 直接跨 7.4 V 是 37 µA，加一只 MOSFET 只在测量时接通</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">RTC 缓冲</td>
+      <td>光耦 <em>或</em> 小 MOSFET，<strong>未定</strong></td>
+      <td style="white-space:nowrap">1</td>
+      <td>不要把 7.4 V 电机节点直连 RTC GPIO —— 主轨关断时 RTC 域仍带电，会倒灌和闩锁</td>
+    </tr>
+    <tr>
+      <td style="white-space:nowrap">互锁与门</td>
+      <td>CD4081（四路 2 输入）；关断时零功耗</td>
+      <td style="white-space:nowrap">1</td>
+      <td>和 DPST 触点是二选一</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="s9"><span class="n">9</span>3D 打印件清单</h2>
+<p class="cap">单独列一节，因为这一批要一起切片。材料建议是工程判断，不是文档数据。</p>
+
+<table>
+  <thead>
+    <tr><th style="white-space:nowrap">件</th><th style="white-space:nowrap">数量</th><th>材料建议</th><th>注意</th></tr>
+  </thead>
+  <tbody>
+    <tr><td style="white-space:nowrap">吸盘刚性座</td><td style="white-space:nowrap">3</td><td>PETG / PA</td><td>上腔要通水；密封面要后处理</td></tr>
+    <tr><td style="white-space:nowrap">推杆套筒</td><td style="white-space:nowrap">3</td><td>PA-CF</td><td>∅10 外径在模型里是<strong>示意值</strong>，不是设计输入</td></tr>
+    <tr><td style="white-space:nowrap">铰点支柱 a/b/c</td><td style="white-space:nowrap">3</td><td>PA-CF</td><td>形状同样是示意值。座 b 靠跨梁吊住</td></tr>
+    <tr><td style="white-space:nowrap">跨梁</td><td style="white-space:nowrap">1</td><td>PA-CF</td><td>跨过刷辊上方，z 44–54</td></tr>
+    <tr class="hl"><td style="white-space:nowrap">主腔壳体</td><td style="white-space:nowrap">1</td><td><strong>PETG / ASA，不要 PLA</strong></td><td>密封面必须上车床或铣床后加工</td></tr>
+    <tr><td style="white-space:nowrap">盖板</td><td style="white-space:nowrap">1</td><td>PETG</td><td>和前窗模块做成一体最好</td></tr>
+    <tr class="bad"><td style="white-space:nowrap">前窗模块</td><td style="white-space:nowrap">1</td><td>CNC POM 优先</td><td>POM 几乎不能打印，只能 CNC</td></tr>
+    <tr><td style="white-space:nowrap">刷辊端盖 / 防缠绕盘</td><td style="white-space:nowrap">2</td><td>POM / PETG</td><td>各占 5 mm，所以有效扫宽是 80 − 5 = 75</td></tr>
+    <tr><td style="white-space:nowrap">导流罩</td><td style="white-space:nowrap">1</td><td>PETG</td><td>下方开口朝后</td></tr>
+    <tr><td style="white-space:nowrap">磁耦合盘体</td><td style="white-space:nowrap">2</td><td>PETG</td><td>主动盘 + 从动盘，各嵌 4 块磁铁</td></tr>
+    <tr><td style="white-space:nowrap">作业头滑座</td><td style="white-space:nowrap">1</td><td>PETG</td><td>配一对直线滑槽</td></tr>
+    <tr><td style="white-space:nowrap">膜片压环</td><td style="white-space:nowrap">3</td><td>PETG</td><td>配 O 圈压紧膜片</td></tr>
+    <tr><td style="white-space:nowrap">坞站外壳上下壳</td><td style="white-space:nowrap">1 套</td><td>ABS / PC</td><td>玻璃侧 Ø70 区域内不能有任何金属</td></tr>
+    <tr><td style="white-space:nowrap">坞站顶块</td><td style="white-space:nowrap">1</td><td>PETG</td><td>尺寸文档未给</td></tr>
+  </tbody>
+</table>
+
+<div class="formula w">
+  <p><strong>PLA 不要用。</strong>长期泡水会水解，逐渐失去强度并变形。demo 用 PETG / ASA / PA。另外打印件本身会吸水、尺寸漂移，配合面要留比金属件更大的间隙。</p>
+</div>
+
+<h2 id="s10"><span class="n">10</span>3D 打印替掉铝壳，丢的是三样</h2>
+<p class="cap">这一节是整份清单里最容易翻车的地方。壳体是唯一一个文档明确指定用 6061 铝单件 CNC 的零件，换成打印件不是「便宜一点的同款」。</p>
+
+<h3 id="s10a1"><span class="n">A</span>导热：205 → 0.2 W/(m·K)</h3>
+<p>6061 铝的导热是 205 W/(m·K)，PETG / PLA 是 0.2 左右 —— 差三个数量级。200 g 的铝壳本身就是散热器，文档里「壳壁 → 水」那一环热阻只有 0.05 K/W，靠的就是它，接触面积 0.065 m²、对流系数 h ≈ 300 W/(m²·K)。</p>
+<p>换成打印件后，平均 3.75 W 的功耗全闷在 0.5 L 的腔里。文档的判据是<strong>外壳温升 &lt; 25 K</strong>，用打印壳几乎肯定过不了。而且电机内部 → 外壳的热阻是 2–4 K/W、由电机本身决定，这一段改不了 —— 热量一定会进到腔里。</p>
+<div class="formula">
+  <p><strong>对策：</strong>把 7 个电机的外壳和 buck 的散热面<strong>直接露到水里</strong> —— 在打印件上开窗，窗口用 O 圈静密封，让金属件自己接触水体。或者塞一块铝板当热桥，把热量引到壳外。不要在打印件上指望散热，也不要在腔内加风扇（没有第二个穿舱点）。</p>
+</div>
+
+<h3 id="s10a2"><span class="n">B</span>密封：层纹本身就是漏气通道</h3>
+<p>O 圈槽开在壳体上，槽宽 2.6 mm、槽深 1.6 mm，线径 ∅2.0 压到 1.6，压缩率 20%。FDM 打印件的层纹是沿着密封面走的连续沟槽，<strong>未后处理的打印面本身就漏</strong>，压缩率再准也没用。</p>
+<p>更糟的是位置：这条密封线在 z = 58–64 那一层，也就是<strong>整机水最深的地方</strong>。文档特意强调前窗模块要和盖板做成一体，就是因为「每加一个零件多一条密封线」。漏了的后果是整机报废。</p>
+<div class="formula w">
+  <p><strong>对策：</strong>主腔壳体这一件不要用 FDM。三条路，按推荐顺序：① CNC 一件 POM 或铝（贵，但省掉全部风险）；② SLA / 树脂打印，表面致密，但树脂脆、怕长期水解；③ FDM 打印后把密封面车一刀或铣一刀，再涂环氧封孔。选 ③ 的话，O 圈槽的公差要留加工余量。</p>
+</div>
+
+<h3 id="s10a3"><span class="n">C</span>螺纹：M3 必须热熔铜螺母</h3>
+<p>约 10 个 M3 螺钉、间距 ≤ 25 mm，靠它把盖板压紧 O 圈。M3 直接攻丝进打印件的拉脱强度只有几十牛，而且泡水后更差 —— 拧第二遍就滑丝。</p>
+<p>全部改热熔铜螺母，或者改成穿透螺栓 + 尼龙垫圈。文档本来就要求每个螺钉下加尼龙垫圈、螺钉柱里加尼龙套筒（防止不锈钢和铝之间形成微电池），换成打印件后这一条更必要。</p>
+
+<div class="formula w">
+  <p><strong>最后一条连带影响：配重。</strong>文档的浮力账是按 200 g 铝壳算的，整机 1097 g / 配重 253 g。换成打印件后壳体轻了大约一半（估），排水体积也变（打印件壁厚不同），<strong>配重必须重算</strong>。文档自己的说法是「这四个数是互相咬合的估算值，任何一个实测出来偏差 20% 都要回头修正其他的」，并且明确要求「把壳体放进量筒实测一次排水量，再算配重，不要一路估到底」。demo 阶段就按这个来：先把壳做好，量筒测排水，再买配重片。</p>
+</div>
+
+<h2 id="s11"><span class="n">11</span>文档没定、先别下单的</h2>
+<p class="cap">下面每一条都是设计还没拍板的地方。这些件买了可能白买，或者买回来也定不了型号。</p>
+
+<ul class="pts">
+  <li class="w"><strong>推杆电机的扭矩需求全仓库从未推导过。</strong>文档只给了「峰值 2.0 W」，没有力、没有导程、没有效率。这件事要在选电机、选导程、选编码器之前补上 —— 它决定电机要不要减速箱，也决定「推杆电机与吸附电机统一型号」这条备件通用性还成不成立。</li>
+  <li class="w"><strong>丝杆导程 0.3 mm 不是货架规格。</strong>最近的替代是 M3 细牙 0.35 mm，需要自己确认自锁和回差。回差是关键指标：丝杆回差 0.5 mm 就能让机身姿态歪 5.7°。</li>
+  <li class="w"><strong>∅12 空心杯 + 霍尔编码器不是货架组合。</strong>demo 用 N20 类减速电机顶，代价是减速箱回差。</li>
+  <li><strong>差压传感器、四象限光电二极管、红外对管的型号全部没给。</strong>三样都要自行选型，其中差压传感器还要自己决定参考腔怎么接。</li>
+  <li><strong>膜片要打 9 组样、刷丝要打 3 根样、刮条要先手动刮。</strong>这三样都不是「下单」而是「打样」。</li>
+  <li><strong>坞站线圈的匝数、线径、电感、谐振电容全部没给。</strong>要绕了才知道，而且第一步实验测出真实效率之后，间隙 13 mm / 效率 45% / 入电池 2.2 W / 停留 5 min 这四个数要全部重算。</li>
+  <li><strong>连接杆穿顶盖的动密封：O 圈还是波纹管，二选一未定。</strong></li>
+  <li><strong>作业头的无源识别：反射图案还是小磁铁，二选一未定。</strong></li>
+  <li><strong>IMU 二选一未定</strong>（BMI270 还是 QMI8658）；<strong>编码器接口二选一未定</strong>（TCA9548A + AS5600 还是 SPI 的 MT6701）；<strong>逆变驱动二选一未定</strong>（专用 IC 还是自激）。</li>
+  <li><strong>电池 1000 mAh 明显偏大</strong>，但改它要连排水体积、配重、热阻、平均功耗一起重算，不能单独改。demo 先按 1000 mAh 走。</li>
+  <li><strong>配重片数量没给。</strong>只有每片 25 g、总量约 253 g、±100 g 可调 —— 而且这个 253 g 在换成打印壳之后就不成立了，见第 10 节。</li>
+  <li><strong>坞站顶块的尺寸材料没给</strong>，而且它只在 body.html 出现，dock.html 全文没提。</li>
+</ul>
+
+<div class="formula w">
+  <p><strong>一份清单里最该先做的不是采购，是第 2 节那四个实验。</strong>它们一共一周、几百块，但决定了第 3 节到第 8 节里几乎所有件的选型。特别是刷丝那一条 —— 文档写得很直接：「这一条不成立，后面全白做」。</p>
+</div>
+
+<footer>清单依据本仓库七份设计文档整理，规格全部照抄原文；标「文档未给」的条目是设计尚未确定的地方，不要自行补值。价格只有量级估算，不是报价。结构件按 3D 打印、控制按现成开发板的替换后果见第 10 节。</footer>
+</div>
+</main>
+<script src="assets/toc.js"></script>
+</body>
+</html>
