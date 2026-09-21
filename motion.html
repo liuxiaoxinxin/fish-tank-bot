@@ -23,6 +23,12 @@
     <li class="lv2"><a href="#s8a1" title="F · 六足蜘蛛方案 — 算完账之后不推荐">F · 六足蜘蛛方案 — 算完账之后不推荐</a></li>
     <li><a href="#s9" title="9 · 运动性能估算">9 · 运动性能估算</a></li>
     <li><a href="#s10" title="10 · 设计要点与风险">10 · 设计要点与风险</a></li>
+    <li><a href="#s11" title="11 · 过棱与换面 — 直角棱也必须能过">11 · 过棱与换面 — 直角棱也必须能过</a></li>
+    <li class="lv2"><a href="#s11a1" title="A · 刚体三角形强制了落点">A · 刚体三角形强制了落点</a></li>
+    <li class="lv2"><a href="#s11a2" title="B · 腿要多一根面外俯仰轴">B · 腿要多一根面外俯仰轴</a></li>
+    <li class="lv2"><a href="#s11a3" title="C · 膝：把偏角从吸盘座挪走">C · 膝：把偏角从吸盘座挪走</a></li>
+    <li class="lv2"><a href="#s11a4" title="D · 跨棱的账面">D · 跨棱的账面</a></li>
+    <li class="lv2"><a href="#s11a5" title="E · 锐角棱要倒角，钝角棱还没验">E · 锐角棱要倒角，钝角棱还没验</a></li>
   </ul>
 </nav>
 <button class="side-btn" type="button" aria-label="目录">&#9776;</button>
@@ -1277,15 +1283,25 @@
       按每天 3 次作业、每次 40–60 次换步算，一天不到 200 次压合 —— 比双足方案的磨损条件轻，
       但<b>唇边仍然是消耗件</b>，做成可拆卸的卡扣式，方便定期更换。</li>
 
-    <li><b>⑦ 玻璃拐角处不要贴边作业。</b>
+    <li><b>⑦ 玻璃拐角处不要贴边作业 —— 但过棱时允许靠近。</b>
       <br>鱼缸的竖直棱边有圆角，曲率会破坏唇边的线接触密封。控制上给壁面四周留 30–40 mm 的安全边距，
-      刷辊也相应地不要伸到边缘。<b>这一步同时还能避免刷辊把缸角的硅胶密封胶刮坏。</b></li>
+      刷辊也相应地不要伸到边缘。<b>这一步同时还能避免刷辊把缸角的硅胶密封胶刮坏。</b>
+      <br><b>过棱是唯一的例外</b>（第 11 节）：吸盘落点必须进到离棱 <code>30 mm</code> 以内才够得着，
+      和上面的边距是同一个尺度，所以两条规则不冲突 —— <b>作业时退出 30–40 mm，过棱时按第 11 节的 <code>h1</code> 落点。</b>
+      但要注意：<b>落点位置比作业位置更靠近圆角，唇边在那里是短时承力，不是长时间作业</b>。</li>
 
-    <li class="w"><b>⑧ 三个推杆电机要带磁角度传感器（AS5600 级）。</b>
+    <li class="w"><b>⑧ 三个推杆电机要带磁角度传感器（AS5600 级），被动关节也必须带角度反馈。</b>
       <br>三足 3-RPR 有一个白拿的性质：三只吸盘都吸住时，<b>三根推杆的长度唯一确定机身位姿
       <code>(x, y, φ)</code></b> —— 这是运动学正解，不是积分。
       加上反馈之后，位置误差从「陀螺零偏积分」（随时间累积、几十毫米、无上界）
       变成「标定系数 + 丝杆回差」（<b>有界</b>、10 mm 级、不随运行时间增长）。
+      <br><b>但这句话在第 11 节的腿上加膝之后不再严格成立。</b>过棱版每条腿的关节链是
+      方位铰（被动）→ 面外俯仰（主动）→ 伸缩（主动）→ 膝（被动、可锁止）→ 定长远端段。
+      主动关节 3 俯仰 + 3 伸缩 = <b>6 个</b>，被动关节 3 方位 + 3 膝 = 6 个；
+      <b>被动关节不给角度就没有唯一正解</b>，所以这 6 个也必须进反馈回路
+      （膝可以用便宜的电位器，方位铰量程很小）。<b>这会把 I2C 上的从站从 3 只抬到 10 只 AS5600（十个电机各一只，地址全是 0x36，要两片 TCA9548A），
+       6 个被动关节另走电位器 + ADS1115</b> ——
+      接口细节见 <a href="ctrl.html">主控与传感器设计</a> 第 3 节 D。
       <br>三条真正的理由，按重要性：<b>① ±5 mm 的对接伺服在开环下根本不可能实现</b>
       （有刷直流电机没有「步距」这个概念）；<b>② 看门狗复位后腿的位置未知</b>，
       没有限位开关可以回零，没有编码器这个步态无法恢复；
@@ -1302,6 +1318,219 @@
       <br>这个推导会直接决定三件事：电机要不要减速箱、丝杆导程取多少、
       以及<b>「推杆电机与吸附电机统一型号」这条备件通用性还成不成立</b>。</li>
   </ul>
+</div>
+
+<div class="card">
+  <h2 id="s11"><span class="n">11</span>过棱与换面 — 直角棱也必须能过</h2>
+  <p class="cap">
+    一次只能在一个平面上作业是不可接受的。三只杯依次从 A 面搬到 B 面，<b>任何时刻至少两只吸附</b>。
+    这一节给这条步态的全部几何约束。<b>最难的恰好是最常见的：θ = 90°，矩形缸的每一道棱。</b>
+  </p>
+
+  <svg viewBox="0 0 700 420" role="img" aria-label="过棱截面：机身绕棱换面与落点" style="width:100%;height:auto">
+    <defs>
+      <linearGradient id="f11Glass" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#2c7d75"/><stop offset="1" stop-color="#1d7a70"/>
+      </linearGradient>
+    </defs>
+
+    <rect x="0" y="0" width="700" height="420" rx="14" fill="#fbfbfa"/>
+    <!-- 壁体（玻璃背后的实体） -->
+    <rect x="0" y="0" width="196" height="420" fill="#eceae5"/>
+    <rect x="196" y="356" width="504" height="64" fill="#eceae5"/>
+
+    <!-- 机身绕棱的转动轨迹：与两个平贴姿态重叠，故不画，只留文字说明 -->
+
+    <!-- 两个玻璃面 -->
+    <line x1="196" y1="420" x2="196" y2="0" stroke="#2c7d75" stroke-width="7" stroke-linecap="round"/>
+    <line x1="196" y1="356" x2="700" y2="356" stroke="#2c7d75" stroke-width="7" stroke-linecap="round"/>
+
+    <!-- ② 起点：三杯平贴 A 面（机身中心离棱 157 mm，即搜索起点） -->
+    <rect x="291" y="273" width="179" height="83" rx="12" fill="#e9e7e2" stroke="#a5a29b" stroke-width="1.6"/>
+    <line x1="291" y1="333" x2="470" y2="333" stroke="#a5a29b" stroke-width="1" stroke-dasharray="4 4"/>
+    <ellipse cx="465" cy="344.5" rx="14" ry="11.5" fill="none" stroke="#8fd8ce" stroke-width="1.4" stroke-dasharray="3 3"/>
+    <path d="M455,371 L466,357" fill="none" stroke="#a5a29b" stroke-width="0.9"/>
+    <text x="300" y="378" class="s-sub">尾杯（后侧 ±86.6 mm，虚线）</text>
+    <path d="M368,333 L270,333" fill="none" stroke="#a5a29b" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="319" cy="333" r="4" fill="#c08a2e"/>
+    <ellipse cx="270" cy="344.5" rx="14" ry="11.5" fill="url(#f11Glass)" stroke="#1d7a70" stroke-width="1.2"/>
+
+    <!-- ③ 终点：三杯平贴 B 面 -->
+    <rect x="196" y="143" width="83" height="179" rx="12" fill="#e9e7e2" stroke="#a5a29b" stroke-width="1.6"/>
+    <line x1="219" y1="143" x2="219" y2="322" stroke="#a5a29b" stroke-width="1" stroke-dasharray="4 4"/>
+    <ellipse cx="207" cy="317" rx="11" ry="14" fill="none" stroke="#8fd8ce" stroke-width="1.4" stroke-dasharray="3 3"/>
+    <path d="M219,219.5 L219,122" fill="none" stroke="#a5a29b" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="219" cy="171" r="4" fill="#c08a2e"/>
+    <ellipse cx="207" cy="122" rx="11" ry="14" fill="url(#f11Glass)" stroke="#1d7a70" stroke-width="1.2"/>
+
+    <!-- ⑥ 过棱中（示意，不是搜出来的姿态） -->
+    <polygon points="271.2,112.3 330,53.5 456.9,180.4 398.2,239.2" fill="none"
+             stroke="#c08a2e" stroke-width="1.6" stroke-dasharray="7 5" opacity="0.75"/>
+
+    <!-- ⑤ 鼻杯落点 h1 + 150 -->
+    <line x1="168" y1="317" x2="168" y2="122" stroke="#8b8880" stroke-width="1" stroke-dasharray="4 3"/>
+    <line x1="163" y1="317" x2="173" y2="317" stroke="#8b8880" stroke-width="1"/>
+    <line x1="163" y1="122" x2="173" y2="122" stroke="#8b8880" stroke-width="1"/>
+    <text x="150" y="228" text-anchor="end" class="s-lbl">150</text>
+    <!-- ④ 尾杯落点 h1 -->
+    <line x1="168" y1="356" x2="168" y2="317" stroke="#8b8880" stroke-width="1" stroke-dasharray="4 3"/>
+    <line x1="163" y1="356" x2="173" y2="356" stroke="#8b8880" stroke-width="1"/>
+    <text x="150" y="308" text-anchor="end" class="s-lbl">h1</text>
+
+    <!-- 带圈编号 -->
+    <g font-size="11.5" font-weight="700" text-anchor="middle">
+      <circle cx="176" cy="374" r="11" fill="#fbfbfa" stroke="#8b8880" stroke-width="1.2"/><text x="176" y="378" fill="#37352f">1</text>
+      <circle cx="430" cy="292" r="11" fill="#fbfbfa" stroke="#8b8880" stroke-width="1.2"/><text x="430" y="296" fill="#37352f">2</text>
+      <circle cx="240" cy="250" r="11" fill="#fbfbfa" stroke="#8b8880" stroke-width="1.2"/><text x="240" y="254" fill="#37352f">3</text>
+      <circle cx="126" cy="336" r="11" fill="#fbfbfa" stroke="#8b8880" stroke-width="1.2"/><text x="126" y="340" fill="#37352f">4</text>
+      <circle cx="126" cy="103" r="11" fill="#fbfbfa" stroke="#8b8880" stroke-width="1.2"/><text x="126" y="107" fill="#37352f">5</text>
+      <circle cx="364" cy="146" r="11" fill="#fbfbfa" stroke="#c08a2e" stroke-width="1.2"/><text x="364" y="150" fill="#37352f">6</text>
+    </g>
+
+    <text x="620" y="392" class="s-lbl">A 面</text>
+    <text x="214" y="40" class="s-lbl">B 面</text>
+    <text x="482" y="310" class="s-sub">机身</text>
+    <text x="360" y="42" class="s-sub">机身绕棱转 180° − θ</text>
+  </svg>
+  <div class="legend">
+    <ol>
+      <li><b>棱（θ = 90°）</b><span>两个玻璃面的交线。<b>它同时也是机身的横向轴</b> —— 过棱时横向坐标不变，这条是下面所有落点结论的前提。</span></li>
+      <li><b>起点：三杯平贴 A 面</b><span>机身离棱 <code>115.5 mm</code> 是下限，由前吸盘的唇边顶住（见 E 小节）；图中画在 <code>157 mm</code> 处，也就是第 D 节步态搜索的起点。机身不与玻璃接触。</span></li>
+      <li><b>终点：三杯平贴 B 面</b><span>细线是<b>鼻腿 a</b>（画在截面内），橙点 = 膝。<b>两个平贴姿态下三腿都是伸直的</b>（膝角 0°）—— 膝只在中间那一步折起来，这就是它平时可以锁死的原因。</span></li>
+      <li><b>尾杯落点 <code>h1</code></b><span>图中画在 <code>30 mm</code>（直角棱的取值；下限 20 mm）。两条尾杯必须落在 B 面的<b>同一高度</b>上：它们的横向坐标 <code>±86.6 mm</code> 在过棱中不变，所以「同高」是刚体三角形强制的，不是选的。</span></li>
+      <li><b>鼻杯落点 <code>h1 + 150 mm</code></b><span>鼻杯到两尾杯连线的距离恒为 <code>150 mm</code>（吸盘三角形的高），所以鼻杯落点被它锁死。</span></li>
+      <li><b>过棱中（示意）</b><span>这一步的姿态<b>不是搜出来的</b>，只用来示意机身绕棱转 <code>180 − θ</code>（θ = 90° 即转 90°）。真正的中间姿态带哪两条腿在动，见第 D 节。</span></li>
+    </ol>
+  </div>
+
+  <h3 id="s11a1"><span class="n">A</span>刚体三角形强制了落点</h3>
+  <p>
+    三只吸盘在机身里是一个固定的三角形：吸盘圆 <code>R_t = 100 mm</code>，
+    鼻杯到两条尾杯连线的距离正好 <code>150 mm</code>。它不会因为过棱而改变，
+    所以<b>过棱结束时三只杯的落点被这个三角形锁死</b>：
+  </p>
+  <ul class="pts">
+    <li>两条尾杯必须落在 B 面<b>同一高度</b> <code>h1</code> 上。它们的横向坐标是 <code>±86.6 mm</code>，
+      而<b>横向就是棱线方向、过棱中不变</b>，所以这个「同高」是刚性的、不是选的。</li>
+    <li>鼻杯必须落在 <code>h1 + 150 mm</code> 上。</li>
+  </ul>
+  <p>
+    <code>h1</code> 是这条步态<b>唯一</b>的设计自由度，它直接决定需要多少行程 —— 取小则行程短。
+    下限由圆角决定（第 10 节 ⑦）：∅25 杯的唇边半径 12.5 mm，<b>杯心离棱不得小于 20 mm</b>。
+  </p>
+  <div class="formula">
+    <p><b>落点的规则：下限 <code>20 mm</code>，直角棱取 <code>30 mm</code> 留余量，锐角棱（θ ≤ 45°）必须退到 <code>60 mm</code>。</b>
+    锐角棱退得远不是因为吸盘，是<b>机身自己的前上角先顶住了第二个面</b> —— 见 E 小节。
+    <br>落点一退，行程就涨：直角棱从 <code>50.5</code> 涨到 <code>55.5 mm</code>，
+    而这 <code>55.5 mm</code> 才是要选型的那根伸缩杆的指标。</p>
+  </div>
+
+  <h3 id="s11a2"><span class="n">B</span>腿要多一根面外俯仰轴</h3>
+  <p>
+    平面 3-RPR 的三根推杆被约束在机身平面里（转动铰的轴线垂直机身平面），<b>够不到另一面玻璃</b>。
+    这一点没有绕过去的办法：只要腿的末端被限制在机身平面内，它就永远只能落在机身所在的那个平面上。
+  </p>
+  <p>
+    所以每条腿加一根<b>面外俯仰轴</b>，绕棱线方向摆动 —— 三根轴的轴线方向相同（都平行棱线），
+    这是过棱唯一需要用到的方向。<b>推杆电机 3 → 6 个</b>；腿的方位铰（大腿转）仍然被动。
+  </p>
+  <div class="formula w">
+    <p><b>「末端能落在两个平面的任一个上」是"能换面"的定义，不是可选项。</b>
+    但只加俯仰轴还不够：推杆轴线相对玻璃面的偏角会摆到 <code>50°</code> 以上，刚性吸盘座吸收不了 ——
+    这就是下一节要解决的。</p>
+  </div>
+
+  <h3 id="s11a3"><span class="n">C</span>膝：把偏角从吸盘座挪走</h3>
+  <p>
+    平贴姿态下推杆轴线与玻璃面<b>几乎平行</b>（偏角 ≈ 0），靠吸盘座的直角弯把力转 90° 送到唇边 ——
+    这条刚性路径是 <a href="suction.html">吸附单元</a> 的载荷前提（壁面 → 唇边 → 吸盘刚性座 → 机身）。
+    过棱时这个角要摆到 50° 以上，<b>刚性座吸收不了</b>。
+  </p>
+  <p>两条路，选了后者：</p>
+  <ul class="pts">
+    <li><b>柔性球窝座：</b>把座做成能吸收 50–85° 的球窝。问题是它在平贴作业时必须重新锁死，
+      否则刷辊那 <code>0.058 N·m</code> 的剪切力矩没有刚性路径可走 —— 等于把已经算清的问题重新打开一遍。</li>
+    <li class="w"><b>腿中间加一个膝（选这条）：</b>远端段始终与所在玻璃面平行，偏角全部由膝吸收。
+      <b>吸盘座、唇边、载荷路径一个字都不用改。</b></li>
+  </ul>
+  <p>
+    膝做成<b>被动弹簧铰 + 锁止</b>：过棱时解锁，膝角由弹簧和接触力自己找位置，远端段自然贴向玻璃面；
+    平贴作业时锁死，把刚度补回来。它不需要第七个电机，但<b>必须带角度反馈</b> —— 被动关节不给反馈，
+    正解就没有输入（见 <a href="ctrl.html">主控与传感器设计</a> 第 6 节 B）。
+  </p>
+  <div class="formula">
+    <p><b>腿因此分成两节：</b><code>l1</code> = 铰点到膝（伸缩段，主动）、
+    <code>l2</code> = 膝到吸盘踝（定长 <code>30 mm</code>）。<br>
+    <b>标称姿态三腿伸直、膝角 0°、<code>l1 = 86.6 − 30 = 56.6 mm</code></b>；
+    过棱时膝折起来，由 <code>l1</code> 去够。</p>
+  </div>
+
+  <h3 id="s11a4"><span class="n">D</span>跨棱的账面</h3>
+  <table>
+    <thead>
+      <tr><th>棱角 θ</th><th>落点 h1</th><th>伸缩段 l1 要覆盖</th><th>行程</th><th>膝折角</th><th>机身离棱下限</th></tr>
+    </thead>
+    <tbody>
+      <tr class="hl"><td><b>90°</b></td><td><b>30 mm</b>（设计取值）</td><td>50.4 → 105.9 mm</td><td><b>55.5 mm</b></td><td>≤ 78.0°</td><td>115.5 mm（前吸盘唇边）</td></tr>
+      <tr><td>75°</td><td>30 mm</td><td>52.4 → 95.5 mm</td><td>43.0 mm</td><td>≤ 79.0°</td><td>115.1 mm（前吸盘座）</td></tr>
+      <tr><td>60°</td><td>20 mm</td><td>53.5 → 83.2 mm</td><td>29.7 mm</td><td>≤ 74.7°</td><td>115.5 mm（前吸盘座）</td></tr>
+      <tr><td>45°</td><td>60 mm</td><td>49.2 → 73.5 mm</td><td>24.3 mm</td><td>≤ 66.1°</td><td>135.2 mm（盖板前缘）</td></tr>
+      <tr><td>30°</td><td>60 mm</td><td>41.2 → 72.3 mm</td><td>31.1 mm</td><td>≤ 62.5°</td><td>170.7 mm（盖板前缘）</td></tr>
+    </tbody>
+  </table>
+  <p>（<b>θ = 90° 那一行是设计输入，其余是余量。</b>三条腿里最长的那根决定行程，瓶颈永远是<b>步 1</b> ——
+    尾右杯绕过棱落到 B 面那一步。
+    <br>除 90° 那一行外，表里的 <code>h1</code> 都是搜索自己收敛到的值（都贴在 <code>20 mm</code> 这条圆角下限上）。
+    <b>直角棱这一行按设计取值画在 <code>30 mm</code></b>：多退这 10 mm 是为了躲开圆角与装配公差，
+    代价是行程从 <code>50.5</code> 涨到 <code>55.5 mm</code> ——
+    <b>要选型的是 <code>55.5 mm</code> 这根杆</b>，余量就留在这里。
+    <br>锐角棱两行的 <code>h1</code> 明显更大，不是吸盘要退，是<b>机身自己的前上角先顶住了</b>，见 E 小节。）</p>
+  <ul class="pts">
+    <li><b>行程要从 20–40 mm 长到 <code>55.5 mm</code>（矩形缸）。</b>∅4 单级杆在 30 mm 行程上就已经接近失稳
+      （见第 5 节），所以这必然变成<b>两级伸缩</b>，或者把杆加粗到 ∅6。
+      <br><b>要过锐角棱的话，范围比行程更麻烦：</b>同一根杆得覆盖 <code>l1 = 41.2 → 105.9 mm</code>
+      （<code>≈ 65 mm</code>），而不只是 90° 棱的 <code>50.4 → 105.9</code>。
+      <b>所以「支持哪些棱」要在选型前定下来</b> —— 只支持直角棱和连锐角棱一起支持，是两种规格的伸缩杆。</li>
+    <li><b>膝要能折到 85°。</b>折角上限设 60° 时 θ = 90° 无解。</li>
+    <li class="w"><b>下行余量要用满：</b>还有 <code>0.7 N</code> 的腿力余量没有做，
+      过棱时的推力需求远小于刷辊工况，电机不需要为过棱加大。</li>
+    <li><b>主腔不用开槽。</b>两条杆件始终待在离玻璃 18 mm 的薄层里（膝把远端段压平、近端段两端同高），
+      扫掠不进入主腔盒 <code>mz ∈ [12, 40]</code>。</li>
+    <li class="w"><b>换面本身要花时间和电，量级和擦完一整面墙相当。</b>
+      一次换面 3 步、约 <code>2–3 min</code>、约 <code>0.1 Wh</code>（量级估算，需实测）；
+      而擦完一整面 600 × 400 mm 的壁是 <code>2.1 min</code>、<code>0.13 Wh</code>
+      （见 <a href="work.html">作业机构设计</a> 第 5 节）。
+      <b>绕一个缸角的代价 ≈ 擦一面墙</b>，所以换面是<b>排程问题</b>，不是步态问题 ——
+      次数要攒着、要少，见 <a href="ctrl.html">主控与传感器设计</a> 第 6 节 E。</li>
+  </ul>
+  <div class="formula">
+    <p><b>载荷不用担心。</b>过棱最坏的一刻是两只杯承载、重心到杯约 <code>100 mm</code>：
+    <code>M = 0.4 N × 100 mm = 0.04 N·m</code>，仍低于 <a href="suction.html">吸附单元</a> 已按刷辊工况
+    设计过的 <code>0.058 N·m</code>。<b>过棱不是工况最恶劣的时刻</b>，唇边不必为它留余量。</p>
+  </div>
+
+  <h3 id="s11a5"><span class="n">E</span>锐角棱要倒角，钝角棱还没验</h3>
+  <p>机身自己能为过棱贴到多近，由它最靠前的外廓决定：</p>
+  <ul class="pts">
+    <li><b>θ = 90°：前吸盘的唇边，115.5 mm。</b>这是最常见的一档，也最紧。</li>
+    <li><b>θ ≤ 45°：换成盖板前缘</b>（135.2 / 170.7 mm）。锐角棱下第二个面斜着压过来，
+      先顶住的是机身<b>前上角</b>，不是吸盘。</li>
+  </ul>
+  <p>
+    所以要过锐角棱，<b>把盖板／主腔的前上角倒成斜面</b>比加长腿便宜得多 —— 这一刀直接把这 135 / 171 mm 压回去。
+    倒角的角度按最尖的那一档棱定，斜面与两个玻璃面的夹角都要留够。
+  </p>
+  <div class="formula w">
+    <p><b>还没验的三条，选型前必须补：</b><br>
+    ① 三步姿态是各自独立搜出来的，<b>步与步之间的连续性没有检查</b>（真实需要的行程会比上表略大）；<br>
+    ② 落点的<b>横向偏移</b>没建模 —— 本文假设三条腿都落在横向 ±86.6 / 0 mm 的标准站位上。<br>
+    另外 <b>θ &gt; 90°（六角缸、转角缸）这一轮没得到可信结论</b>：旋转量更小、按趋势应该更容易，
+    但姿态搜索在钝角下会找出「扭曲姿态」的假解。<b>不要拿它当结论用。</b><br>
+    ③ <b><a href="model.html">整机三维示意</a> 里的腿还是单级推杆</b>（前两条是几何，这条是文档）：
+    加了面外俯仰轴与膝之后，<code>model.html</code> 的 <code>CFG</code>、<code>LAYERS</code>
+    和 <code>checks()</code> 都要跟着改 —— 否则它的干涉自检表会继续用一个已经不存在的腿报「通过」。</p>
+  </div>
+
 </div>
 
 <footer>

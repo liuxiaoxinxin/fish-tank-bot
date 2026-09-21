@@ -108,7 +108,8 @@
     <tr>
       <td style="white-space:nowrap">③ 三足整机</td>
       <td>② 的量 ×3，加刷辊、7 路驱动、传感器套件、电池、全部打印件</td>
-      <td>能走完一面 600 × 400 的壁，换行不漏步</td>
+      <td>能走完一面 600 × 400 的壁，换行不漏步。
+        <br><b>这一批不含过棱换面的零件</b>（整机才是 10 个电机，见第 11 节）</td>
       <td style="white-space:nowrap">¥ 2–4 k</td>
     </tr>
     <tr>
@@ -647,7 +648,8 @@
       <td style="white-space:nowrap">电机驱动</td>
       <td>H 桥 × 7 路；推杆 ×3 走 MCPWM，膜片 ×3 + 刷辊走 LEDC</td>
       <td style="white-space:nowrap">4 片双路</td>
-      <td><span class="tag w">型号未给</span>文档只给了路数和拓扑，没给芯片。全是有刷直流，双路 H 桥 4 片正好 8 路</td>
+      <td><span class="tag w">型号未给</span>文档只给了路数和拓扑，没给芯片。全是有刷直流，双路 H 桥 4 片正好 8 路。
+        <br><b>这是 demo 的口径（7 个电机）；过棱版的整机是 10 个电机、5 片</b></td>
     </tr>
     <tr class="hl">
       <td style="white-space:nowrap">主 buck</td>
@@ -788,9 +790,19 @@
   <li><strong>差压传感器、四象限光电二极管、红外对管的型号全部没给。</strong>三样都要自行选型，其中差压传感器还要自己决定参考腔怎么接。</li>
   <li><strong>膜片要打 9 组样、刷丝要打 3 根样、刮条要先手动刮。</strong>这三样都不是「下单」而是「打样」。</li>
   <li><strong>坞站线圈的匝数、线径、电感、谐振电容全部没给。</strong>要绕了才知道，而且第一步实验测出真实效率之后，间隙 13 mm / 效率 45% / 入电池 2.2 W / 停留 5 min 这四个数要全部重算。</li>
+  <li class="w"><strong>过棱换面的零件整批没定，这一份清单里也没有 —— 买了 demo 的腿就买不到整机的腿。</strong>
+    整机要过棱（含 90° 直角棱，见 <a href="motion.html">运动单元设计</a> 第 11 节），
+    每条腿因此变成<b>两级伸缩 + 面外俯仰轴 + 被动可锁止膝</b>：伸缩杆从 ∅4 单级换成
+    <b>∅8–10 两级、行程 <code>55.5 mm</code></b>（demo 的 ∅4 单级在 30 mm 行程上就接近屈曲极限），
+    再加 3 个俯仰电机、3 套膝锁与角度反馈 —— 电机从 7 个变 10 个、H 桥从 4 片变 5 片。
+    <b>demo 的验收判据是「走完一面 600 × 400 的墙」，本来就不含过棱，所以这里照 7 个电机下单是对的</b>，
+    但要知道这是<b>为 demo 省掉的一整块</b>，不是设计里没有。
+    杆径选 ∅8 还是 ∅10 还决定总厚是 64 还是 66 mm（<a href="body.html">主体设计</a> 第 1 节，待选型）。</li>
   <li><strong>连接杆穿顶盖的动密封：O 圈还是波纹管，二选一未定。</strong></li>
   <li><strong>作业头的无源识别：反射图案还是小磁铁，二选一未定。</strong></li>
-  <li><strong>IMU 二选一未定</strong>（BMI270 还是 QMI8658）；<strong>编码器接口二选一未定</strong>（TCA9548A + AS5600 还是 SPI 的 MT6701）；<strong>逆变驱动二选一未定</strong>（专用 IC 还是自激）。</li>
+  <li><strong>IMU 二选一未定</strong>（BMI270 还是 QMI8658）；<strong>编码器接口二选一未定</strong>（TCA9548A + AS5600 还是 SPI 的 MT6701），
+    而<b>整机要给 10 个电机 + 6 个被动关节做反馈</b>：AS5600 地址固定 0x36，
+    一片 TCA9548A 八路已经不够（见 <a href="ctrl.html">主控与传感器设计</a> 第 3 节 D）；<strong>逆变驱动二选一未定</strong>（专用 IC 还是自激）。</li>
   <li><strong>电池 1000 mAh 明显偏大</strong>，但改它要连排水体积、配重、热阻、平均功耗一起重算，不能单独改。demo 先按 1000 mAh 走。</li>
   <li><strong>配重片数量没给。</strong>只有每片 25 g、总量约 253 g、±100 g 可调 —— 而且这个 253 g 在换成打印壳之后就不成立了，见第 10 节。</li>
   <li><strong>坞站顶块的尺寸材料没给</strong>，而且它只在 body.html 出现，dock.html 全文没提。</li>

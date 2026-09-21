@@ -176,7 +176,8 @@
 
   <div class="formula w">
     <b>哪几个数是「示意」—— 这几个要特别注意</b><br>
-    <b>① 推杆壳体外径 ∅10。</b>文档只给了丝杆 ∅4，没给外面的壳。
+    <b>① 腿的杆径与中间的级。</b>文档只给了丝杆 ∅4 和「过棱要两级、杆径涨到 ∅8–10」，
+    没给每级的具体直径。模型画外管 ∅10 / 中间级 ∅7 / 远端段 ∅6。
     <br><b>② 三条铰点支柱的形状。</b>文档只说「普通球头或销轴铰链就够，不是精密件」。
     <br><b>③ 刮条的全部几何。</b>文档明确写了「角度、尺寸未指定」，只有 Shore A 40。
     <br><b>④ 主腔里各零件的具体摆位。</b>文档只给了质量（55 g 主控、55 g 电池）和
@@ -184,8 +185,11 @@
     <br><b>⑤ 刷辊的驱动仓。</b>文档给了磁耦合的 ∅30 / 4 极 / 1.2 mm 气隙，
     但整个驱动链沿刷辊轴向要占多长没给 —— 模型里它伸出支撑三角形约 5 mm，
     <b>这是取舍不是结论</b>（见 <a href="#s6">第 6 节</a>）。
+    <br><b>⑥ 膝铰座与俯仰叉耳的外径。</b>过棱换面的结论只到「膝盖要能折到 85°、
+    行程 55.5 mm」，铰座本身多大没给。模型取膝铰座 ∅14 ——
+    <b>它正好塞不进 12 mm 的传动层，这就是 <a href="#s6">第 6 节 ⑦</a> 那条的由来</b>。
     <br><span style="color:var(--ink-3);font-size:12.5px">
-    这五条如果要定稿，应该反过来写回对应文档，而不是让 model.html 成为唯一出处。</span>
+    这六条如果要定稿，应该反过来写回对应文档，而不是让 model.html 成为唯一出处。</span>
   </div>
 </div>
 
@@ -258,7 +262,7 @@
       <ol>
         <li><b>吸盘圆 R_t = 100 mm</b><span>三只 ∅25 吸盘，等边三角形，边长 173.2 mm</span></li>
         <li><b>铰点圆 r = 50 mm</b><span>机身上的三个铰点，整体相对吸盘圆转 60°</span></li>
-        <li><b>推杆中位长 86.603 mm</b><span>L = √(R_t²+r²−2·R_t·r·cos60°)，行程 ±15 mm</span></li>
+        <li><b>腿的中位长 86.603 mm</b><span>L = √(R_t²+r²−2·R_t·r·cos60°)，分成 l1（伸缩 56.6）+ l2（膝到踝 30）</span></li>
         <li><b>刷辊落在三角形的宽处</b><span>轴心 y = −25，接触线半宽 72 mm &gt; 辊长一半 40 mm</span></li>
       </ol>
     </div>
@@ -272,9 +276,10 @@
     ±15 mm 行程对应 <code>Δφ = 0.3 rad ≈ 17°</code>，与
     <a href="motion.html">motion.html</a> 第 7 节一致。
     <br><span style="color:var(--ink-3);font-size:12.5px">
-    模型里推杆画在中位位形，没有做步态动画 ——
-    步态的逐帧几何在 <a href="motion.html">motion.html</a> 第 2 节的四帧图里，
-    这里重复一遍没有增量价值。</span>
+    模型画的是<b>平贴中位位形</b>：三腿伸直、膝角 0、伸缩段 l1 = 56.6 mm。
+    <b>步态动画和过棱动画都没有做</b> ——
+    步态的逐帧几何在 <a href="motion.html">motion.html</a> 第 2 节，
+    过棱的姿态与读数在第 11 节，这里重复一遍没有增量价值。</span>
   </div>
 
   <h3 id="s3a2"><span class="n">B</span>刷辊的落位约束</h3>
@@ -354,7 +359,7 @@
       <tr class="hl"><td><b>吸盘 + 膜片腔</b></td><td>0 – 18</td><td>18</td>
         <td>唇边、吸盘碗、∅20 驱动膜片</td><td>青绿半透明（硅胶）</td></tr>
       <tr class="hl"><td><b>传动层</b></td><td>18 – 30</td><td>12</td>
-        <td>推杆、丝杆、导向，以及<b>三条铰点支柱</b></td><td>暖灰（铝）</td></tr>
+        <td>腿（外管 + 中间级 + 膝座）、销轴，以及<b>三条铰点支柱</b></td><td>暖灰（铝）</td></tr>
       <tr class="hl"><td><b>主腔</b></td><td>30 – 58</td><td>28</td>
         <td>推杆电机、刷辊电机、主控板、电池、配重</td><td>暖灰壳体 + 内部件</td></tr>
       <tr class="hl"><td><b>盖板 + O 圈</b></td><td>58 – 64</td><td>6</td>
@@ -363,9 +368,11 @@
   </table>
 
   <div class="formula">
-    <b>传动层只有 12 mm，而它要同时装下三根推杆和三个铰点</b><br>
+    <b>传动层只有 12 mm，而它要同时装下三条腿和三个铰点</b><br>
     三维里看得很清楚：<b>三条腿全部落在这 12 mm 里</b>。
-    推杆 ∅10（示意）在 z = 24 的平面内摆动，
+    过棱换面把这条腿变成了两节（<a href="motion.html">motion.html</a> 第 11 节），
+    <b>于是这 12 mm 里现在多了三样东西：面外俯仰叉耳、两级伸缩、膝铰座</b>。
+    外管 ∅10（示意）在 z = 24 的平面内摆动，
     上下各只剩 7 mm 和 6 mm —— <b>这是整机上余量最小的一层</b>。
     <br>主腔的 28 mm 反而不紧张，因为「电机全部横放」把 ∅12 的直径
     转到了水平面里，厚度方向只占 12 mm。
@@ -464,9 +471,12 @@
           只有 4.1 mm 的容身区间</td>
         <td><b>已解决：刷辊缩到 80 mm</b>（<a href="work.html">work.html</a> 第 7 节），
           区间放宽到 38.7 mm，俯视图与正文对得上。见 <a href="#s3a2">第 3 节 B</a></td></tr>
-      <tr><td><b>③ 推杆行程</b></td>
+      <tr><td><b>③ 步态行程</b></td>
         <td>§1/§2/§9 写 <b>20–40 mm</b>／§5③ 和 §7 用 <b>30 mm（±15）</b></td>
-        <td>取 <b>±15 mm</b>，与 §7 的转向计算自洽。模型画中位，行程不影响外观</td></tr>
+        <td>取 <b>±15 mm</b>，与 §7 的转向计算自洽。
+          <b>过棱换面又加了一个数：伸缩段要覆盖 <code>l1 = 50.4 → 105.9 mm</code>（55.5 mm）</b>
+          （<a href="motion.html">motion.html</a> 第 11 节 D），它<b>大于</b>步态那 30 mm ——
+          选伸缩杆时按 55.5 选，步态的 ±15 是它的子区间</td></tr>
       <tr><td><b>④ 吸盘单元的总长度</b></td>
         <td><a href="suction.html">suction.html</a> 剖面按比例是 <b>∅25 × 76 mm</b>／
           <a href="body.html">body.html</a> 只给吸盘+膜片腔 <b>18 mm</b></td>
@@ -480,6 +490,21 @@
       <tr><td><b>⑥ motion.html 图 1 的比例</b></td>
         <td>同一张图里吸盘圆按 2 px/mm、铰点圆按 0.92 px/mm 画（黄圆小了约 2.2 倍）</td>
         <td>不影响建模（角度是对的，只有半径比例错），但<b>读那张图的半径要当心</b></td></tr>
+      <tr class="hl"><td><b>⑦ 膝铰座塞不进传动层</b></td>
+        <td><a href="body.html">body.html</a> 第 1 节的传动层是 <b>12 mm</b>／过棱要求膝能折 85°
+          并带锁止，铰座做不到 ∅12 以内</td>
+        <td>模型取膝铰座 <b>∅14</b>，自检第 ⑫ 行因此报红 ——
+          <b>这一条不是建模错误，正是 body.html 第 1 节选项②的由来</b>：
+          膝铰座撑到 ∅14 就要把传动层加到 14 mm，总厚 64 → 66 mm。
+          杆径选到 ∅8 还是 ∅10 会一起决定这个结果</td></tr>
+      <tr><td><b>⑧ 刷辊的轴向位置</b></td>
+        <td>文档（<a href="body.html">body.html</a> 第 1 节剖面）把刷辊轴心放在
+          <b>重心之后 18 mm</b>，并明说<b>刷辊与主腔在投影上重叠、要挖槽让开</b>／
+          模型把刷辊放在可行区间的下限 25 mm，与主腔留 3.5 mm 净距</td>
+        <td>模型的可行区间是 <b>−25 ≤ y ≤ 13.7</b>，两个值都在区间内。
+          <b>模型选了不挖槽的那一端</b>，因为挖槽要改主腔底板形状，
+          而本模型的用途是对齐尺寸、不是出图。要按文档那张剖面定稿，
+          得把刷辊挪到 −18 并在主腔底板上开一条槽</td></tr>
     </tbody>
   </table>
 
@@ -648,10 +673,24 @@ const CFG = {
   },
   leg: {
     plane: 24,       // 推导：传动层 18–30 的中面
-    sleeveD: 10,     // 示意：文档只给丝杆 ∅4，没给外面的壳
-    rodD: 4,         // src: motion.html §5③「∅4 推杆」
+    sleeveD: 10,     // 示意：两级伸缩的外管 —— 文档只说「杆径涨到 ∅8–10」
+    rodD: 4,         // src: motion.html §5③「∅4 推杆」，单级时代的数；
+                     //  §11D 判定它过不了棱，已换成上面两级，这一条留作对照
     bossD: 14,       // 示意：铰链「普通球头或销轴就够，不是精密件」
     stroke: 30,      // src: motion.html（±15 mm；文档另有 20–40 的说法，见 §6③）
+
+    /* ── 过棱换面：这条腿是两节的（motion.html §11）───────────────
+       关节链 = 方位铰（被动）→ 面外俯仰（主动）→ 伸缩（主动）
+                → 膝（被动、可锁止）→ 定长远端段。
+       这一步把「推杆」变成了「腿」：本页的 leg 组现在画的是这条链，
+       平贴中位时膝角为 0（伸直），所以外形与换面之前一致。 */
+    l2: 30,          // src: motion.html §11C「膝到吸盘踝 = 定长 30 mm」
+    l1min: 50.4,     // src: motion.html §11D 表（θ = 90°，落点 h1 = 30 mm）
+    l1max: 105.9,    // src: motion.html §11D 表（同一个姿态的最长腿）
+    stage2D: 7,      // 示意：两级伸缩的中间级 —— 文档只说「杆径涨到 ∅8–10」
+    kneeD: 14,       // 示意：膝铰座外径，与 bossD 同量级，见 §6⑦
+    pitchD: 12,      // 示意：面外俯仰叉耳的外径
+    plateT: 3.0,     // 示意：叉耳 / 膝夹板厚度
   },
 
   /* ── 厚度分层 ────── src: body.html §1，z 从玻璃面起算 ───────── */
@@ -723,6 +762,11 @@ DERIVED.L0 = Math.sqrt(
   - 2 * CFG.foot.Rt * CFG.hinge.r * Math.cos(CFG.hinge.off * DEG));
 DERIVED.legLen = DERIVED.feet.map((f, i) => Math.hypot(
   f[0] - DERIVED.hinges[i][0], f[1] - DERIVED.hinges[i][1]));
+/* 腿是两节的：l1（髋 → 膝，伸缩段）+ l2（膝 → 踝，定长）。
+   平贴中位三腿伸直，所以 l1 的标称值就是 L₀ − l2 —— motion.html §11C */
+DERIVED.l2 = CFG.leg.l2;
+DERIVED.l1nom = DERIVED.L0 - DERIVED.l2;
+DERIVED.l1span = CFG.leg.l1max - CFG.leg.l1min;   // 过棱时伸缩段要覆盖的范围
 DERIVED.edge = CFG.foot.Rt * Math.sqrt(3);              // 支撑三角形边长 173.2
 DERIVED.gapTotal = Object.values(CFG.gap).reduce((a, b) => a + b, 0);   // 应为 13.0
 
@@ -858,7 +902,7 @@ function buildDock() {
   return g;
 }
 
-/* ── 单只吸盘单元（不含推杆）──────────────────────────────────
+/* ── 单只吸盘单元（不含腿：腿的踝端销接在上面那个铰座里）──────
    z 分层按 body.html §1：0–18 吸盘 + 膜片腔，18–30 传动层。
    suction.html 的剖面里这台单元轴向长 76 mm（含轴向电机），
    但 body.html 要求「电机全部横放」，所以这里只画到传动层为止。 */
@@ -873,7 +917,7 @@ function buildFoot() {
   g.add(mesh(cylZ(9, padDia / 2, 9.6, MAT.sili), MAT.sili, 0, 0, 7.2));
   // 膜片腔：∅20
   g.add(mesh(cylZ(chamberDia / 2, 9.6, L.pad - 12, MAT.alu), MAT.alu, 0, 0, (L.pad + 12) / 2));
-  // 传动层壳体：把 ∅20 收到 ∅12，接推杆座
+  // 传动层壳体：把 ∅20 收到 ∅12，顶上是腿的踝端铰座
   g.add(mesh(cylZ(6, chamberDia / 2, L.trans - L.pad, MAT.aluD), MAT.aluD, 0, 0, (L.pad + L.trans) / 2));
   // 铰点：轴线 ⊥ 玻璃，且穿过吸盘接触中心 —— motion.html §10④
   g.add(mesh(cylZ(CFG.leg.bossD / 2, CFG.leg.bossD / 2, 10, MAT.steel),
@@ -881,22 +925,56 @@ function buildFoot() {
   return g;
 }
 
-/* ── 推杆：从吸盘端铰点到机身端铰点，躺在传动层里 ───────────── */
+/* ── 一条腿：方位铰 → 面外俯仰 → 两级伸缩 → 膝 → 定长远端段 ──────
+   平贴中位（本页画的位形）：三腿伸直、膝角 0、l1 = L₀ − 30 = 56.6 mm。
+   关节链与节点位置见 motion.html §11C，杆径见 §11D 的选型结论。
+   所有销轴都画在中位：方位销沿 z（⊥ 玻璃），俯仰销与膝销沿 n（面内、
+   垂直腿的方向）—— 换面时腿就是绕 n 摆出玻璃平面的。 */
 function buildLeg(foot, hinge) {
   const g = new THREE.Group(); g.name = 'leg';
-  const z = CFG.leg.plane, R = CFG.leg.sleeveD / 2;
-  const a = new THREE.Vector3(foot[0], foot[1], z);
-  const b = new THREE.Vector3(hinge[0], hinge[1], z);
-  const dir = b.clone().sub(a).normalize();
-  const L = a.distanceTo(b);
+  const K = CFG.leg, z = K.plane;
+  const a = new THREE.Vector3(foot[0], foot[1], z);     // 踝（吸盘端）
+  const b = new THREE.Vector3(hinge[0], hinge[1], z);   // 髋（机身铰点）
+  const dir = b.clone().sub(a).normalize();             // 由踝指向髋
+  const L = a.distanceTo(b);                            // = L₀ = 86.603
+  const knee = a.clone().addScaledVector(dir, K.l2);    // 膝：离踝 l2 = 30
+  const l1 = L - K.l2;                                  // 伸缩段 = 56.6
+  // n = 面内、垂直腿的方向 —— 俯仰轴与膝轴都沿它（z × dir）
+  const n = new THREE.Vector3(-dir.y, dir.x, 0).normalize();
+  const off = (p, v, d) => p.clone().addScaledVector(v, d);
 
-  // 壳体（丝杆在里面，所以壳比杆长）
-  const shellEnd = a.clone().addScaledVector(dir, L * 0.66);
-  const shell = link(a, shellEnd, R, MAT.alu, 20);
-  g.add(shell);
-  // 伸出来的 ∅4 丝杆
-  g.add(link(shellEnd, b, CFG.leg.rodD / 2, MAT.steel, 12));
-  // 两端铰点轴：⊥ 玻璃，就是一截沿 z 的销
+  /* ① 髋端：方位销（⊥ 玻璃，被动）+ 面外俯仰叉耳（主动）
+     叉耳是两片夹板 + 一根沿 n 的销 —— 换面时伸缩段绕这根销摆出去 */
+  const yokeC = off(b, dir, -K.pitchD * 0.6);           // 叉耳中心，往腿内挪一点
+  [-1, 1].forEach(s => {
+    const p = off(yokeC, n, s * (K.pitchD / 2));
+    g.add(mesh(new THREE.BoxGeometry(10, K.plateT, 10), MAT.aluD, p.x, p.y, z));
+  });
+  g.add(link(off(yokeC, n, -K.pitchD * 0.65), off(yokeC, n, K.pitchD * 0.65),
+             2, MAT.steel, 12));
+
+  /* ② 两级伸缩：外管 ∅10 靠髋（固定），中间级 ∅7 伸向膝。
+     文档给的是「∅4 单级不够、要两级、杆径涨到 ∅8–10」（motion.html §11D）
+     —— ∅7 / ∅10 是示意，选型定下来要改这里和 checks ⑫ */
+  const tubeEnd = off(knee, dir, K.stage2D * 0.5);      // 二级杆截止处（离膝半个杆径）
+  const tubeMid = off(yokeC, dir, l1 * 0.55);
+  g.add(link(yokeC, tubeMid, K.sleeveD / 2, MAT.alu, 20));
+  g.add(link(tubeMid, tubeEnd, K.stage2D / 2, MAT.aluD, 16));
+
+  /* ③ 膝：铰座（沿 n 的圆柱 + 销）+ 锁止凸台。
+     膝是被动弹簧铰 + 锁止，平贴时锁死把刚度补回来 —— 见 motion.html §11C */
+  g.add(link(off(knee, n, -K.kneeD / 2), off(knee, n, K.kneeD / 2),
+             K.kneeD / 2 - 1.5, MAT.aluD, 16));
+  g.add(link(off(knee, n, -K.kneeD * 0.62), off(knee, n, K.kneeD * 0.62),
+             2.2, MAT.steel, 12));
+  g.add(mesh(new THREE.BoxGeometry(7, 5, 8), MAT.steel,
+             off(knee, n, K.kneeD * 0.75).x, off(knee, n, K.kneeD * 0.75).y, z));
+
+  /* ④ 远端段：膝 → 踝，定长 30 mm。它始终与所在玻璃面平行，
+     所以吸盘座的口径和载荷路径一个字都不用改（motion.html §11C）*/
+  g.add(link(knee, a, 3, MAT.steel, 14));
+
+  // ⑤ 两端铰点轴：⊥ 玻璃，就是一截沿 z 的销
   [a, b].forEach(p => {
     const pin = mesh(cylZ(3, 3, 12, MAT.steel), MAT.steel, p.x, p.y, z);
     g.add(pin);
@@ -1107,7 +1185,7 @@ function assemble() {
     add('foot', foot);
   });
 
-  // 三条推杆
+  // 三条腿（每条 = 方位铰 + 面外俯仰 + 两级伸缩 + 膝 + 远端段）
   DERIVED.feet.forEach((f, i) => add('leg', buildLeg(f, DERIVED.hinges[i])));
 
   add('cavity', buildCavity());
@@ -1216,8 +1294,14 @@ function buildLabels() {
     return g;
   };
   const foot0 = DERIVED.feet[0];                                    // 顶点那个吸盘
-  const leg2 = [(DERIVED.feet[2][0] + DERIVED.hinges[2][0]) / 2,   // 右腿中点
-                (DERIVED.feet[2][1] + DERIVED.hinges[2][1]) / 2, CFG.leg.plane];
+  /* 右腿的**膝**：踝往髋走 l2 = 30 mm。锚点打在膝上，
+     因为过棱换面加出来的零件（两级伸缩、俯仰叉耳、膝铰座）都在这一段 */
+  const leg2 = (() => {
+    const f = DERIVED.feet[2], h = DERIVED.hinges[2];
+    const dx = h[0] - f[0], dy = h[1] - f[1], L = Math.hypot(dx, dy);
+    const d = CFG.leg.l2 / L;
+    return [f[0] + dx * d, f[1] + dy * d, CFG.leg.plane];
+  })();
   const zTx = -G.glass - G.shell - G.txPot;
   const zRx = G.water + G.shroud + G.rxSelf;
   return [
@@ -1237,7 +1321,7 @@ function buildLabels() {
     /* 前窗模块与推杆在正对玻璃的视角下会挤在一起，所以右中留给前窗 */
     mk('前窗模块 POM', 'Ø50 线圈 + 4 光电管',
        [0, S.y, (S.z0 + S.z1) / 2], [0.87, 0.50]),
-    mk('推杆 3-RPR', 'L₀ = 86.603 · 行程 ±15',
+    mk('腿 3-RPR（两节）', 'l1 56.6 + l2 30 · 膝可锁止',
        leg2, [0.78, 0.15]),
   ];
 
@@ -1319,7 +1403,7 @@ function checks() {
   // ⑦ 三条腿中位等长，且等于余弦定理算出的 L₀
   const dmax = Math.max(...DERIVED.legLen.map(l => Math.abs(l - DERIVED.L0)));
   out.push({
-    name: '三条推杆中位等长 = L₀',
+    name: '三条腿中位等长 = L₀',
     want: `偏差 ≤ 0.01 mm`,
     got: `L₀ ${DERIVED.L0.toFixed(3)} · 最大偏差 ${dmax.toFixed(3)} mm`,
     ok: dmax <= 0.01,
@@ -1341,6 +1425,28 @@ function checks() {
     want: '13.0 mm（dock.html §3）',
     got: `${DERIVED.gapTotal.toFixed(1)} mm · z ${zTx.toFixed(1)} → +${zRx.toFixed(1)}`,
     ok: Math.abs(DERIVED.gapTotal - 13) < 0.05 && Math.abs((zRx - zTx) - 13) < 0.05,
+  });
+  // ⑩ 腿的两节：标称伸缩段 = L₀ − l2（平贴中位三腿伸直，膝角 0）
+  const KL = CFG.leg;
+  out.push({
+    name: '伸缩段标称长 = L₀ − l2（膝角 0）',
+    want: `${(DERIVED.L0 - KL.l2).toFixed(1)} mm`,
+    got: `L₀ ${DERIVED.L0.toFixed(1)} − l2 ${KL.l2} = ${DERIVED.l1nom.toFixed(1)} mm`,
+    ok: DERIVED.l1nom > 0 && DERIVED.l1nom < DERIVED.L0,
+  });
+  // ⑪ 伸缩段要覆盖过棱换面的范围 —— motion.html §11D
+  out.push({
+    name: '伸缩段覆盖过棱范围',
+    want: `中位 ${DERIVED.l1nom.toFixed(1)} 落在 ${KL.l1min} → ${KL.l1max} 内`,
+    got: `要覆盖 ${DERIVED.l1span.toFixed(1)} mm（θ = 90° 直角棱那一步最长）`,
+    ok: KL.l1min <= DERIVED.l1nom && DERIVED.l1nom <= KL.l1max,
+  });
+  // ⑫ 膝铰座塞不塞得进 12 mm 的传动层 —— 这一步决定总厚是 64 还是 66
+  out.push({
+    name: '膝铰座外径 ≤ 传动层 12 mm',
+    want: '≤ 12.0 mm（body.html §1 选项①，总厚不变）',
+    got: `∅${KL.kneeD.toFixed(1)} → 走选项②：传动层 12 → 14 mm，总厚 64 → 66 mm`,
+    ok: KL.kneeD <= L.trans - L.pad,
   });
   return out;
 }
@@ -1624,9 +1730,13 @@ function reportChecks() {
     `<tr class="${r.ok ? 'hl' : 'bad'}"><td>${r.name}</td><td>${r.want}</td>` +
     `<td><b>${r.got}</b></td><td>${r.ok ? '通过' : '<b>不通过</b>'}</td></tr>`).join('');
   const sum = document.getElementById('chk-sum');
+  /* 未通过的行不一定都是错：⑫（膝铰座）本来就报红 ——
+     它是「待选型」而不是「算错」，见第 6 节 ⑦。所以这句文案要中性。 */
+  const tail = `腿中位长 ${DERIVED.L0.toFixed(3)} mm（l1 ${DERIVED.l1nom.toFixed(1)} + l2 ${DERIVED.l2}）`
+    + ` · 三角形边长 ${DERIVED.edge.toFixed(1)} mm · 间隙合计 ${DERIVED.gapTotal.toFixed(1)} mm`;
   if (sum) sum.textContent = bad.length
-    ? `✗ ${bad.length} 条未通过 —— 控制台有明细`
-    : `✓ ${rows.length} 条约束全部通过 · 推杆中位长 ${DERIVED.L0.toFixed(3)} mm · 三角形边长 ${DERIVED.edge.toFixed(1)} mm · 间隙合计 ${DERIVED.gapTotal.toFixed(1)} mm`;
+    ? `● ${rows.length - bad.length} 条通过 · ${bad.length} 条未通过（不一定是错，逐条看第 6 节）· ${tail}`
+    : `✓ ${rows.length} 条约束全部通过 · ${tail}`;
 }
 
 /* ── 对外接口：控制台里改参数用 ───────────────────────────── */
