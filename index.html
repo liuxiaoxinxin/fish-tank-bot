@@ -13,8 +13,9 @@
   <ul class="side-list">
     <li><a href="#s1" title="1 · 六份设计文档">1 · 六份设计文档</a></li>
     <li><a href="#s2" title="2 · 三维示意与物料清单">2 · 三维示意与物料清单</a></li>
-    <li><a href="#s3" title="3 · 从哪一篇读起">3 · 从哪一篇读起</a></li>
-    <li><a href="#s4" title="4 · 怎么读这些文档">4 · 怎么读这些文档</a></li>
+    <li><a href="#s3" title="3 · 独立项目">3 · 独立项目</a></li>
+    <li><a href="#s4" title="4 · 从哪一篇读起">4 · 从哪一篇读起</a></li>
+    <li><a href="#s5" title="5 · 怎么读这些文档">5 · 怎么读这些文档</a></li>
   </ul>
 </nav>
 <button class="side-btn" type="button" aria-label="目录">&#9776;</button>
@@ -24,7 +25,7 @@
 <header>
   <div class="page-icon">🐟</div>
   <h1>鱼缸壁面清洁机器人 — 结构设计文档</h1>
-  <p class="sub">吸附在鱼缸玻璃壁面上、靠封闭死容积负压固定的爬壁清洁机器人。整机接近中性浮力，步进式运动，无真空泵、无气动管路。八份文档，用浏览器直接打开即可。</p>
+  <p class="sub">吸附在鱼缸玻璃壁面上、靠封闭死容积负压固定的爬壁清洁机器人。整机接近中性浮力，步进式运动，无真空泵、无气动管路。八份文档，外加一份独立项目，用浏览器直接打开即可。</p>
 </header>
 
 <div class="keybox">
@@ -89,7 +90,7 @@
     <span class="di">🧊</span>
     <div>
       <b>整机三维示意<span class="tag b">需联网</span></b>
-      <p>three.js 交互模型，按文档标注尺寸建模（对不上的一律标成「示意值」，第 2 节 B 逐条列出）。分层展开滑杆、四个视角预设、干涉自检表（改参数后自动重算）</p>
+      <p>three.js 交互模型，结构 / 步态 / 过棱 / 回坞四个模式。腿每帧逆解、读数越限变红；干涉自检表逐帧重算，建模暴露的问题列在第 8 节</p>
     </div>
   </a></li>
   <li><a href="bom.html">
@@ -105,7 +106,20 @@
   <p><strong>只有 <code>model.html</code> 需要联网</strong> —— 它的 three.js 从 CDN 取，离线打开会看到一段说明，页面其余部分照常。原因见 <a href="AGENTS.md">AGENTS.md</a> 第 6 节。其余七篇都是纯静态的，双击就能看。</p>
 </div>
 
-<h2 id="s3"><span class="n">3</span>从哪一篇读起</h2>
+<h2 id="s3"><span class="n">3</span>独立项目</h2>
+<p class="cap">和鱼缸机器人无关、只是借用同一套文档风格的设计。它的参数不参与上面八篇的跨文档一致性。</p>
+
+<ul class="doclist">
+  <li><a href="gimbal/gimbal.html">
+    <span class="di">🎥</span>
+    <div>
+      <b>手持三轴稳定云台<span class="tag b">独立项目</span></b>
+      <p>手机 / 运动相机用的三轴稳定云台。单侧 L 臂与三轴不共点的平衡几何、梁单元频响定带宽、步行与慢跑的抖动预算、力矩与续航核算、Demo 物料清单</p>
+    </div>
+  </a></li>
+</ul>
+
+<h2 id="s4"><span class="n">4</span>从哪一篇读起</h2>
 <p class="cap">推荐顺序。前三步是「这东西凭什么能吸住、能走、能擦」，后面才是把它拼起来。</p>
 
 <ul class="pts">
@@ -119,7 +133,7 @@
   <li><strong><a href="model.html">整机三维示意</a></strong> — 最后看。它把上面所有数字变成一个能转、能拆开看的东西。</li>
 </ul>
 
-<h2 id="s4"><span class="n">4</span>怎么读这些文档</h2>
+<h2 id="s5"><span class="n">5</span>怎么读这些文档</h2>
 <p class="cap">这一节写给要改这些文档的人（包括以后的你自己）。</p>
 
 <table>
@@ -150,7 +164,7 @@
   <p><strong>不要在 HTML 里写死十六进制颜色</strong>，用 <code>assets/notion.css</code> 里的 CSS 变量。<code>AGENTS.md</code> 里有一份完整色板，是 Notion 原生色，不要再引入新颜色。</p>
 </div>
 
-<footer>这是文档库的入口页。八份文档都是单页 HTML + 内联 SVG，共享 <code>assets/</code> 下的样式与脚本，所以不要把某一篇单独拷走。所有内容为设计推导，非工程图纸。</footer>
+<footer>这是文档库的入口页。九份文档都是单页 HTML + 内联 SVG，共享 <code>assets/</code> 下的样式与脚本，所以不要把某一篇单独拷走。所有内容为设计推导，非工程图纸。</footer>
 </div>
 </main>
 <script src="assets/toc.js"></script>
