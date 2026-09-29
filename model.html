@@ -11,17 +11,25 @@
   <div class="side-doc"><span class="side-icon">🧊</span><span class="side-name">整机三维示意</span></div>
   <div class="side-label">目录</div>
   <ul class="side-list">
-    <li><a href="#s1" title="1 · 三维总览">1 · 三维总览</a></li>
+    <li><a href="#s1" title="1 · 三维演示">1 · 三维演示</a></li>
     <li><a href="#s2" title="2 · 建模约定与数据来源">2 · 建模约定与数据来源</a></li>
-    <li class="lv2"><a href="#s2a1" title="A · 坐标系：玻璃面就是 z0">A · 坐标系：玻璃面就是 z0</a></li>
-    <li class="lv2"><a href="#s2a2" title="B · 文档值 vs 示意值">B · 文档值 vs 示意值</a></li>
-    <li><a href="#s3" title="3 · 关键布局与干涉自检">3 · 关键布局与干涉自检</a></li>
-    <li class="lv2"><a href="#s3a1" title="A · 三足、铰点圆与推杆">A · 三足、铰点圆与推杆</a></li>
-    <li class="lv2"><a href="#s3a2" title="B · 刷辊的落位约束">B · 刷辊的落位约束</a></li>
+    <li class="lv2"><a href="#s2a1" title="A · 坐标系：跟着运动单元第 1 节走">A · 坐标系：跟着运动单元第 1 节走</a></li>
+    <li class="lv2"><a href="#s2a2" title="B · 文档值、推导值、示意值">B · 文档值、推导值、示意值</a></li>
+    <li><a href="#s3" title="3 · 结构与布局">3 · 结构与布局</a></li>
+    <li class="lv2"><a href="#s3a1" title="A · 三足与腿 a / b / c">A · 三足与腿 a / b / c</a></li>
+    <li class="lv2"><a href="#s3a2" title="B · 机尾：刷辊、刮条与跨梁">B · 机尾：刷辊、刮条与跨梁</a></li>
+    <li class="lv2"><a href="#s3a3" title="C · 前窗模块与坞站偏心">C · 前窗模块与坞站偏心</a></li>
+    <li class="lv2"><a href="#s3a4" title="D · 实时自检">D · 实时自检</a></li>
     <li><a href="#s4" title="4 · 厚度分层">4 · 厚度分层</a></li>
-    <li><a href="#s5" title="5 · 坞站与 13 mm 间隙">5 · 坞站与 13 mm 间隙</a></li>
-    <li><a href="#s6" title="6 · 已知的文档冲突">6 · 已知的文档冲突</a></li>
-    <li><a href="#s7" title="7 · 怎么改这个模型">7 · 怎么改这个模型</a></li>
+    <li><a href="#s5" title="5 · 步态动画">5 · 步态动画</a></li>
+    <li class="lv2"><a href="#s5a1" title="A · 一个循环四拍">A · 一个循环四拍</a></li>
+    <li class="lv2"><a href="#s5a2" title="B · 平贴步距被伸缩段下限卡住">B · 平贴步距被伸缩段下限卡住</a></li>
+    <li><a href="#s6" title="6 · 过棱换面动画">6 · 过棱换面动画</a></li>
+    <li class="lv2"><a href="#s6a1" title="A · 腿的解法与步序">A · 腿的解法与步序</a></li>
+    <li class="lv2"><a href="#s6a2" title="B · 连续性补上之后的读数">B · 连续性补上之后的读数</a></li>
+    <li><a href="#s7" title="7 · 回坞对接动画">7 · 回坞对接动画</a></li>
+    <li><a href="#s8" title="8 · 建模暴露的问题">8 · 建模暴露的问题</a></li>
+    <li><a href="#s9" title="9 · 怎么改这个模型">9 · 怎么改这个模型</a></li>
   </ul>
 </nav>
 <button class="side-btn" type="button" aria-label="目录">&#9776;</button>
@@ -31,50 +39,51 @@
 <header>
   <div class="page-icon">🧊</div>
   <h1>鱼缸壁面清洁机器人 — 整机三维示意</h1>
-  <p class="sub">用 three.js 按文档标注尺寸 1:1 建的交互模型 · 所有尺寸集中在一张参数表里</p>
+  <p class="sub">three.js 按文档尺寸 1:1 建模 · 结构 / 步态 / 过棱 / 回坞四个模式 · 每一帧的腿长与膝角都是逆解算出来的</p>
 </header>
 
 <!-- ══════ 结论先行 ══════ -->
 <div class="keybox">
-  <h3>结论先行：这张图和别的文档的关系</h3>
+  <h3>结论先行：这一版能看什么，看出了什么</h3>
   <p>
-    <b>一、这不是新增设计，是把已有六份文档的数字拼起来看。</b>
-    三维模型本身不产生任何新参数 —— 每个尺寸要么直接来自某一篇文档的正文/表格，
-    要么在 <a href="#s7">第 7 节</a>里被明确标成「示意值」。看到对不上的地方，
-    <b>以那六份文档为准，改这张图</b>。
+    <b>一、四个模式，同一个模型。</b>
+    「结构」是静态装配，可以分层展开、透视主腔；
+    「步态」让三足 3-RPR 真的走起来，刷辊在玻璃上擦出一条干净的带子；
+    「过棱」演示 90° 直角棱的三步换面；「回坞」演示精定位、作业头退让和感应充电。
+    <b>三个动画里的腿都不是摆出来的</b>：每一帧由机身位姿和吸盘落点逆解出伸缩段 l1 与膝角，
+    读数面板实时显示，越限就变红。
   </p>
   <p>
-    <b>二、它最大的用处是暴露平面图看不出来的干涉。</b>
-    厚度方向挤不挤、刷辊会不会撞到推杆、前窗罩够不够地方 ——
-    这些在各自的文档里都是「本图看不到刷辊」这类盲区。
-    模型里带了<a href="#s3">干涉自检</a>，改参数后控制台会直接报数。
+    <b>二、布局已经跟到最新基准。</b>
+    腿 a / b / c 与铰点座 (43.3, −25) / (0, +50) / (−43.3, −25)、刷辊站在 y = +18、
+    铰点座 b 靠跨梁吊在机尾、前窗模块和坞站圆盘偏心到 (−15, −32) —— 上一版模型的坐标系还是反的，
+    刷辊画在机头，这些都已重做。
   </p>
   <p>
-    <b>三、改这个模型只动两个地方。</b>
-    尺寸全在 <code>CFG</code> 对象里（<a href="#s7">第 7 节</a>），
-    零件全在 <code>build*()</code> 函数里，一个函数画一个零件。
-    <b>没有构建步骤</b>，改完刷新浏览器即可。
+    <b>三、建模暴露了四件事，列在 <a href="#s8">第 8 节</a>。</b>
+    最硬的一条：<b>前窗罩压住了铰点座 c</b>（中心距 29.2 mm，罩半径就有 26.5）；
+    其次，<b>跨梁只能走 z = 56–64 这 8 mm</b>，否则作业头退让 20 mm 时刷辊会顶上去；
+    <b>伸缩段下限若就是 50.4 mm，平贴步距只能到 14.5 mm</b>；
+    过棱三步<b>在连续性上是走得通的</b>，行程不用加，但膝要折到 85°，而不是表里的 78°。
   </p>
   <p>
-    <b>打开方式：</b>双击即可，和别的文档一样不需要服务器。
-    但 three.js 是从 CDN 取的，<b>第一次打开需要联网</b>（之后走浏览器缓存）。
-    离线打开会看到一段说明而不是白屏。
+    <b>打开方式：</b>双击即可。three.js 从 CDN 取，<b>第一次打开需要联网</b>；离线会看到一段说明，正文照常可读。
   </p>
 </div>
 
-<!-- ══════ 1 三维总览 ══════ -->
+<!-- ══════ 1 三维演示 ══════ -->
 <div class="card">
-  <h2 id="s1"><span class="n">1</span>三维总览</h2>
+  <h2 id="s1"><span class="n">1</span>三维演示</h2>
   <p class="cap">
-    拖拽旋转、滚轮缩放、右键平移。<b>「分层展开」滑杆是最有用的一个</b> ——
-    它把 64 mm 的厚度预算一层层拉开，那是平面图永远讲不清楚的一件事。
-    <br><b>坞站在默认视角里被玻璃和机身挡住了，切「侧视」才看得清</b>；
-    看三足布局切「正对玻璃」；看刷辊和玻璃的接触关系切「看刷辊」。
-    关掉「玻璃与坞站」勾选可以只看机器人本体。
+    左键拖拽旋转、滚轮缩放、右键平移，鼠标停在零件上会显示名字和关键尺寸。
+    <b>先点「步态」</b>——它最直观；再点「过棱」，它默认就是沿棱线看的截面，切「斜看」「缸内」看立体。
   </p>
 
   <div class="viewer" id="viewer">
     <div class="viewer-stage" id="stage">
+      <div class="viewer-overlay" id="overlay"><svg id="leaders"></svg></div>
+      <div class="viewer-readout" id="readout" hidden></div>
+      <div class="viewer-tip" id="tip"></div>
       <div class="viewer-hint">拖拽旋转 · 滚轮缩放 · 右键平移</div>
       <div class="viewer-fallback">
         <div>
@@ -82,44 +91,74 @@
           three.js 从 jsDelivr CDN 取，<b>首次打开需要联网</b>。<br>
           如果已经联网，请确认浏览器没有拦截 <code>cdn.jsdelivr.net</code>，
           或浏览器支持 WebGL。<br>
-          <span style="color:var(--fg-3)">
-            页面其余部分和别的文档一样可以正常阅读。</span>
+          <span style="color:var(--fg-3)">页面其余部分和别的文档一样可以正常阅读。</span>
         </div>
       </div>
     </div>
     <div class="viewer-bar">
-      <span class="viewer-label">视角</span>
-      <button class="viewer-btn" data-view="iso" type="button">等轴</button>
-      <button class="viewer-btn" data-view="face" type="button">正对玻璃</button>
-      <button class="viewer-btn" data-view="side" type="button">侧视</button>
-      <button class="viewer-btn" data-view="brush" type="button">看刷辊</button>
+      <span class="viewer-label">模式</span>
+      <button class="viewer-btn" data-mode="struct" type="button">结构</button>
+      <button class="viewer-btn" data-mode="gait" type="button">步态</button>
+      <button class="viewer-btn" data-mode="cross" type="button">过棱</button>
+      <button class="viewer-btn" data-mode="dock" type="button">回坞</button>
       <span class="sp"></span>
-      <span class="viewer-range">
-        分层展开
-        <input type="range" id="explode" min="0" max="10" step="0.1" value="0">
-      </span>
+      <span class="viewer-label">视角</span>
+      <button class="viewer-btn" data-view="in" type="button">缸内</button>
+      <button class="viewer-btn" data-view="out" type="button">缸外</button>
+      <button class="viewer-btn" data-view="side" type="button">侧视</button>
+      <button class="viewer-btn" data-view="top" type="button">正视</button>
     </div>
-    <div class="viewer-bar">
+    <div class="viewer-bar" id="bar-struct">
+      <span class="viewer-range">分层展开
+        <input type="range" id="explode" min="0" max="10" step="0.1" value="0" aria-label="分层展开"></span>
+      <span class="sp"></span>
+      <label class="viewer-chip"><input type="checkbox" id="cb-xray">透视主腔</label>
       <label class="viewer-chip"><input type="checkbox" id="cb-glass" checked>玻璃与坞站</label>
-      <label class="viewer-chip"><input type="checkbox" id="cb-inner">内部件</label>
       <label class="viewer-chip"><input type="checkbox" id="cb-labels" checked>标注</label>
       <label class="viewer-chip"><input type="checkbox" id="cb-spin">自动旋转</label>
-      <span class="sp"></span>
+    </div>
+    <div class="viewer-bar" id="bar-anim" hidden>
+      <button class="viewer-btn" id="play" type="button" aria-label="播放 / 暂停">❚❚</button>
+      <span class="viewer-time">
+        <input type="range" id="scrub" min="0" max="1000" step="1" value="0" aria-label="时间">
+        <output id="clock">0.0 / 0.0 s</output>
+      </span>
+      <button class="viewer-btn" data-speed="0.5" type="button">0.5×</button>
+      <button class="viewer-btn" data-speed="1" type="button">1×</button>
+      <button class="viewer-btn" data-speed="2" type="button">2×</button>
+      <label class="viewer-chip"><input type="checkbox" id="cb-xray2">透视</label>
+    </div>
+    <div class="viewer-bar">
       <span class="viewer-label" id="viewer-state">载入中…</span>
     </div>
   </div>
 
+  <table>
+    <thead><tr><th>模式</th><th>看什么</th><th>对应文档</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td><b>结构</b></td>
+        <td>整机装配。拉「分层展开」看 64 mm 厚度怎么分；勾「透视主腔」看里面的电池、主控和电机摆位</td>
+        <td><a href="body.html">主体</a> 第 1 节</td></tr>
+      <tr class="hl"><td><b>步态</b></td>
+        <td>工作相三足吸附推机身 12 mm，换步相逐只抬脚。刷辊只在 n = 3 时转，缸外视角能看见它擦出来的带子</td>
+        <td><a href="motion.html">运动单元</a> 第 2 节、<a href="work.html">作业机构</a> 第 7 节</td></tr>
+      <tr class="hl"><td><b>过棱</b></td>
+        <td>90° 直角棱，三只杯按 C → B → A 依次过棱，机身绕棱转 90°。默认沿棱线看截面</td>
+        <td><a href="motion.html">运动单元</a> 第 11 节</td></tr>
+      <tr class="hl"><td><b>回坞</b></td>
+        <td>四象限光电精定位 → 作业头退让 20 mm → 13 mm 间隙感应充电</td>
+        <td><a href="dock.html">充电坞站</a> 第 3–5 节</td></tr>
+    </tbody>
+  </table>
+
   <div class="formula">
-    <b>先看三件事，其余细节都不重要</b><br>
-    <b>① 三个吸盘撑在 ∅200 的外接圆上，机身只有 110 mm 宽。</b>
-    这是 <a href="body.html">主体设计</a>第 1 节那条原则的三维版本：
-    <b>主腔做小，用细臂够到吸盘</b>。外形跨度不参与排水体积，主腔才参与。
-    <br><b>② 机身悬在三只脚之间，不碰玻璃。</b>除了吸盘、刷辊和刮条，
-    没有第四个点接触玻璃。整机 64 mm 的厚度全部是「离壁距离」，
-    所以重心的离壁距离 h 是这套布局里最敏感的那个数。
-    <br><b>③ 刷辊比看起来靠里。</b>刷辊在行进方向的<b>上游</b>，
-    但它的轴心离玻璃 25 mm —— 这个数字把刷辊推到了支撑三角形的宽处，
-    也顺带决定了主腔必须往后让。见 <a href="#s3a2">第 3 节 B</a>。
+    <b>先看三件事</b><br>
+    <b>① 机身悬在三只脚之间。</b>除了吸盘、刷丝尖和刮条刃口，没有第四样东西碰玻璃；
+    「缸外」视角能看到主腔底面离玻璃整整 30 mm。
+    <br><b>② 三条腿都不指向圆心。</b>铰点圆相对吸盘圆转了 60°，这是 3-RPR 能转向的前提
+    （径向布置雅可比恒为 0，见 <a href="motion.html">运动单元设计</a> 第 5 节）。
+    <br><b>③ 机尾那根跨梁。</b>铰点座 b 在 (0, +50)，和主腔之间隔着刷辊，只能从刷辊上方吊过去 ——
+    这是三维里才看得清的一根零件，也是 <a href="#s8">第 8 节</a>第 ② 条的主角。
   </div>
 </div>
 
@@ -127,478 +166,365 @@
 <div class="card">
   <h2 id="s2"><span class="n">2</span>建模约定与数据来源</h2>
   <p class="cap">
-    三维模型的坑几乎全部来自「口径没说清楚」：哪个方向是 z、厚度从哪算起、
-    这个数到底是谁给的。所以这一节先把口径钉死。
+    三维模型的坑几乎全部来自「口径没说清楚」：哪个方向是 y、厚度从哪算起、这个数是谁给的。
+    这一节先把口径钉死。
   </p>
 
-  <h3 id="s2a1"><span class="n">A</span>坐标系：玻璃面就是 z0</h3>
-
+  <h3 id="s2a1"><span class="n">A</span>坐标系：跟着运动单元第 1 节走</h3>
   <table>
     <thead><tr><th>轴</th><th>定义</th><th>为什么这么定</th></tr></thead>
     <tbody>
-      <tr class="hl"><td><b>z = 0</b></td><td><b>玻璃内表面</b>，+z 指向缸内（机器人所在的一侧）</td>
-        <td>和 <a href="body.html">body.html</a> 第 1 节「厚度从玻璃面起算」同一口径，
-          <b>文档里的 0–18 / 18–30 / 30–58 / 58–64 可以原样当 z 坐标用</b></td></tr>
-      <tr class="hl"><td><b>+y</b></td><td><b>行进方向</b>（刷辊在上游 = 低 y 侧）</td>
-        <td>刷辊轴线必须 ⊥ 行进方向，定死 +y 之后刷辊就只能沿 x 放</td></tr>
-      <tr><td>x</td><td>剩下的那个方向，刷辊的轴线</td><td>由右手系定死，没有自由度</td></tr>
-      <tr><td>单位</td><td><b>three.js 的 1 个单位 = 1 mm</b></td>
-        <td>参数表里的数字可以原样抄进代码，不需要任何换算</td></tr>
+      <tr class="hl"><td><b>+x</b></td><td>机身右侧（从缸内看向玻璃）</td>
+        <td>与 <a href="motion.html">motion.html</a> 第 1 节的铰点表同一口径</td></tr>
+      <tr class="hl"><td><b>+y</b></td><td><b>指向机尾</b>。机头（前足 A）在 y = −100，行进方向是 −y</td>
+        <td>同上。<b>三份文档里的 (43.3, −25)、y = +18、(−15, −32) 可以原样抄进 <code>CFG</code></b></td></tr>
+      <tr class="hl"><td><b>z</b></td><td><b>离玻璃内表面的距离</b>，0 = 玻璃面</td>
+        <td>与 <a href="body.html">body.html</a> 第 1 节的 0–18 / 18–30 / 30–58 / 58–64 同一口径</td></tr>
+      <tr><td>单位</td><td>1 个 three.js 单位 = 1 mm</td><td>参数表里的数原样用，不换算</td></tr>
     </tbody>
   </table>
 
   <div class="formula">
-    <b>玻璃被放到了 z&lt;0 一侧，坞站也在那边</b><br>
-    玻璃占 <code>z ∈ [−5, 0]</code>，坞站贴在玻璃外侧。
-    这样「机器人」和「坞站」天然分居 z=0 的两边，
-    <b>第 5 节的 13 mm 间隙预算就可以直接沿 z 逐层摆出来</b>，
-    不需要额外的坐标变换 —— 这也是这套口径唯一的设计意图。
+    <b>这套 (x, y, z) 是左手系 —— 模型里只在一个函数里处理它</b><br>
+    x 向右、y 向机尾、z 离开玻璃，三者构成左手系。three.js 是右手系、y 朝上，
+    所以代码里的约定是：<b>文档坐标只出现在 <code>CFG</code> 和零件函数里，
+    进场景之前一律过 <code>L(x, y, z) = (x, −y, z)</code></b>。
+    于是「步态」和「结构」里机头朝上、爬升方向就是屏幕上方；「过棱」把整机转 90°，机头指向缸角。
   </div>
 
-  <h3 id="s2a2"><span class="n">B</span>文档值 vs 示意值</h3>
+  <h3 id="s2a2"><span class="n">B</span>文档值、推导值、示意值</h3>
   <p class="cap">
-    模型里每一个数字都在代码里标了来源。<b>只有两类：</b>
-    带 <code>// src</code> 的是文档给的，带 <code>// 示意</code> 的是文档没给的。
-    后者只影响外观，<b>不能当成设计输入</b>。
+    <code>CFG</code> 里每个数右边都标了来源，只有三类。<b>带 <code>// 示意</code> 的数不能当设计输入</b>，
+    定稿要写回对应文档。
   </p>
-
   <table>
-    <thead><tr><th>来源标注</th><th>含义</th><th>能不能改</th></tr></thead>
+    <thead><tr><th>标注</th><th>含义</th><th>能不能改</th></tr></thead>
     <tbody>
-      <tr class="hl"><td><code>// src: 文档 §N</code></td><td>文档正文或表格里明确给出的数字</td>
+      <tr class="hl"><td><code>// src: 文档 §N</code></td><td>文档正文或表格里明确给出的数</td>
         <td><b>改它等于改设计</b>，必须回头同步那篇文档</td></tr>
-      <tr><td><code>// 推导</code></td><td>由文档值算出来的（如 L₀ = 86.603、三角形边长 173.2）</td>
-        <td>不要手改，改上游的 R_t / r 让它自己重算</td></tr>
-      <tr class="bad"><td><code>// 示意</code></td><td>文档没给，为了让模型能看而取的值</td>
-        <td>随便改。<b>但它一旦定了，就变成了事实上的设计</b></td></tr>
+      <tr><td><code>// 推导</code></td><td>由文档值算出来的（L₀ = 86.603、轴心 z = 17、过棱关键帧…）</td>
+        <td>不要手改，改上游让它重算</td></tr>
+      <tr class="bad"><td><code>// 示意</code></td><td>文档没给、为了让模型能看而取的</td>
+        <td>随便改，<b>但它一旦被引用，就成了事实上的设计</b></td></tr>
     </tbody>
   </table>
 
   <div class="formula w">
-    <b>哪几个数是「示意」—— 这几个要特别注意</b><br>
-    <b>① 腿的杆径与中间的级。</b>文档只给了丝杆 ∅4 和「过棱要两级、杆径涨到 ∅8–10」，
-    没给每级的具体直径。模型画外管 ∅10 / 中间级 ∅7 / 远端段 ∅6。
-    <br><b>② 三条铰点支柱的形状。</b>文档只说「普通球头或销轴铰链就够，不是精密件」。
-    <br><b>③ 刮条的全部几何。</b>文档明确写了「角度、尺寸未指定」，只有 Shore A 40。
-    <br><b>④ 主腔里各零件的具体摆位。</b>文档只给了质量（55 g 主控、55 g 电池）和
-    「电机全部横放」这条姿态约束。
-    <br><b>⑤ 刷辊的驱动仓。</b>文档给了磁耦合的 ∅30 / 4 极 / 1.2 mm 气隙，
-    但整个驱动链沿刷辊轴向要占多长没给 —— 模型里它伸出支撑三角形约 5 mm，
-    <b>这是取舍不是结论</b>（见 <a href="#s6">第 6 节</a>）。
-    <br><b>⑥ 膝铰座与俯仰叉耳的外径。</b>过棱换面的结论只到「膝盖要能折到 85°、
-    行程 55.5 mm」，铰座本身多大没给。模型取膝铰座 ∅14 ——
-    <b>它正好塞不进 12 mm 的传动层，这就是 <a href="#s6">第 6 节 ⑦</a> 那条的由来</b>。
-    <br><span style="color:var(--ink-3);font-size:12.5px">
-    这六条如果要定稿，应该反过来写回对应文档，而不是让 model.html 成为唯一出处。</span>
+    <b>这一版里最要当心的六个示意值</b><br>
+    <b>① 腿的杆径与级数。</b>文档只给「两级伸缩、杆径 ∅8–10」。模型画外管 ∅10 / 中间级 ∅8 / 末级 ∅6，膝铰座 ∅14。
+    <br><b>② 跨梁的截面。</b>文档只说「从刷辊上方跨过去」。模型取 12 × 8 mm、z = 56–64 ——
+    这个高度不是随手取的，是作业头退让逼出来的，见 <a href="#s8">第 8 节</a> ②。
+    <br><b>③ 刷辊的驱动仓。</b>文档给了磁耦合 ∅30 / 4 极 / 1.2 mm 气隙，没给仓体。模型放在 +x 端（右侧在 y = +1 处没有杆）。
+    <br><b>④ 作业头的机架与刮条。</b>刮条几何文档明确未给，只有 Shore A 40 和「y ≈ +38 ~ +42」。
+    <br><b>⑤ 主腔内部件的摆位。</b>文档只给质量和「电机全部横放」。
+    <br><b>⑥ 吸附电机的位置。</b>模型把 ∅12 × 24 空心杯横放在吸盘单元的 18–30 层里，贴着踝环。
   </div>
 </div>
 
-<!-- ══════ 3 关键布局 ══════ -->
+<!-- ══════ 3 结构与布局 ══════ -->
 <div class="card">
-  <h2 id="s3"><span class="n">3</span>关键布局与干涉自检</h2>
+  <h2 id="s3"><span class="n">3</span>结构与布局</h2>
   <p class="cap">
-    三足布局和刷辊位置是这台机器上仅有的两个「一个数字定死一片」的地方。
-    这一节把它们在三维里的实际后果算给你看。
+    三足布局是这台机器上唯一「一个数字定死一片」的地方：R_t、r、错开角三个数一定，
+    铰点座、腿、刷辊的站位就全定了。切到「结构」模式、「正视」视角对照着看。
   </p>
 
-  <h3 id="s3a1"><span class="n">A</span>三足、铰点圆与推杆</h3>
-
-  <p class="cap">
-    两个同心圆：吸盘在 <code>R_t = 100</code> 上，机身铰点在 <code>r = 50</code> 上，
-    两圆<b>错开 60°</b>。<a href="motion.html">运动单元设计</a>第 5 节论证过这个偏角
-    是雅可比绝对值的两个最大值之一 —— 三维模型里它表现为
-    「<b>推杆不指向圆心</b>」，这是整机能转向的前提。
-  </p>
-
-  <div class="figrow">
-    <svg viewBox="0 0 360 340" role="img" aria-label="三足与铰点圆俯视关系" style="width:100%;height:auto">
-      <defs>
-        <marker id="m1Arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
-          <path d="M0,0 L10,5 L0,10 z" fill="#448361"/>
-        </marker>
-      </defs>
-      <rect width="360" height="340" rx="10" fill="#fbfbfa"/>
-      <!-- 吸盘圆 -->
-      <circle cx="180" cy="176" r="70" fill="none" stroke="#2f9d90" stroke-width="1.4" stroke-dasharray="6 4"/>
-      <!-- 铰点圆 -->
-      <circle cx="180" cy="176" r="35" fill="none" stroke="#c9a227" stroke-width="1.4" stroke-dasharray="6 4"/>
-      <!-- 支撑三角形 -->
-      <polygon points="180,106 119.4,211 240.6,211" fill="none" stroke="#9b9891" stroke-width="1.4" stroke-dasharray="7 5"/>
-      <!-- 推杆 -->
-      <g stroke="#8b8880" stroke-width="4" stroke-linecap="round">
-        <line x1="180" y1="106" x2="149.7" y2="193.5"/>
-        <line x1="119.4" y1="211" x2="180" y2="211"/>
-        <line x1="240.6" y1="211" x2="210.3" y2="193.5"/>
-      </g>
-      <!-- 吸盘 -->
-      <g fill="#cfe6e2" stroke="#2f9d90" stroke-width="1.8">
-        <circle cx="180" cy="106" r="9"/>
-        <circle cx="119.4" cy="211" r="9"/>
-        <circle cx="240.6" cy="211" r="9"/>
-      </g>
-      <!-- 铰点 -->
-      <g fill="#e8c94a" stroke="#a8851a" stroke-width="1.4">
-        <circle cx="149.7" cy="193.5" r="4.5"/>
-        <circle cx="180" cy="211" r="4.5"/>
-        <circle cx="210.3" cy="193.5" r="4.5"/>
-      </g>
-      <!-- 刷辊 -->
-      <rect x="138" y="164" width="84" height="24" rx="12"
-            fill="#e0bb8c" fill-opacity=".55" stroke="#b5714a" stroke-width="1.6"/>
-      <text x="228" y="180" class="s-sub" style="fill:#a05f3c">刷辊</text>
-      <!-- 行进方向 -->
-      <line x1="316" y1="250" x2="316" y2="212" stroke="#448361" stroke-width="2.4" marker-end="url(#m1Arr)"/>
-      <text x="300" y="266" class="s-sub" style="fill:var(--green-fg)">行进 +y</text>
-      <!-- 标注 -->
-      <text x="34" y="40" class="s-lbl">吸盘圆 R_t = 100</text>
-      <text x="34" y="58" class="s-sub">绿虚线 · ∅200 外接圆 · 边长 173.2</text>
-      <text x="34" y="80" class="s-lbl" style="fill:#a8851a">铰点圆 r = 50</text>
-      <text x="34" y="98" class="s-sub">黄虚线 · 与吸盘圆错开 60°</text>
-      <text x="34" y="122" class="s-sub">推杆中位长 L₀ = 86.603</text>
-      <text x="34" y="290" class="s-sub">俯视，1 px = 1.43 mm</text>
-      <text x="34" y="308" class="s-sub">推杆不指向圆心 —— 这是能转向的前提</text>
-    </svg>
-    <div class="legend">
-      <ol>
-        <li><b>吸盘圆 R_t = 100 mm</b><span>三只 ∅25 吸盘，等边三角形，边长 173.2 mm</span></li>
-        <li><b>铰点圆 r = 50 mm</b><span>机身上的三个铰点，整体相对吸盘圆转 60°</span></li>
-        <li><b>腿的中位长 86.603 mm</b><span>L = √(R_t²+r²−2·R_t·r·cos60°)，分成 l1（伸缩 56.6）+ l2（膝到踝 30）</span></li>
-        <li><b>刷辊落在三角形的宽处</b><span>轴心 y = −25，接触线半宽 72 mm &gt; 辊长一半 40 mm</span></li>
-      </ol>
-    </div>
-  </div>
-
-  <div class="formula">
-    <b>三条腿的中位长度是相等的，而且只由两个圆决定</b><br>
-    <code>L₀ = √(100² + 50² − 2·100·50·cos 60°) = √7500 = 86.603 mm</code><br>
-    <b>三条都等于它</b> —— 这是中位位形，三杆等长。
-    转向时三杆<b>等量</b>伸长或缩短 <code>ΔL = r·Δφ = 50·Δφ</code>，
-    ±15 mm 行程对应 <code>Δφ = 0.3 rad ≈ 17°</code>，与
-    <a href="motion.html">motion.html</a> 第 7 节一致。
-    <br><span style="color:var(--ink-3);font-size:12.5px">
-    模型画的是<b>平贴中位位形</b>：三腿伸直、膝角 0、伸缩段 l1 = 56.6 mm。
-    <b>步态动画和过棱动画都没有做</b> ——
-    步态的逐帧几何在 <a href="motion.html">motion.html</a> 第 2 节，
-    过棱的姿态与读数在第 11 节，这里重复一遍没有增量价值。</span>
-  </div>
-
-  <h3 id="s3a2"><span class="n">B</span>刷辊的落位约束</h3>
-  <p class="cap">
-    刷辊的位置不是「放在前面就行」。它同时被四条约束夹住。
-    <b>刷辊从 120 mm 缩到 80 mm 之后，可行区间从 4.1 mm 宽变成 38.7 mm 宽</b> ——
-    长度是这里唯一的紧约束，而真正卡死 120 mm 的是杆 c 的扫掠包络（
-    <a href="work.html">work.html</a> 第 7 节），不是三角形。
-  </p>
-
+  <h3 id="s3a1"><span class="n">A</span>三足与腿 a / b / c</h3>
   <table>
-    <thead><tr><th>约束</th><th>判据</th><th>对刷辊轴心 y 的要求</th></tr></thead>
+    <thead><tr><th>腿</th><th>吸盘（脚）</th><th>机身铰点座</th><th>座怎么挂在机身上</th></tr></thead>
     <tbody>
-      <tr class="hl"><td><b>① 接触线落在支撑三角形内</b></td>
-        <td>86.6·(100−y)/150 ≥ 40</td><td>y ≤ 30.7</td></tr>
-      <tr class="hl"><td><b>② 整个刷辊落在三角形内</b></td>
-        <td>上式的 y 换成 y + 17（辊半径）</td><td><b>y ≤ 13.7</b>（最紧的一条）</td></tr>
-      <tr><td>③ 让开底边那根推杆（y = −50）</td>
-        <td>y − 17 ≥ −50 + 5 + 3</td><td>y ≥ −25</td></tr>
-      <tr><td>④ 让开主腔前壁（y = hy − 42.5）</td>
-        <td>y + 17 ≤ hy − 42.5 − 3</td><td>由主腔位置反推，见下</td></tr>
-      <tr class="hl"><td><b>合计可行区间</b></td><td>② 与 ③ 同时成立</td>
-        <td><b>−25 ≤ y ≤ 13.7</b>（宽 38.7 mm）</td></tr>
+      <tr><td><b>a</b></td><td>A · 前足 (0, −100)</td><td>330° · (43.3, −25)</td><td>主腔底面的凸台，向下伸到传动层</td></tr>
+      <tr><td><b>b</b></td><td>B · 机尾右 (86.6, +50)</td><td>90° · (0, +50)</td><td><b>跨梁吊在机尾</b>，从刷辊上方过去再下探到 z = 18</td></tr>
+      <tr><td><b>c</b></td><td>C · 机尾左 (−86.6, +50)</td><td>210° · (−43.3, −25)</td><td>主腔底面的凸台（<b>与前窗罩相撞，见第 8 节 ①</b>）</td></tr>
     </tbody>
   </table>
 
-  <p class="cap">
-    模型取 <code>y = −25</code>，即可行区间的下限 ——
-    <b>贴着推杆走，把余量全留给主腔</b>。主腔因此被推到 <code>hy = 38</code>，
-    前壁在 y = −4.5，与刷辊外廓（y = −8）留 3.5 mm。
-    文档把这个轴心定在 +18（本模型的 −18，比这里靠前 7 mm）—— 那 7 mm 落在新区间内，
-    但会吃掉主腔前壁那 3.5 mm 净距，所以模型取靠后的下限。
-  </p>
+  <div class="formula">
+    <b>腿的中位长只由两个圆决定，三条相等</b><br>
+    <code>L₀ = √(100² + 50² − 2·100·50·cos 60°) = √7500 = 86.603 mm</code>，
+    拆成伸缩段 <code>l1 = 56.6</code> + 膝到踝定长 <code>l2 = 30</code>（<a href="motion.html">motion.html</a> 第 11 节 C）。
+    <br>每条腿的关节链：<b>方位铰（被动）→ 俯仰（主动）→ 两级伸缩（主动）→ 膝（被动弹簧 + 锁止）→ 远端段 → 踝环</b>。
+    平贴时膝角 0，外形和一根直杆没有区别；膝只在过棱时折起来。
+    <br><span style="color:var(--ink-3);font-size:12.5px">
+    自检表第一行还会实算一次雅可比行列式，确认 60° 错开非奇异、0° 径向布置恒为 0。</span>
+  </div>
 
-  <h4>模型实时自检</h4>
+  <h3 id="s3a2"><span class="n">B</span>机尾：刷辊、刮条与跨梁</h3>
   <p class="cap">
-    下表由三维模块在每次加载和每次改完参数后重算。
-    <b>在控制台执行 <code>BOT.CFG.brush.y = -21; BOT.rebuild()</code>，这张表会立刻更新。</b>
-    页面离线打开时这张表是空的，但约束定义（即本表前四行）在
-    <a href="#s7">第 7 节</a>的代码里可以查。
+    主腔占 y = −85 ~ 0，机尾那一截全让给作业头：刷辊 y = +1 ~ +35，刮条 y ≈ +38 ~ +41，
+    杆 b 压在 y = +50。三样东西之间都只剩几毫米。
   </p>
+  <ul class="pts">
+    <li><b>刷辊 ∅34 × 80，轴心 (y, z) = (+18, 17)。</b>
+      ∅34 按<b>外径</b>取（芯 ∅18 + 刷丝 8 mm），丝尖正好触玻璃。
+      文档另写了「占 z = 8–42、z_b = 25」—— 那是按 ∅34 是芯算的，两种说法只能取一，见第 8 节 ⑤。</li>
+    <li><b>作业头整体装在一对 z 向滑槽上</b>，可被动退让 20 mm（对接时让出前窗模块的位置）。
+      模型里刷辊、刮条、端板一起走这 20 mm。</li>
+    <li><b>跨梁从主腔尾面伸出，经刷辊上方到 y = +50 再下探</b>，末端就是铰点座 b。
+      它和刷辊之间的余量决定了作业头能退多少。</li>
+    <li class="w"><b>磁耦合驱动仓放在 +x 端。</b>−x 端是杆 c 的走廊（y = +1 处杆 c 只在 x = −58.3），放不下。</li>
+  </ul>
 
+  <h3 id="s3a3"><span class="n">C</span>前窗模块与坞站偏心</h3>
+  <p class="cap">
+    前窗模块是一个从主腔底面（z = 30）伸到离玻璃 2 mm 的 POM 罩，里面装 Ø50 接收线圈、天线和 4 个光电管。
+    它的中心按 <a href="dock.html">dock.html</a> 第 1 节放在 (−15, −32)，坞站的 Ø90 圆盘跟着它一起偏心。
+  </p>
+  <div class="formula w">
+    <b>三维里一眼就能看到的问题：罩体啃进了铰点座 c</b><br>
+    罩心 (−15, −32) 到铰点 c (−43.3, −25) 只有 <b>29.2 mm</b>，而罩体半径光线圈加壁厚就要
+    <code>50/2 + 1.5 = 26.5 mm</code>，剩 2.7 mm 装一个 ∅14 的铰点座 —— 装不下，<b>重叠约 4.3 mm</b>。
+    dock.html 第 1 节查过「盘边离铰点 a 13.7 mm」，但没有查罩体离铰点 c。
+    <br>透视主腔打开，在「正视」视角里能直接看到。候选修法见 <a href="#s8">第 8 节</a> ①。
+  </div>
+
+  <h3 id="s3a4"><span class="n">D</span>实时自检</h3>
+  <p class="cap">
+    下表由三维模块在加载时重算：静态几何直接查，步态与过棱两项是把整段动画逐帧逆解一遍再取极值。
+    <b>在控制台改 <code>BOT.CFG</code> 再 <code>BOT.rebuild()</code>，表会立刻更新。</b>
+  </p>
   <table class="viewer-table">
     <thead><tr><th>约束</th><th>要求</th><th>实算</th><th>结论</th></tr></thead>
     <tbody id="chk-body">
       <tr><td colspan="4" style="color:var(--fg-3);text-align:center">
-        三维模块未运行 —— 打开联网的浏览器即可看到实时结果</td></tr>
+        三维模块未运行 —— 用联网的浏览器打开即可看到实时结果</td></tr>
     </tbody>
   </table>
   <p class="cap" id="chk-sum" style="font-family:ui-monospace,Menlo,monospace;font-size:12.5px"></p>
-
-  <div class="formula w">
-    <b>区间宽 = 125 − 0.866·辊长 − 辊半径（mm）—— 长度是唯一的紧约束</b><br>
-    代入：辊长 80 → <b>38.7 mm</b>；辊长 120 → <b>4.1 mm</b>；辊长 130 → 负数（装不下）。
-    <b>长度每加 10 mm，区间两侧各收 8.66 mm。</b>
-    <br>直径几乎不重要：从 ∅34 加到 ∅40（半径 +3）区间只收 3 mm，
-    <b>原来那句「刷辊直径和 R_t = 100 绑死」是 120 mm 长辊才有的结论</b>，缩到 80 mm 之后不成立了。
-    <br><b>真正卡死 120 mm 的另一条更硬</b> —— 杆 c 的扫掠包络在刷辊前缘只留 101 mm（居中）
-    到 79 mm（40 mm 行程用满），见 <a href="work.html">work.html</a> 第 7 节。
-    <br><span style="color:var(--ink-3);font-size:12.5px">
-    另外注意：俯视图与正文现在对得上了 —— 刷辊缩到 80 mm 之后完整落在三角形内，
-    与 <a href="body.html">body.html</a> 第 1 节的画法不再冲突；把刷辊加回去，冲突立刻回来。</span>
-  </div>
 </div>
 
 <!-- ══════ 4 厚度分层 ══════ -->
 <div class="card">
   <h2 id="s4"><span class="n">4</span>厚度分层</h2>
   <p class="cap">
-    这是三维模型相对平面图增量最大的一节。
-    <b>把「分层展开」滑杆拉到底</b>，四层会沿 z 分开，一眼能看出哪一层最挤。
+    「结构」模式下把「分层展开」拉到底，各层沿 z 拉开 —— 坞站往缸外走，其余往缸内走。
   </p>
-
   <table>
-    <thead><tr><th>层</th><th>z 区间 (mm)</th><th>厚度</th><th>装什么</th><th>模型里的颜色</th></tr></thead>
+    <thead><tr><th>层</th><th>z 区间 (mm)</th><th>装什么</th><th>模型里的颜色</th></tr></thead>
     <tbody>
-      <tr class="hl"><td><b>吸盘 + 膜片腔</b></td><td>0 – 18</td><td>18</td>
-        <td>唇边、吸盘碗、∅20 驱动膜片</td><td>青绿半透明（硅胶）</td></tr>
-      <tr class="hl"><td><b>传动层</b></td><td>18 – 30</td><td>12</td>
-        <td>腿（外管 + 中间级 + 膝座）、销轴，以及<b>三条铰点支柱</b></td><td>暖灰（铝）</td></tr>
-      <tr class="hl"><td><b>主腔</b></td><td>30 – 58</td><td>28</td>
-        <td>推杆电机、刷辊电机、主控板、电池、配重</td><td>暖灰壳体 + 内部件</td></tr>
-      <tr class="hl"><td><b>盖板 + O 圈</b></td><td>58 – 64</td><td>6</td>
-        <td>POM 盖板、周圈约 10 个 M3、干燥剂</td><td>浅绿（POM）</td></tr>
+      <tr class="hl"><td><b>吸盘 + 膜片腔</b></td><td>0 – 18</td><td>唇边、吸盘碗、∅20 膜片</td><td>青绿半透明（硅胶）</td></tr>
+      <tr class="hl"><td><b>传动层</b></td><td>18 – 30</td><td>三条腿（z = 24 中面）、铰点座、吸附电机</td><td>银色（铝）、黄铜色膝</td></tr>
+      <tr class="hl"><td><b>主腔</b></td><td>30 – 58</td><td>6 颗腿电机、主控、电池、配重</td><td>银色壳体</td></tr>
+      <tr class="hl"><td><b>盖板 + O 圈</b></td><td>58 – 64</td><td>POM 盖板、周圈 10 个 M3</td><td>暖白（POM）</td></tr>
+      <tr><td>作业头</td><td>0 – 34（退让后 20 – 54）</td><td>刷辊、刮条、端板</td><td>橙色刷丝</td></tr>
+      <tr><td>前窗模块</td><td>2 – 30</td><td>Ø50 接收线圈、4 光电管</td><td>白（POM）</td></tr>
+      <tr><td>跨梁</td><td>56 – 64</td><td>吊铰点座 b</td><td>深银</td></tr>
     </tbody>
   </table>
-
   <div class="formula">
-    <b>传动层只有 12 mm，而它要同时装下三条腿和三个铰点</b><br>
-    三维里看得很清楚：<b>三条腿全部落在这 12 mm 里</b>。
-    过棱换面把这条腿变成了两节（<a href="motion.html">motion.html</a> 第 11 节），
-    <b>于是这 12 mm 里现在多了三样东西：面外俯仰叉耳、两级伸缩、膝铰座</b>。
-    外管 ∅10（示意）在 z = 24 的平面内摆动，
-    上下各只剩 7 mm 和 6 mm —— <b>这是整机上余量最小的一层</b>。
-    <br>主腔的 28 mm 反而不紧张，因为「电机全部横放」把 ∅12 的直径
-    转到了水平面里，厚度方向只占 12 mm。
+    <b>传动层 12 mm 是整机最挤的一层</b><br>
+    外管 ∅10 在 z = 24 的面里走，上下各只剩 1 mm；膝铰座 ∅14 比这层还厚 2 mm。
+    <a href="body.html">body.html</a> 第 1 节给了两条路：∅8 两级管塞进 12 mm（总厚仍 64），
+    或 ∅10 + 膝座把传动层撑到 14 mm（总厚 66）。<b>模型按 64 画</b>，自检表对应那一行会报「待选型」。
+  </div>
+</div>
+
+<!-- ══════ 5 步态 ══════ -->
+<div class="card">
+  <h2 id="s5"><span class="n">5</span>步态动画</h2>
+  <p class="cap">
+    「步态」模式在一块长了藻的前玻璃上连走 5 个循环。默认「缸外」视角 —— 就是站在鱼缸前看它干活的样子。
+  </p>
+
+  <h3 id="s5a1"><span class="n">A</span>一个循环四拍</h3>
+  <table>
+    <thead><tr><th>拍</th><th>n</th><th>发生什么</th><th>刷辊</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td><b>① 工作相</b></td><td>3</td><td>三杯不动，三根腿协同伸缩，机身前移 d = 12 mm</td><td><b>转</b></td></tr>
+      <tr><td>② 换步 A</td><td>2</td><td>前足松开 → 俯仰轴把杯抬起 5 mm → 前移 12 mm → 落下吸附</td><td>停</td></tr>
+      <tr><td>③ 换步 C</td><td>2</td><td>机尾左，同上</td><td>停</td></tr>
+      <tr><td>④ 换步 B</td><td>2</td><td>机尾右，同上</td><td>停</td></tr>
+    </tbody>
+  </table>
+  <p class="cap">
+    机身在每个循环里<b>从三角形中位后 6 mm 走到中位前 6 mm</b>，这样三条腿的伸缩对称地分在中位两侧。
+    n = 2 时刷辊停转是 <a href="work.html">work.html</a> 第 7 节 ④ 的硬互锁；
+    抬杯用的是过棱新加的俯仰轴，平贴步态顺带也用上了。
+  </p>
+
+  <h3 id="s5a2"><span class="n">B</span>平贴步距被伸缩段下限卡住</h3>
+  <div class="formula w">
+    <b>d = 23 mm 那档要 l1 = 46.9 mm，低于过棱表的 50.4</b><br>
+    机身前移时杆 a 缩短得最多：中位前 d/2 处，
+    <code>l1 = √(43.3² + (75 − d/2)²) − 30</code>。
+    <b>d = 12 → 51.5 mm</b>（动画里的值，在 50.4 → 105.9 内）；
+    <b>d = 23 → 46.9 mm</b>（出界 3.5 mm）。反推 l1 ≥ 50.4 允许的最大步距是 <b>14.5 mm</b>。
+    <br>所以「伸缩段要覆盖 50.4 → 105.9」只是过棱的需求，<b>平贴步态要的是更短的那一头</b>。
+    两条路：伸缩杆规格下限按 46.9 选（对两级管不难，收拢长度多让 3.5 mm），
+    或者把平贴步距限在 ≈ 14 mm（与第 7 节横向偏移 ±10 mm 那档本来就接近）。
     <br><span style="color:var(--ink-3);font-size:12.5px">
-    模型里主腔做成了开口盒（四壁 2 mm + 底板），不是实心块 ——
-    这样展开后能直接看到内部件的摆位。</span>
-  </div>
-
-  <div class="formula w">
-    <b>刷辊是唯一一个横跨三层的东西</b><br>
-    刷辊占 <code>z ∈ [8, 42]</code>：<b>从吸盘层的中间一直伸到主腔里</b>。
-    所以「主腔在刷辊横向范围内要挖凹槽让开」这句话在三维里是有实物对应的。
-    <br>模型里的处理是<b>把主腔整体后退</b>（hy = 38）而不是挖槽 ——
-    两种做法等效，但后退不削弱主腔刚度，<b>代价是重心后移</b>。
-    这一条值得在实物上复核：见 <a href="#s6">第 6 节</a>第 3 条。
+    这里的 l1 是把机身在中位两侧对称走算出来的；偏航和横移会让某一条腿更短，真实下限只会更低。</span>
   </div>
 </div>
 
-<!-- ══════ 5 坞站 ══════ -->
+<!-- ══════ 6 过棱 ══════ -->
 <div class="card">
-  <h2 id="s5"><span class="n">5</span>坞站与 13 mm 间隙</h2>
+  <h2 id="s6"><span class="n">6</span>过棱换面动画</h2>
   <p class="cap">
-    13 mm 的间隙预算是 <a href="dock.html">dock.html</a> 第 3 节的核心论证。
-    三维模型把它变成了<b>沿 z 依次摆开的六个厚度</b>，一眼能看出哪一层能压。
+    「过棱」模式把机器人放到前玻璃与侧玻璃的 90° 内角前，机头指向缸角。
+    <b>整段动画的姿态是本页离线搜出来的</b>，搜索判据就是 <a href="motion.html">motion.html</a> 第 11 节的那几条，
+    加上它没来得及做的「步与步之间连续」。
   </p>
 
-  <table>
-    <thead><tr><th>层（从发射线圈到接收线圈）</th><th>厚度 (mm)</th><th>模型里的 z 区间</th><th>能不能压</th></tr></thead>
-    <tbody>
-      <tr><td>坞站外壳（线圈前面那层壳）</td><td>1.5</td><td>−8.0 → −6.5</td><td>可减到 1.0，文档判定不划算</td></tr>
-      <tr><td>发射线圈自身灌封</td><td>1.5</td><td>−6.5 → −5.0</td><td>不能压，压了就穿</td></tr>
-      <tr class="bad"><td><b>玻璃</b></td><td><b>5.0</b></td><td>−5.0 → 0</td><td><b>完全不能动 —— 它是缸体</b></td></tr>
-      <tr class="hl"><td><b>水隙</b>（导向罩尖端到玻璃内表面）</td><td><b>2.0</b></td><td>0 → +2.0</td><td><b>唯一可调的余量</b></td></tr>
-      <tr><td>导向罩壁 + 接收线圈灌封</td><td>1.5</td><td>+2.0 → +3.5</td><td>不能压</td></tr>
-      <tr><td>接收线圈自身灌封</td><td>1.5</td><td>+3.5 → +5.0</td><td>不能压</td></tr>
-      <tr class="hl"><td><b>合计</b></td><td><b>13.0</b></td><td>−8.0 → +5.0</td><td>六层里只有一层可动</td></tr>
-    </tbody>
-  </table>
-
-  <div class="formula">
-    <b>模型里的摆放方式：六层恰好填满两线圈之间</b><br>
-    玻璃内表面 = z0，机器人侧 <code>z &gt; 0</code>，坞站侧 <code>z &lt; 0</code>。
-    <br>从坞站往里数：坞站圆盘占 <code>z ∈ [−27, −5]</code>（∅90 × 22），
-    朝玻璃那一面正好贴上玻璃；
-    <b>发射线圈的绕组面落在 <code>z = −8.0</code></b>（玻璃面往缸外退 外壳 1.5 + 灌封 1.5）；
-    机器人的导向罩尖端在 <code>z = +2.0</code>，
-    <b>接收线圈的绕组面落在 <code>z = +5.0</code></b>（水隙 2.0 + 罩壁与灌封 1.5 + 自身灌封 1.5）。
-    <br><code>5.0 − (−8.0) = 13.0</code> ✓ 六层逐位对上，一个数不多一个数不少。
-    <br>这也顺带说明了 <a href="dock.html">dock.html</a> 那张表的读法：<b>它是「从绕组面到绕组面」的一条完整路径</b>，
-    所以两个线圈的 z 坐标不需要额外假设，直接从表里累加就得到了。
-  </div>
-
-  <div class="formula w">
-    <b>前窗模块被两条上推杆夹住了 —— 这是建模才发现的</b><br>
-    罩体在中心线上，所以它到两条上推杆的距离就是
-    <code>0.5·(R_t − y)</code>。Ø53 的罩体加推杆 ∅10 加 3 mm 余量，
-    要求 <code>0.5·(100 − y) ≥ 26.5 + 5 + 3</code>，即 <b>y ≤ 31</b>。
-    <br>同时罩体的前沿还必须让开刮条，要求 <b>y ≥ 27</b>。
-    <br><b>可行区间 (27, 31]，宽 4 mm</b> —— 和刷辊那个 4 mm 区间一样窄，
-    而且是被两个完全不同的东西夹出来的。
-    <br>模型取 <code>y = 28</code>，两头各留约 4 mm 和 5 mm。
-    <br><span style="color:var(--ink-3);font-size:12.5px">
-    后果：<b>罩体几乎没有收细的余地</b>，Ø54 → Ø53 基本是个直筒。
-    想给接收线圈加屏蔽层或者加一个对准用的锥口，都会先撞上这个区间。
-    这条约束在任何一篇文档里都没有出现过，因为它在俯视图里看不出来。</span>
-  </div>
-
-  <div class="formula w">
-    <b>文档里的对接图没有锥形捕获口</b><br>
-    捕获 ±25 mm 靠的是<b>四象限红外</b>（坞站 4 × 940 nm LED 按 ±20 mm 布置）
-    + 三条推杆伺服，不是机械漏斗。
-    模型里因此看不到任何锥形结构，
-    <b>坞站侧只有一个 ∅70 的非金属窗口</b>（要同时透过磁场和红外）。
-    <br>别在后面的版本里「补」一个锥形口上去 —— 那是在文档之外新增设计。
-  </div>
-</div>
-
-<!-- ══════ 6 冲突 ══════ -->
-<div class="card">
-  <h2 id="s6"><span class="n">6</span>已知的文档冲突</h2>
-  <p class="cap">
-    建模过程被迫把六份文档的数字放在同一个坐标系里，
-    因此暴露了几处<b>在各自文档里看不出来</b>的矛盾。列在这里，
-    <b>没有一处由本页擅自裁定</b> —— 模型选了一个，但选择理由都写明了。
-  </p>
-
-  <table>
-    <thead><tr><th>冲突</th><th>两种说法</th><th>模型怎么选</th></tr></thead>
-    <tbody>
-      <tr class="hl"><td><b>① 支撑三角形内切圆</b></td>
-        <td><a href="body.html">body.html</a> 标注「内切圆 ∅100 mm」／
-          几何上 R_t = 100 的等边三角形内切圆是 <b>∅86.6</b></td>
-        <td>按 <b>∅86.6</b>（边长 173.2）。∅100 应该是把 R_t 误当成了内切圆半径</td></tr>
-      <tr class="hl"><td><b>② 刷辊在不在三角形内</b></td>
-        <td>原稿写「刷辊 120 mm 完全落在三角形内」，但 120 mm 在 y = −25 处
-          只有 4.1 mm 的容身区间</td>
-        <td><b>已解决：刷辊缩到 80 mm</b>（<a href="work.html">work.html</a> 第 7 节），
-          区间放宽到 38.7 mm，俯视图与正文对得上。见 <a href="#s3a2">第 3 节 B</a></td></tr>
-      <tr><td><b>③ 步态行程</b></td>
-        <td>§1/§2/§9 写 <b>20–40 mm</b>／§5③ 和 §7 用 <b>30 mm（±15）</b></td>
-        <td>取 <b>±15 mm</b>，与 §7 的转向计算自洽。
-          <b>过棱换面又加了一个数：伸缩段要覆盖 <code>l1 = 50.4 → 105.9 mm</code>（55.5 mm）</b>
-          （<a href="motion.html">motion.html</a> 第 11 节 D），它<b>大于</b>步态那 30 mm ——
-          选伸缩杆时按 55.5 选，步态的 ±15 是它的子区间</td></tr>
-      <tr><td><b>④ 吸盘单元的总长度</b></td>
-        <td><a href="suction.html">suction.html</a> 剖面按比例是 <b>∅25 × 76 mm</b>／
-          <a href="body.html">body.html</a> 只给吸盘+膜片腔 <b>18 mm</b></td>
-        <td>按 <b>body.html 的分层</b>建：0–18 吸盘与膜片腔、18–30 传动层。
-          suction.html 的 76 mm 含轴向电机，而 body.html 要求「电机全部横放」，
-          <b>两者在多文档重组时才对得上</b></td></tr>
-      <tr><td><b>⑤ 刷辊 ∅34 是芯还是外径</b></td>
-        <td>文档只写「刷辊 ∅34」，另写「刷丝长 6–10 mm」「轴心离壁 z_b = 25」</td>
-        <td>判定 <b>∅34 是芯</b>：芯半径 17 → 芯表面离壁 8 mm，
-          <b>正好等于刷丝长度，丝尖刚好触玻璃</b>。三个数字自洽，不是巧合</td></tr>
-      <tr><td><b>⑥ motion.html 图 1 的比例</b></td>
-        <td>同一张图里吸盘圆按 2 px/mm、铰点圆按 0.92 px/mm 画（黄圆小了约 2.2 倍）</td>
-        <td>不影响建模（角度是对的，只有半径比例错），但<b>读那张图的半径要当心</b></td></tr>
-      <tr class="hl"><td><b>⑦ 膝铰座塞不进传动层</b></td>
-        <td><a href="body.html">body.html</a> 第 1 节的传动层是 <b>12 mm</b>／过棱要求膝能折 85°
-          并带锁止，铰座做不到 ∅12 以内</td>
-        <td>模型取膝铰座 <b>∅14</b>，自检第 ⑫ 行因此报红 ——
-          <b>这一条不是建模错误，正是 body.html 第 1 节选项②的由来</b>：
-          膝铰座撑到 ∅14 就要把传动层加到 14 mm，总厚 64 → 66 mm。
-          杆径选到 ∅8 还是 ∅10 会一起决定这个结果</td></tr>
-      <tr><td><b>⑧ 刷辊的轴向位置</b></td>
-        <td>文档（<a href="body.html">body.html</a> 第 1 节剖面）把刷辊轴心放在
-          <b>重心之后 18 mm</b>，并明说<b>刷辊与主腔在投影上重叠、要挖槽让开</b>／
-          模型把刷辊放在可行区间的下限 25 mm，与主腔留 3.5 mm 净距</td>
-        <td>模型的可行区间是 <b>−25 ≤ y ≤ 13.7</b>，两个值都在区间内。
-          <b>模型选了不挖槽的那一端</b>，因为挖槽要改主腔底板形状，
-          而本模型的用途是对齐尺寸、不是出图。要按文档那张剖面定稿，
-          得把刷辊挪到 −18 并在主腔底板上开一条槽</td></tr>
-    </tbody>
-  </table>
-
-  <div class="formula">
-    <b>这几条里只有 ③ 和 ④ 需要真的回去改文档</b><br>
-    ①⑤⑥ 是标注或读图问题，几何本身没问题。
-    <b>③ 行程有三个说法</b>，建议统一成 §7 用的 ±15 —— 它是被转向计算引用过的那个值。
-    <br><b>④ 才是真问题</b>：吸盘单元的轴向长度在 suction.html 里是 76 mm，
-    在 body.html 的厚度预算里只有 18 mm。
-    这两个数只有在「电机横放、丝杆留在传动层」的架构下才同时成立，
-    而<b>这句话目前只写在 body.html 里，suction.html 没有回指</b>。
-    建议在 suction.html 第 1 节加一句口径说明。
-  </div>
-</div>
-
-<!-- ══════ 7 怎么改 ══════ -->
-<div class="card">
-  <h2 id="s7"><span class="n">7</span>怎么改这个模型</h2>
-  <p class="cap">
-    这一节是写给<b>后面来接手的 Agent</b>的。模型的全部可调量集中在一个对象里，
-    改尺寸不需要读渲染代码。
-  </p>
-
+  <h3 id="s6a1"><span class="n">A</span>腿的解法与步序</h3>
   <ul class="pts">
-    <li><b>① 改尺寸 → 只动 <code>CFG</code>。</b>
-      它是 <code>&lt;script type="module"&gt;</code> 里的第一个常量，
-      按「玻璃/坞站 → 三足布局 → 厚度分层 → 作业头 → 内部件」分组。
-      <b>每个值右边都有 <code>// src:</code> 或 <code>// 示意</code> 标注</b>，
-      照抄那篇文档之前先看那个标注。</li>
-    <li><b>② 改形状 → 只动对应的 <code>build*()</code>。</b>
-      <code>buildGlass / buildDock / buildFoot / buildLeg / buildCavity /
-      buildBrush / buildSqueegee / buildShroud / buildInternals</code>，
-      一个函数画一个零件，互不引用。<b>函数返回一个 Group，装配代码只负责摆位置。</b></li>
-    <li><b>③ 加了新零件 → 在 <code>LAYERS</code> 里登记它。</b>
-      「分层展开」滑杆靠这张表决定每个组沿 z 走多远。
-      <b>不登记的组不会动</b>，这是展开图里零件停在原地的最常见原因。</li>
-    <li><b>④ 改标注 → 只动 <code>buildLabels()</code> 里的 <code>at</code>。</b>
-      每条标注是「世界坐标的锚点 + <b>屏幕坐标</b>的 <code>[u, v]</code>」，
-      u 从左边 0→1，v 从上边 0→1。<b>写成屏幕坐标是为了换视角不糊</b> ——
-      世界坐标的偏移只在调它的那个视角下好看。锚点仍跟着 <code>CFG</code> 走，
-      所以改了刷辊的 y，引线自己会跟过去。删一条就直接删一行，别处不引用它。</li>
-    <li><b>⑤ 改完看控制台。</b>
-      每次重建都会跑一遍<a href="#s3">干涉自检</a>并 <code>console.table</code> 出来。
-      换视角还会多打两行：<b>取景</b>（模型占画面多少、有没有被切）和
-      <b>标注排布</b>（哪两条压住了、哪条出框了）。
-      <b>约束被改坏会直接标红</b>，不用肉眼在三维里找干涉。</li>
-    <li class="w"><b>⑥ 不要在 HTML 里写 <code>&lt;style&gt;</code>。</b>
-      三维视图的外观类（<code>.viewer</code> / <code>.viewer-bar</code> / <code>.viewer-chip</code> …）
-      全部在 <code>assets/notion.css</code> 里。
-      这和本仓库其余文档是同一条规矩，见 <a href="AGENTS.md">AGENTS.md</a> 第 2.1 节。</li>
+    <li><b>每条腿的逆解：</b>踝在杯心正上方 24 mm；膝落在以踝为心、半径 30、<b>平行于该杯所在玻璃面</b>的圆上
+      （远端段始终贴着玻璃，第 11 节 C）。在这个圆上挑一个点，使 l1 在 50.4 → 105.9 内、膝角 ≤ 85°、
+      杆件不穿进主腔，并让 l1 尽量留在机身平面里（「近端段两端同高」）。</li>
+    <li><b>步序 C → B → A。</b>先把机尾左杯直接甩到侧玻璃（它的铰点座在机身前左，够得着），
+      机身抬头转到约 59° 再挪机尾右杯，最后机身贴平到侧玻璃上、把鼻杯送到 h1 + 150 = 180 mm。</li>
+    <li><b>落点与文档一致：</b>两只尾杯落在侧玻璃 h1 = 30 mm、鼻杯 180 mm；起点机身离棱 130 mm（下限 115.5）。</li>
+    <li class="w"><b>和文档不一样的一点：</b>第 11 节 D 说「瓶颈永远是步 1 —— 尾右杯」。
+      本页先走的是<b>尾左杯</b>：铰点圆转了 60° 之后左右不对称，座 c 在机身前左、座 b 在正后方，
+      尾左杯离棱更近的铰点够得着。第 11 节的中间姿态没有公开，两边步序是否等价没法对照。</li>
   </ul>
 
+  <h3 id="s6a2"><span class="n">B</span>连续性补上之后的读数</h3>
+  <table>
+    <thead><tr><th>量</th><th>文档（第 11 节 D，θ = 90°）</th><th>本页（整段动画逐帧）</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td><b>伸缩段 l1</b></td><td>50.4 → 105.9 mm</td><td id="rd-l1">—</td></tr>
+      <tr class="bad"><td><b>膝折角</b></td><td>≤ 78.0°（「膝要能折到 85°」）</td><td id="rd-knee">—</td></tr>
+      <tr><td>杆件进入主腔</td><td>不进入</td><td id="rd-intr">—</td></tr>
+      <tr><td>机身离玻璃最小净距</td><td>—</td><td id="rd-clr">—</td></tr>
+    </tbody>
+  </table>
   <div class="formula">
-    <b>控制台里可以直接试参数，不用改文件</b><br>
-    <code>BOT.CFG.brush.y = -21; BOT.rebuild()</code> —— 立刻看到刷辊前移后的效果，
-    自检表会告诉你有没有撞上主腔。
-    <br><code>BOT.CFG.foot.Rt = 70; BOT.rebuild()</code> ——
-    验证 <a href="body.html">body.html</a> 第 4 节说的「缩 R_t 是最有效的那个旋钮」：
-    整机跨度立刻收窄，但刷辊的可行区间会跟着消失。
-    <br><code>BOT.checks()</code> 单独再跑一次自检；<code>BOT.labelLayout()</code> 看标注有没有压住；
-    <code>BOT.modelBounds()</code> 看取景有没有把零件切掉；
-    <code>BOT.VIEWS.iso.d = 600; BOT.setView('iso')</code> 拉远一点再量一次。
+    <b>结论：行程不用加，膝要按 85° 做</b><br>
+    第 11 节 E ① 担心「步与步之间的连续性没有检查，真实需要的行程会比上表略大」。
+    按本页的腿模型，<b>连续的三步路径在同一个 50.4 → 105.9 里就走得通</b>，
+    代价落在膝上 —— 机身从贴平转到约 60° 的那一段，三条腿的膝同时折到 80–85°。
+    这正好压在文档自己定的「膝要能折到 85°」上限，<b>锁止机构和角度传感器的量程要按 85° 选，不是 78°</b>。
     <br><span style="color:var(--ink-3);font-size:12.5px">
-    这些改动只活在这个页面里，<b>刷新就没了</b> —— 想留下来就写进 <code>CFG</code>。</span>
+    摆动腿（悬空那一条）在关节空间里插值，再沿「角平分线 + 朝髋收腿」抬起 20 mm 绕过缸角；
+    它的 l1 与杯心离玻璃的净距也在自检表里逐帧查了。这条轨迹是本页选的，不是文档给的。</span>
   </div>
+</div>
 
+<!-- ══════ 7 回坞 ══════ -->
+<div class="card">
+  <h2 id="s7"><span class="n">7</span>回坞对接动画</h2>
+  <p class="cap">
+    「回坞」模式演示停靠的三拍：光电伺服把罩心对上盘心 → 作业头退让 20 mm → 感应充电。
+    默认「侧视」看 13 mm 间隙最清楚。
+  </p>
+  <table>
+    <thead><tr><th>层（发射线圈 → 接收线圈）</th><th>厚度 (mm)</th><th>模型里的 z</th></tr></thead>
+    <tbody>
+      <tr><td>坞站外壳</td><td>1.5</td><td>−8.0 → −6.5</td></tr>
+      <tr><td>发射线圈灌封</td><td>1.5</td><td>−6.5 → −5.0</td></tr>
+      <tr class="bad"><td><b>玻璃</b></td><td><b>5.0</b></td><td>−5.0 → 0</td></tr>
+      <tr class="hl"><td><b>水隙</b></td><td><b>2.0</b></td><td>0 → +2.0（罩尖）</td></tr>
+      <tr><td>罩壁 + 接收线圈灌封</td><td>1.5</td><td>+2.0 → +3.5</td></tr>
+      <tr><td>接收线圈自身灌封</td><td>1.5</td><td>+3.5 → +5.0</td></tr>
+      <tr class="hl"><td><b>合计</b></td><td><b>13.0</b></td><td>−8.0 → +5.0</td></tr>
+    </tbody>
+  </table>
+  <div class="formula">
+    <b>精定位只动机身，不动脚</b><br>
+    四只 940 nm 信标按 ±20 mm 布在盘上，光电管在罩尖。n = 3 时机身在三杯不动的前提下还有 ±10 mm 量级的平移余量，
+    动画里罩心从偏 (−9, +12) mm 收到 0 —— 这就是 <a href="dock.html">dock.html</a> 第 4 节 B 的「推杆伺服」。
+    <br>退让那一拍刷辊顶从 z = 34 升到 54，离跨梁底 z = 56 还有 2 mm；读数面板会实时显示这个净距。
+  </div>
+</div>
+
+<!-- ══════ 8 问题 ══════ -->
+<div class="card">
+  <h2 id="s8"><span class="n">8</span>建模暴露的问题</h2>
+  <p class="cap">
+    把几份文档的数字放进同一个坐标系、再让腿动起来，暴露了下面这些。
+    <b>没有一条由本页擅自裁定</b> —— 模型选了一个画法，选择理由都写在这里。
+  </p>
+  <table>
+    <thead><tr><th>问题</th><th>怎么来的</th><th>建议</th></tr></thead>
+    <tbody>
+      <tr class="bad"><td><b>① 前窗罩压住铰点座 c</b></td>
+        <td>罩心 (−15, −32) 到座 c 29.2 mm；罩半径 ≥ 26.5（Ø50 线圈 + 1.5 壁），座 ∅14 → 重叠 ≈ 4.3 mm。
+          body.html 俯视图按 Ø60 画罩，重叠更多</td>
+        <td><b>候选：罩心挪到 (0, −30)</b>。到座 a / c 各净 10.1 mm、到杆 a 净 3.5 mm、到刷辊前缘净 3.0 mm（按罩根 Ø56）。
+          代价在坞站：Ø90 圆盘跟着挪过去，盘边会越过铰点 a 中心 1.4 mm ——
+          dock.html 第 1 节「盘边离铰点 a」那条判据防的是什么（圆盘在缸外，碰不到铰点座）要先问清楚。
+          <b>不要动铰点座</b> —— 那会动铰点圆，必须重扫雅可比</td></tr>
+      <tr><td><b>② 跨梁只剩 z = 56–64</b></td>
+        <td>作业头退让 20 mm 后刷辊顶在 z = 54；跨梁要从它上面过，又不能高出盖板 64</td>
+        <td>跨梁截面按 ≤ 8 mm 高做，或加宽来补刚度。
+          另外值得回头问一句：<b>罩心搬到 (−15, −32) 之后，罩体与刷辊在俯视上已经不重叠</b>，
+          「两者抢同一段间隙所以要退让」的理由是否还成立（body.html 第 1 节 ②）</td></tr>
+      <tr><td><b>③ 平贴步距上限 14.5 mm</b></td>
+        <td>伸缩段下限按 50.4 算时，d = 23 那档要 l1 = 46.9</td>
+        <td>伸缩杆规格下限改按平贴步态定，见 <a href="#s5a2">第 5 节 B</a></td></tr>
+      <tr><td><b>④ 过棱膝角到 85°</b></td>
+        <td>第 11 节 D 表是逐步独立搜的，≤ 78°；补上步间连续后三腿同时到 80–85°</td>
+        <td>锁止与角度传感器量程按 85° 选。步序（先尾左还是尾右）两边对不上，见 <a href="#s6a1">第 6 节 A</a></td></tr>
+      <tr><td><b>⑤ 刷辊 ∅34 是外径还是芯</b></td>
+        <td>俯视各处写「占 y = +1 ~ +35」、work.html 按 r = 17 算扭矩 → 外径；
+          剖面写「占 z = 8–42」、motion.html 用 z_b = 25 → 芯。两种不能同时成立</td>
+        <td>模型按<b>外径</b>取、轴心 z = 17（否则丝尖离玻璃 8 mm，或刷辊啃进主腔尾面 7 mm）。
+          后果：motion.html 第 6 节的剥离力矩按 z_b = 25 算是偏保守的</td></tr>
+      <tr><td>⑥ 支撑三角形内切圆（撤回）</td>
+        <td>上一版模型说 body.html 的「内切圆 ∅100」应为 ∅86.6。复核：R_t = 100 的等边三角形，内切圆半径 = R_t / 2 = 50，
+          <b>∅100 是对的</b></td>
+        <td>body.html 不用改。上一版把边长的一半（86.6）当成了内切圆直径</td></tr>
+      <tr><td>⑦ body.html 剖面图的一句旧话</td>
+        <td>图注写「刷辊与主腔重叠 —— 刷辊处主腔要挖槽让开」；正文与各处数字是主腔尾面 y = 0、刷辊 y = +1 起，不重叠</td>
+        <td>删掉那句图注，或改成「刷辊前缘离主腔尾面 1 mm」</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════ 9 怎么改 ══════ -->
+<div class="card">
+  <h2 id="s9"><span class="n">9</span>怎么改这个模型</h2>
+  <p class="cap">写给后面来接手的 Agent。模型的全部可调量在一个对象里，改尺寸不需要读渲染代码。</p>
+  <ul class="pts">
+    <li><b>① 改尺寸 → 只动 <code>CFG</code>。</b>按「玻璃与坞站 → 三足 → 腿 → 厚度 → 主腔 → 作业头 → 前窗 → 动画」分组，
+      每条都有 <code>// src</code> / <code>// 推导</code> / <code>// 示意</code>。</li>
+    <li><b>② 改形状 → 只动对应的 <code>build*()</code>。</b>
+      <code>buildGlass / buildCorner / buildAlgae / buildDock / buildFoot / buildLeg / buildSeats / buildBeam /
+      buildCavity / buildCover / buildShroud / buildHead / buildPod / buildInternals / buildField</code>，
+      一个函数一个零件，互不调用，各自返回一个 Group。腿和脚每帧由 <code>poseLeg / poseFoot</code> 摆位。</li>
+    <li><b>③ 加了新零件 → 在 <code>LAYERS</code> 里登记。</b>不登记的组不会跟着「分层展开」走。</li>
+    <li><b>④ 标注自动排布，不用手调坐标。</b><code>buildLabels()</code> 只写「锚点（文档坐标）+ 文字」，
+      排布按锚点的屏幕位置分左右两栏、逐条避让。改完跑 <code>BOT.labelLayout()</code> 看有没有出框或压住。</li>
+    <li><b>⑤ 动画 = 时间线函数。</b><code>gaitTimeline / crossTimeline / dockTimeline</code> 各返回
+      <code>{ T, at(t) }</code>，<code>at</code> 只给机身位姿、杯位和几个开关量，腿全由 <code>legIK</code> 现算。
+      过棱关键帧在 <code>CFG.cross.keys</code>，改了之后<b>自检表会重新逐帧检查</b>。</li>
+    <li><b>⑥ 约束写进 <code>checks()</code>。</b>它会渲染成第 3 节 D 的表并 <code>console.table</code>，
+      不通过的行在页面上标红，「待选型」类标成普通行加 ⚠。</li>
+    <li class="w"><b>⑦ 不要在 HTML 里写 <code>&lt;style&gt;</code>。</b>叠加层、读数面板、标注的外观类全在
+      <code>assets/notion.css</code> 的「3D 视图」段里。</li>
+  </ul>
+  <div class="formula">
+    <b>控制台可以直接试</b><br>
+    <code>BOT.setMode('cross'); BOT.setTime(9)</code> —— 跳到过棱第 9 秒；
+    <code>BOT.CFG.shroud.at = [0, -30]; BOT.rebuild()</code> —— 试第 8 节 ① 的修法，自检表那一行会变绿；
+    <code>BOT.CFG.gait.d = 23; BOT.rebuild()</code> —— 看步态那一行变红；
+    <code>BOT.checks()</code>、<code>BOT.labelLayout()</code>、<code>BOT.modelBounds()</code> 单独跑自检、标注排布与取景。
+    <br><span style="color:var(--ink-3);font-size:12.5px">这些改动刷新就没了，想留下来就写进 <code>CFG</code>。</span>
+  </div>
   <div class="formula w">
-    <b>two more 注意事项</b><br>
-    <b>three.js 的版本是钉死的</b>（importmap 里写死的 <code>0.180.0</code>）。
-    换版本要注意 r155 前后<b>光照强度单位变过</b>，同一个 <code>intensity</code>
-    在新版本里会明显偏亮或偏暗 —— 场景里那三盏灯的数值是按 0.180 调的。
-    <br><b>不要改成从本地 <code>assets/</code> 引 three.js。</b>
-    <code>file://</code> 下的 ES module 会被 CORS 拦死（实测），
-    而 three.js 从 r160 起就不再发 UMD 构建，本地只剩 ESM 一条路可走不通。
-    所以这个仓库存不了离线的 three.js，<b>CDN 是唯一可行解</b>。
+    <b>two 条硬规矩</b><br>
+    <b>three.js 版本钉死在 importmap 的 <code>0.180.0</code>。</b>换版本要注意 r155 前后光照强度的量纲变过。
+    <br><b>不要改成从本地 <code>assets/</code> 引 three.js。</b><code>file://</code> 下本地 ES module 会被 CORS 拦死，
+    three.js 从 r160 起又不再发 UMD，所以 CDN 是唯一可行解（<a href="AGENTS.md">AGENTS.md</a> 第 6 节）。
   </div>
 </div>
 
 <footer>
-  三维示意 · 按各文档标注尺寸 1:1 建模，未标注尺寸的零件为示意比例<br>
-  「示意」值不影响任何已论证的结论，但会决定外观 —— 定稿前应写回对应文档<br>
+  三维示意 · 按各文档标注尺寸 1:1 建模，未标注尺寸的零件为示意比例 · 非工程图纸<br>
+  动画时长已压缩，姿态为本页逆解与离线搜索结果，需实测标定<br>
   配套文档：<a href="suction.html">吸附单元设计</a> · <a href="motion.html">运动单元设计</a> · <a href="work.html">作业机构设计</a> · <a href="body.html">主体设计</a> · <a href="dock.html">充电坞站设计</a> · <a href="ctrl.html">主控与传感器设计</a>
 </footer>
 </div>
 </main>
 
-
 <script>
-/* 三维模块没起来时的兜底：6 秒后仍是载入中，就换成说明。
+/* 三维模块没起来时的兜底：8 秒后仍是载入中，就换成说明。
    覆盖两种情况 —— CDN 取不到（离线/被拦）和浏览器不支持 WebGL。 */
 setTimeout(function () {
   var v = document.getElementById('viewer');
   if (v && !v.dataset.ready) v.classList.add('is-dead');
-}, 6000);
+}, 8000);
 </script>
 
 <script type="importmap">
@@ -614,216 +540,317 @@ setTimeout(function () {
 /* ══════════════════════════════════════════════════════════════════
    鱼缸壁面清洁机器人 · 整机三维示意
    ──────────────────────────────────────────────────────────────────
-   改这个文件只需要认识两样东西：
-
-     ① CFG     —— 全部尺寸。每条都标了 // src:（文档给的）
-                  或 // 示意（文档没给、为了能看而取的）
-     ② build*  —— 全部零件。一个函数画一个零件，函数之间不互相调用，
-                  每个返回一个 Group，由 assemble() 负责摆位置
-
-   改完刷新浏览器即可，没有构建步骤。
-   控制台可直接改参数试：BOT.CFG.brush.y = -21; BOT.rebuild()
+     ① CFG      —— 全部尺寸，文档坐标（x 右、y 向机尾、z 离玻璃）
+     ② 运动学    —— 纯函数：位姿、逆解。不碰 three.js
+     ③ build*   —— 零件。一个函数画一个，互不调用，返回 Group
+     ④ 时间线    —— gait / cross / dock，给机身位姿与杯位，腿现算
+     ⑤ 场景与 UI
+   控制台：BOT.setMode('cross'); BOT.setTime(9) / BOT.CFG... ; BOT.rebuild()
    ══════════════════════════════════════════════════════════════════ */
-
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 /* ══════════════════════════════════════════════════════════════════
-   ① CFG —— 参数表
-   单位统一 mm。坐标系：玻璃内表面 = z0，+z 指向缸内，+y = 行进方向。
-   口径与 body.html 第 1 节「厚度从玻璃面起算」一致。
+   ① CFG —— 单位 mm，文档坐标
    ══════════════════════════════════════════════════════════════════ */
 const CFG = {
-
   /* ── 玻璃与坞站 ─────────────────────────────────────────────── */
   glass: {
-    t: 5.0,          // src: dock.html §3「玻璃 5 mm，完全不能动」
-    w: 240, h: 220,  // 示意：只为取景，不是缸体尺寸
+    t: 5.0,          // src: dock.html §3「玻璃 5 mm」
+    w: 600, h: 440,  // 示意：前玻璃取景尺寸，不是缸体尺寸
+    xEdge: -300,     // 示意：缸角（前玻璃与侧玻璃的交线）在世界 X = −300
+    bead: 6,         // 示意：缸角的玻璃胶三角条腰长（motion.html §10 ⑦ 的「圆角」）
   },
   dock: {
-    dia: 90,         // src: dock.html §1「Ø90 × 22 的塑料圆盘」
-    th: 22,          // src: dock.html §1
-    coilDia: 60,     // src: dock.html §3「发射线圈 Ø60，利兹线」
-    wallDia: 70,     // src: dock.html §5「玻璃侧开一个 Ø70 的非金属区」
-    irSpan: 40,      // src: dock.html §4B「信标 LED 间距 ±20 mm」
+    dia: 90, th: 22, // src: dock.html §1「Ø90 × 22 的塑料圆盘」
+    coilDia: 60,     // src: dock.html §5「发射线圈 Ø60」
+    winDia: 70,      // src: dock.html §5「Ø70 的非金属区」
+    irSpan: 40,      // src: dock.html §4B「信标 LED ±20 mm」
+  },
+  gap: {             // src: dock.html §3 表，六层合计 13.0
+    shell: 1.5, txPot: 1.5, glass: 5.0, water: 2.0, shroud: 1.5, rxSelf: 1.5,
   },
 
-  /* 13 mm 线圈间隙，逐层 —— src: dock.html §3 表，六层合计 13.0。
-     这六层恰好填满「发射线圈绕组面 → 接收线圈绕组面」之间的全部距离，
-     所以两线圈的 z 坐标直接由累加得到：−8.0 和 +5.0。 */
-  gap: {
-    shell: 1.5,      // 坞站外壳（线圈前面那层壳）
-    txPot: 1.5,      // 发射线圈自身灌封
-    glass: 5.0,      // 玻璃 —— 完全不能动
-    water: 2.0,      // 水隙（导向罩尖端到玻璃内表面）← 唯一可调的余量
-    shroud: 1.5,     // 导向罩壁 + 接收线圈灌封（文档把这两样并成了一层）
-    rxSelf: 1.5,     // 接收线圈自身灌封
-  },
-
-  /* ── 三足布局 ───────────────────────────────────────────────── */
+  /* ── 三足 ── src: motion.html §1 表 ────────────────────────────── */
   foot: {
-    Rt: 100,         // src: motion.html §1「吸盘圆 R_t = 100」
-    a0: 90,          // 示意：三足的相位，只影响朝向
-    padDia: 25,      // src: suction.html「吸盘开口 ∅25」
-    chamberDia: 20,  // src: suction.html「驱动膜片 ∅20」
+    Rt: 100,                 // src: 吸盘圆 R_t = 100
+    ang: [270, 30, 150],     // src: A 前足 270° / B 机尾右 30° / C 机尾左 150°
+    padDia: 25,              // src: suction.html「吸盘开口 ∅25」
+    chamberDia: 20,          // src: suction.html「驱动膜片 ∅20」
+    motor: [12, 24],         // src: suction.html「∅12 × 24 空心杯」；横放位置是示意
   },
-  hinge: {
-    r: 50,           // src: motion.html §1「机身铰点圆 r = 50」
-    off: 60,         // src: motion.html §1「两圆错开 60°」
-  },
+  hinge: { r: 50, off: 60 }, // src: 铰点圆 r = 50，相对吸盘圆转 60°（= 吸盘方位 +60°）
+
+  /* ── 腿 ── motion.html §11 ─────────────────────────────────────── */
   leg: {
     plane: 24,       // 推导：传动层 18–30 的中面
-    sleeveD: 10,     // 示意：两级伸缩的外管 —— 文档只说「杆径涨到 ∅8–10」
-    rodD: 4,         // src: motion.html §5③「∅4 推杆」，单级时代的数；
-                     //  §11D 判定它过不了棱，已换成上面两级，这一条留作对照
-    bossD: 14,       // 示意：铰链「普通球头或销轴就够，不是精密件」
-    stroke: 30,      // src: motion.html（±15 mm；文档另有 20–40 的说法，见 §6③）
-
-    /* ── 过棱换面：这条腿是两节的（motion.html §11）───────────────
-       关节链 = 方位铰（被动）→ 面外俯仰（主动）→ 伸缩（主动）
-                → 膝（被动、可锁止）→ 定长远端段。
-       这一步把「推杆」变成了「腿」：本页的 leg 组现在画的是这条链，
-       平贴中位时膝角为 0（伸直），所以外形与换面之前一致。 */
-    l2: 30,          // src: motion.html §11C「膝到吸盘踝 = 定长 30 mm」
-    l1min: 50.4,     // src: motion.html §11D 表（θ = 90°，落点 h1 = 30 mm）
-    l1max: 105.9,    // src: motion.html §11D 表（同一个姿态的最长腿）
-    stage2D: 7,      // 示意：两级伸缩的中间级 —— 文档只说「杆径涨到 ∅8–10」
-    kneeD: 14,       // 示意：膝铰座外径，与 bossD 同量级，见 §6⑦
-    pitchD: 12,      // 示意：面外俯仰叉耳的外径
-    plateT: 3.0,     // 示意：叉耳 / 膝夹板厚度
+    l2: 30,          // src: §11C「膝到吸盘踝 = 定长 30」
+    l1min: 50.4,     // src: §11D 表 θ = 90°
+    l1max: 105.9,    // src: 同上
+    kneeMax: 85,     // src: §11D「膝要能折到 85°」
+    kneeTable: 78,   // src: §11D 表「膝折角 ≤ 78.0°」（逐步独立搜的值，对照用）
+    tubeD: 10, midD: 8, rodD: 6,   // 示意：两级伸缩 ∅10 / ∅8 / ∅6（文档只给 ∅8–10）
+    kneeD: 14,       // 示意：膝铰座外径
+    bossD: 14,       // 示意：铰点座外径（dock.html §1：≤ ∅27 就不必在盘上开缺口）
   },
 
-  /* ── 厚度分层 ────── src: body.html §1，z 从玻璃面起算 ───────── */
-  layer: {
-    pad: 18,         // 0–18   吸盘 + 膜片腔
-    trans: 30,       // 18–30  传动层
-    cavity: 58,      // 30–58  主腔
-    cover: 64,       // 58–64  盖板 + O 圈
-  },
+  /* ── 厚度分层 ── src: body.html §1 ─────────────────────────────── */
+  layer: { pad: 18, trans: 30, cavity: 58, cover: 64 },
   body: {
-    w: 110,          // src: body.html §1「主腔 110 × 85」
-    d: 85,           // src: body.html §1
-    hy: 38,          // 推导：让开刷辊后的主腔中心 y，见 §3B
+    w: 110, d: 85,   // src: body.html §1「主腔 110 × 85」
+    y0: -85, y1: 0,  // src: 主腔尾面 y = 0（body §1 / motion §1），前缘由 85 深推出
     r: 12,           // 示意：圆角
-    wall: 2.0,       // src: body.html §3「2 mm 铝板能扛几百 kPa」
+    wall: 2.0,       // src: body.html §3「2 mm 铝板」
     screws: 10,      // src: body.html §2B「周圈约 10 个 M3」
   },
+  beam: {            // 跨梁：吊住铰点座 b（motion §1 / body §1）
+    w: 12,           // src: body.html §1 俯视图 24 px @ 1:2
+    z0: 56, z1: 64,  // 推导：退让后刷辊顶 z = 54 + 2 mm 净距 → 56；不高出盖板 64
+  },
 
-  /* ── 作业头 ─────────────────────────────────────────────────── */
+  /* ── 作业头 ── work.html §4 / body.html §1 ────────────────────── */
   brush: {
-    coreD: 34,       // src: work.html §4「刷辊直径 ∅34」
-    len: 80,         // src: work.html §4「刷辊长度 80」
-    y: -25,          // 推导：可行区间下限，见 §3B
-    z: 25,           // src: motion.html §6「刷辊离壁 z_b = 25」
-    bristle: 8,      // src: work.html §4「刷丝长 6–10」取中；恰好触玻璃
-    rows: 15, cols: 18,  // 示意：植毛密度，文档只说「稀疏」
-    podLen: 22,      // 示意：驱动仓沿轴向的长度
+    D: 34,           // src: work.html §4「∅34」—— 本页按外径取，见 §8 ⑤
+    len: 80,         // src: work.html §4 / §7
+    sweep: 75,       // src: 有效扫宽 = 80 − 5
+    y: 18,           // src: body.html §1「刷辊轴线 y = +18」
+    bristle: 8,      // src: work.html §4「刷丝长 6–10」取中
+    retract: 20,     // src: body.html §1 ②「作业头被动退让 20 mm」
+    rows: 18, cols: 22,  // 示意：植毛密度（文档只说「稀疏」）
+    rpm: 400,        // src: work.html §4「300–500 rpm」（动画按 1/20 放慢）
   },
   squeegee: {
-    len: 75,         // 示意：与有效扫宽 75 对齐（work.html §4）
-    y: -2.5,         // 示意：文档明确未给刮条几何，只规定在刷辊下游
-    h: 26,           // 示意
-    t: 3,            // 示意
-    lean: 6,         // 示意：刃口向后的倾斜，单位 °
+    y: 39.5,         // src: body.html §1「刮条 y = +38」~ motion §1「≈ +42」取中
+    len: 80, h: 16, t: 3, lean: 8,   // 示意：文档明确未给刮条几何
   },
   shroud: {
-    /* y = 28 是被自检逼出来的：到两条上推杆的距离是 0.5·(R_t − y)，
-       Ø53 的罩体加 3 mm 余量要求 y ≤ 31；同时罩体前沿还要让开刮条，
-       要求 y ≥ 27。罩体因此几乎没有收细的余地 —— Ø54 → Ø53 基本是直筒。 */
-    y: 28,           // 推导：见 §5 的「前窗模块被两条上推杆夹住」
-    dBody: 54,       // 推导：Ø50 线圈 + 2 × 1.5 罩壁 = Ø53，再留 1 mm
-    dTip: 53,        // 推导：同上
-    z0: 2.0,         // src: dock.html §1「向前伸到距玻璃 2 mm」
-    z1: 30,          // src: body.html §1「前窗模块从 30 mm 处伸到距玻璃 2 mm」
+    at: [-15, -32],  // src: dock.html §1 / body.html §1「偏中线左 15、前 32」
     coilDia: 50,     // src: dock.html §1「接收线圈 Ø50」
+    wall: 1.5,       // src: body.html §1「罩壁 1.5 mm」
+    dTop: 56,        // 示意：根部略粗，便于脱模
+    z0: 2, z1: 30,   // src: 「从 30 mm 处伸到距玻璃 2 mm」
   },
 
-  /* ── 内部件（摆位全部是示意，只有质量/姿态有出处） ────────────── */
-  pack:  { w: 34, h: 22, l: 82 },   // 示意：2S 1000 mAh 的包络
-  pcb:   { w: 56, t: 1.6, l: 34 },  // 示意：文档未给 PCB 尺寸，只给 55 g
-  motor: { d: 12, l: 24 },          // src: suction.html「∅12 × 24 空心杯」
-  weight:{ w: 40, h: 6, l: 70 },    // src: body.html §4「配重约 253 g，可调 ±100 g」
+  /* ── 动画 ─────────────────────────────────────────────────────── */
+  gait: {
+    d: 12,           // src: motion.html §2「步距 12–23」取下限（理由见 §5 B）
+    lift: 5,         // 示意：换步时抬杯高度
+    cycles: 5,
+    tWork: 1.5, tSwing: 0.9,   // 示意：动画时长（已压缩）
+  },
+  cross: {
+    h1: 30,          // src: motion.html §11A「直角棱 h1 取 30」
+    order: [2, 1, 0],  // 推导：本页离线搜索的步序 C → B → A
+    /* 推导：机身截面位姿关键帧 [u 离棱, v 离前玻璃, ψ 绕棱转角°, 此处摆动的杯]
+       搜索判据：l1 ∈ [50.4, 105.9]、膝 ≤ 85°、杆件不进主腔、机身不碰玻璃，逐段线性插值连续 */
+    keys: [
+      [130, 0, 0, -1],
+      [120, 0, 0, 2],
+      [115, 0.8, 0, -1],
+      [31.5, 39.6, 59.3, 1],
+      [0, 57, 90, -1],
+      [0, 60.4, 90, 0],
+      [0, 71, 90, -1],
+      [0, 80, 90, -1],
+    ],
+    tSwing: 1.8,     // 示意
+    lift: 20,        // 推导（本页扫出来的）：摆动杯抬起幅度 —— 杯心离玻璃 ≥ 8 mm 且 l1 不出界
+    liftMix: 0.6,    // 示意：抬起方向里「角平分线」占的比例，其余朝髋收
+  },
+  dockAnim: {
+    miss: [-9, 12],  // 示意：精定位起点的罩心偏差（捕获 ±25 mm 以内）
+  },
 };
 
-/* 由 CFG 推出的量 —— 不要手改，改上游参数 */
+/* ══════════════════════════════════════════════════════════════════
+   ② 运动学（纯函数，数组进数组出）
+   世界系：右手系，Y 朝上。前玻璃内表面是 Z = 0，缸内是 +Z。
+   位姿 = { O, R }，R 的三列是机身局部 X（右）/ Y（机头）/ Z（离玻璃）在世界里的方向。
+   文档坐标 (x, y, z) → 局部 (x, −y, z)。
+   ══════════════════════════════════════════════════════════════════ */
 const DEG = Math.PI / 180;
-const DERIVED = {
-  Rt: CFG.foot.Rt,
-  r: CFG.hinge.r,
-  footAng: [0, 1, 2].map(i => (CFG.foot.a0 + i * 120) * DEG),
-  hingeAng: [0, 1, 2].map(i => (CFG.foot.a0 + CFG.hinge.off + i * 120) * DEG),
+const V = {
+  add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]],
+  sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]],
+  mul: (a, s) => [a[0] * s, a[1] * s, a[2] * s],
+  dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
+  len: a => Math.hypot(a[0], a[1], a[2]),
+  norm: a => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; },
+  cross: (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]],
+  lerp: (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t],
 };
-DERIVED.feet  = DERIVED.footAng.map(a => [CFG.foot.Rt * Math.cos(a), CFG.foot.Rt * Math.sin(a)]);
-DERIVED.hinges = DERIVED.hingeAng.map(a => [CFG.hinge.r * Math.cos(a), CFG.hinge.r * Math.sin(a)]);
-/* 中位杆长 L₀ = √(R_t² + r² − 2·R_t·r·cos(偏角)) —— motion.html §5
-   注意是余弦定理，不是勾股 —— 两个圆错开了 60°，腿是斜的 */
-DERIVED.L0 = Math.sqrt(
-  CFG.foot.Rt ** 2 + CFG.hinge.r ** 2
-  - 2 * CFG.foot.Rt * CFG.hinge.r * Math.cos(CFG.hinge.off * DEG));
-DERIVED.legLen = DERIVED.feet.map((f, i) => Math.hypot(
-  f[0] - DERIVED.hinges[i][0], f[1] - DERIVED.hinges[i][1]));
-/* 腿是两节的：l1（髋 → 膝，伸缩段）+ l2（膝 → 踝，定长）。
-   平贴中位三腿伸直，所以 l1 的标称值就是 L₀ − l2 —— motion.html §11C */
-DERIVED.l2 = CFG.leg.l2;
-DERIVED.l1nom = DERIVED.L0 - DERIVED.l2;
-DERIVED.l1span = CFG.leg.l1max - CFG.leg.l1min;   // 过棱时伸缩段要覆盖的范围
-DERIVED.edge = CFG.foot.Rt * Math.sqrt(3);              // 支撑三角形边长 173.2
-DERIVED.gapTotal = Object.values(CFG.gap).reduce((a, b) => a + b, 0);   // 应为 13.0
+function slerp(a, b, t) {
+  const c = Math.max(-1, Math.min(1, V.dot(a, b))), w = Math.acos(c);
+  if (w < 1e-4) return V.norm(V.lerp(a, b, t));
+  const s = Math.sin(w);
+  return V.add(V.mul(a, Math.sin((1 - t) * w) / s), V.mul(b, Math.sin(t * w) / s));
+}
+const ease = t => t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
+const clamp01 = t => Math.max(0, Math.min(1, t));
+
+function toWorld(pose, [x, y, z]) {
+  const R = pose.R;
+  return [0, 1, 2].map(k => pose.O[k] + R[0][k] * x - R[1][k] * y + R[2][k] * z);
+}
+function toDoc(pose, p) {
+  const d = V.sub(p, pose.O);
+  return [V.dot(d, pose.R[0]), -V.dot(d, pose.R[1]), V.dot(d, pose.R[2])];
+}
+/* 贴在前玻璃上、机头朝上：世界原点 (X, Y) 平移 + 偏航 φ */
+function planePose(X, Y, phi = 0) {
+  const c = Math.cos(phi), s = Math.sin(phi);
+  return { O: [X, Y, 0], R: [[c, s, 0], [-s, c, 0], [0, 0, 1]] };
+}
+/* 过棱截面位姿：棱线 = 世界 Y 轴方向，位于 X = xEdge、Z = 0。
+   u = 机身原点离棱（沿前玻璃）、v = 离前玻璃、ψ = 绕棱转角。机头朝 −X（指向缸角），右侧朝上 */
+function sectPose(u, v, psi) {
+  const s = Math.sin(psi), c = Math.cos(psi);
+  return { O: [CFG.glass.xEdge + u, 0, v], R: [[0, 1, 0], [-c, 0, s], [s, 0, c]] };
+}
+
+/* 主腔盒（文档坐标）——腿的杆件不许进来。返回侵入深度（mm），0 = 没进 */
+function cavityDepth([x, y, z]) {
+  const B = CFG.body, L = CFG.layer;
+  if (Math.abs(x) < B.w / 2 + 1 && y > B.y0 - 1 && y < B.y1 + 1 && z > L.trans - 1 && z < L.cover + 1)
+    return z - (L.trans - 1);
+  return 0;
+}
+
+/* 一条腿的逆解 —— motion.html §11C 的腿模型
+   H 髋（世界）、P 踝（世界）、n 踝所在玻璃面法向。
+   膝在以 P 为心、半径 l2、平行于玻璃面的圆上（远端段贴着玻璃）。
+   在圆上找一点：l1 在范围内、膝 ≤ 上限、不进主腔、近端段尽量留在机身平面（「两端同高」）。
+   prev = 上一帧的角度，给一点点粘性，免得相邻两帧在两个等价解之间跳 */
+function legIK(pose, H, P, n, prev) {
+  const K = CFG.leg;
+  const ref = Math.abs(n[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0];
+  const e1 = V.norm(V.cross(n, ref)), e2 = V.cross(n, e1);
+  const at = a => V.add(P, V.add(V.mul(e1, K.l2 * Math.cos(a)), V.mul(e2, K.l2 * Math.sin(a))));
+  const cost = a => {
+    const Kp = at(a), v1 = V.sub(Kp, H), l1 = V.len(v1), v2 = V.sub(P, Kp);
+    const knee = Math.acos(Math.max(-1, Math.min(1, V.dot(v1, v2) / (l1 * K.l2)))) / DEG;
+    let intr = 0;
+    for (let j = 1; j <= 8; j++) {
+      const t = j / 8;
+      intr = Math.max(intr, cavityDepth(toDoc(pose, V.lerp(H, Kp, t))), cavityDepth(toDoc(pose, V.lerp(Kp, P, t))));
+    }
+    const kz = toDoc(pose, Kp)[2];
+    let c = (Math.max(0, K.l1min - l1) + Math.max(0, l1 - K.l1max)) ** 2
+          + (Math.max(0, knee - K.kneeMax) * 0.5) ** 2 + intr * intr * 0.2
+          + 0.002 * Math.abs(kz - K.plane) + 0.0005 * knee;
+    if (prev != null) { let d = Math.abs(a - prev) % (2 * Math.PI); d = Math.min(d, 2 * Math.PI - d); c += 0.0003 * d / DEG; }
+    return { c, a, K: Kp, l1, knee, intr };
+  };
+  let best = null;
+  for (let k = 0; k < 72; k++) { const r = cost(k * 5 * DEG); if (!best || r.c < best.c) best = r; }
+  for (let k = -10; k <= 10; k++) { const r = cost(best.a + k * 0.5 * DEG); if (r.c < best.c) best = r; }
+  return { H, P, K: best.K, l1: best.l1, knee: best.knee, intr: best.intr, alpha: best.a, n };
+}
+
+/* 由 CFG 推出的量 —— 不要手改 */
+const DERIVED = {};
+function derive() {
+  const F = CFG.foot, Hg = CFG.hinge;
+  DERIVED.feet = F.ang.map(a => [F.Rt * Math.cos(a * DEG), F.Rt * Math.sin(a * DEG)]);
+  DERIVED.hinges = F.ang.map(a => [Hg.r * Math.cos((a + Hg.off) * DEG), Hg.r * Math.sin((a + Hg.off) * DEG)]);
+  DERIVED.L0 = Math.sqrt(F.Rt ** 2 + Hg.r ** 2 - 2 * F.Rt * Hg.r * Math.cos(Hg.off * DEG));
+  DERIVED.l1nom = DERIVED.L0 - CFG.leg.l2;
+  DERIVED.brushZ = CFG.brush.D / 2;                         // 推导：外径 ∅34 丝尖触玻璃 → 轴心 z = 17
+  DERIVED.gapTotal = Object.values(CFG.gap).reduce((a, b) => a + b, 0);
+  DERIVED.zTx = -CFG.gap.glass - CFG.gap.shell - CFG.gap.txPot;     // −8.0
+  DERIVED.zRx = CFG.gap.water + CFG.gap.shroud + CFG.gap.rxSelf;     // +5.0
+  /* 3-RPR 雅可比：每行 [u_x, u_y, (r × u)_z]，u = 杯 → 铰点单位向量，r = 铰点相对机身中心 */
+  const jac = off => {
+    const rows = F.ang.map(a => {
+      const f = [F.Rt * Math.cos(a * DEG), F.Rt * Math.sin(a * DEG)];
+      const h = [Hg.r * Math.cos((a + off) * DEG), Hg.r * Math.sin((a + off) * DEG)];
+      const d = [h[0] - f[0], h[1] - f[1]], l = Math.hypot(d[0], d[1]), u = [d[0] / l, d[1] / l];
+      return [u[0], u[1], h[0] * u[1] - h[1] * u[0]];
+    });
+    const [a, b, c] = rows;
+    return a[0] * (b[1] * c[2] - b[2] * c[1]) - a[1] * (b[0] * c[2] - b[2] * c[0]) + a[2] * (b[0] * c[1] - b[1] * c[0]);
+  };
+  DERIVED.jac = jac(Hg.off); DERIVED.jac0 = jac(0);
+}
+derive();
 
 /* ══════════════════════════════════════════════════════════════════
-   ② 材质 —— 语义色取自 notion.css 的变量，改配色只需要改 CSS
+   ③ 材质与几何小工具
    ══════════════════════════════════════════════════════════════════ */
-const CSS = getComputedStyle(document.documentElement);
-const cssVar = n => CSS.getPropertyValue(n).trim();
 const std = o => new THREE.MeshStandardMaterial(o);
-
 const MAT = {
-  alu:    std({ color: 0xc9c6bf, metalness: 0.72, roughness: 0.38 }),  // 6061 阳极氧化
-  aluD:   std({ color: 0x9b9891, metalness: 0.80, roughness: 0.42 }),
-  pom:    std({ color: 0xcfe0d5, metalness: 0.00, roughness: 0.62 }),  // POM 盖板 / 前窗
-  pomD:   std({ color: 0xa8bfb0, metalness: 0.00, roughness: 0.70 }),
-  sili:   std({ color: 0x9fd8d0, metalness: 0.00, roughness: 0.42,
-                transparent: true, opacity: 0.92, side: THREE.DoubleSide }),
-  siliD:  std({ color: 0x5fb3a8, metalness: 0.00, roughness: 0.50 }),
-  brush:  std({ color: 0xe0bb8c, metalness: 0.00, roughness: 0.88 }),  // 尼龙 PA6 刷丝
-  blade:  std({ color: 0x86bfa2, metalness: 0.00, roughness: 0.55 }),  // 铂金硫化硅胶
-  copper: std({ color: 0xc98b52, metalness: 0.90, roughness: 0.28 }),
-  motor:  std({ color: 0x6b6862, metalness: 0.70, roughness: 0.40 }),
-  pcb:    std({ color: 0x4a8a5c, metalness: 0.10, roughness: 0.70 }),
-  batt:   std({ color: 0x9a86c4, metalness: 0.20, roughness: 0.60 }),
-  steel:  std({ color: 0x8a8f96, metalness: 0.95, roughness: 0.26 }),  // 316 不锈钢配重
-  dark:   std({ color: 0x4a4740, metalness: 0.30, roughness: 0.60 }),
-  glass:  new THREE.MeshPhysicalMaterial({
-            color: new THREE.Color(cssVar('--blue-bg') || '#cfe0ee'),
-            metalness: 0, roughness: 0.06, transparent: true, opacity: 0.3,
-            side: THREE.DoubleSide }),
+  alu:    std({ color: 0xd3d6da, metalness: 0.85, roughness: 0.34 }),   // 6061 阳极氧化
+  aluD:   std({ color: 0x9ea4ab, metalness: 0.85, roughness: 0.40 }),
+  steel:  std({ color: 0xc4c8cd, metalness: 1.00, roughness: 0.22 }),
+  brass:  std({ color: 0xc9a25a, metalness: 0.90, roughness: 0.32 }),   // 膝：一眼找到
+  pom:    std({ color: 0xf1ede4, metalness: 0.00, roughness: 0.55 }),   // 盖板、前窗
+  pomD:   std({ color: 0xdcd7cb, metalness: 0.00, roughness: 0.62 }),
+  sili:   std({ color: 0x86d3c8, metalness: 0.00, roughness: 0.35, transparent: true, opacity: 0.86 }),
+  lip:    std({ color: 0x4fb3a5, metalness: 0.00, roughness: 0.45, emissive: 0x000000 }),
+  lipOff: std({ color: 0xe6a15b, metalness: 0.00, roughness: 0.45, emissive: 0x3a1a00 }),
+  bristle:std({ color: 0xe89a4c, metalness: 0.00, roughness: 0.80 }),   // 尼龙 PA6
+  blade:  std({ color: 0x3f4246, metalness: 0.00, roughness: 0.60 }),   // 刮条硅胶
+  motor:  std({ color: 0x5a5e63, metalness: 0.70, roughness: 0.40 }),
+  pcb:    std({ color: 0x2f6f4f, metalness: 0.10, roughness: 0.70 }),
+  batt:   std({ color: 0x7a68b0, metalness: 0.20, roughness: 0.55 }),
+  weight: std({ color: 0x8d9299, metalness: 0.95, roughness: 0.30 }),
+  copper: std({ color: 0xc27c4a, metalness: 0.90, roughness: 0.30, emissive: 0x000000 }),
+  dark:   std({ color: 0x2d2f33, metalness: 0.20, roughness: 0.55 }),
+  ir:     std({ color: 0x5a1f1f, metalness: 0.00, roughness: 0.40, emissive: 0x000000 }),
+  dockSh: std({ color: 0xf6f5f2, metalness: 0.00, roughness: 0.50, transparent: true, opacity: 0.78 }),
+  dockWin:std({ color: 0x3b4650, metalness: 0.00, roughness: 0.30, transparent: true, opacity: 0.55 }),
+  bead:   std({ color: 0x8a9096, metalness: 0.00, roughness: 0.50, transparent: true, opacity: 0.7 }),
+  glass:  new THREE.MeshPhysicalMaterial({ color: 0xb9dbe8, metalness: 0, roughness: 0.04,
+            transparent: true, opacity: 0.24, side: THREE.DoubleSide, depthWrite: false }),
+  glassEdge: new THREE.LineBasicMaterial({ color: 0x6f9fb6, transparent: true, opacity: 0.9 }),
+  shadow: new THREE.ShadowMaterial({ opacity: 0.13 }),
+  field:  new THREE.LineBasicMaterial({ color: 0xd9730d, transparent: true, opacity: 0.0 }),
+  beam:   new THREE.MeshBasicMaterial({ color: 0xd44c47, transparent: true, opacity: 0.0, depthWrite: false }),
 };
+/* 「透视」开关要改的材质：记下它们原本的不透明度 */
+MAT.shell = MAT.alu.clone(); MAT.lid = MAT.pom.clone(); MAT.hood = MAT.pom.clone();
+const XRAY = ['shell', 'lid', 'hood', 'dockSh'];
+XRAY.forEach(k => { MAT[k].userData.op = MAT[k].opacity; });
 
-/* ══════════════════════════════════════════════════════════════════
-   ③ 几何小工具 —— 只做「摆一根杆 / 画一个回转体」这类重复动作
-   ══════════════════════════════════════════════════════════════════ */
+const L = (x, y, z) => new THREE.Vector3(x, -y, z);           // 文档坐标 → 机身局部
+const v3 = a => new THREE.Vector3(a[0], a[1], a[2]);
 
-/* 轴向沿 z 的圆柱（three 默认沿 y，这块地方到处都是沿 z 的零件） */
-function cylZ(rTop, rBot, h, mat, seg = 40) {
-  const m = new THREE.Mesh(new THREE.CylinderGeometry(rTop, rBot, h, seg), mat);
-  m.rotation.x = Math.PI / 2;
+function mesh(geo, mat, part) {
+  const m = new THREE.Mesh(geo, mat);
+  m.castShadow = true; m.receiveShadow = true;
+  if (part) m.userData.part = part;
   return m;
 }
-
-/* 把两个三维点连成一根圆柱（推杆、支柱、连杆都用它） */
-const _up = new THREE.Vector3(0, 1, 0);
-function link(a, b, r, mat, seg = 16) {
-  const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b);
-  const d = B.clone().sub(A), len = d.length();
-  const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, seg), mat);
-  m.position.copy(A).addScaledVector(d, 0.5);
-  m.quaternion.setFromUnitVectors(_up, d.normalize());
-  return m;
+/* 沿 z 的回转体（局部坐标），profile = [[r, z], ...] */
+function lathe(profile, mat, part, seg = 48) {
+  const g = new THREE.LatheGeometry(profile.map(([r, z]) => new THREE.Vector2(r, z)), seg);
+  g.rotateX(Math.PI / 2);
+  return mesh(g, mat, part);
 }
-
-/* 圆角矩形轮廓，extrude 之后 z 从 0 长到 depth（正好对上本文件的 z 口径） */
-function roundedRect(w, d, r) {
-  const s = new THREE.Shape(), x = -w / 2, y = -d / 2;
+function cylZ(r0, r1, h, mat, part, seg = 40) {
+  const g = new THREE.CylinderGeometry(r1, r0, h, seg); g.rotateX(Math.PI / 2);
+  return mesh(g, mat, part);
+}
+/* 单位长度、沿 +Y 的圆柱 —— 腿的杆件用它，每帧只改位置、朝向和 scale.y */
+function unitRod(r, mat, part, seg = 20) {
+  const g = new THREE.CylinderGeometry(r, r, 1, seg); g.translate(0, 0.5, 0);
+  return mesh(g, mat, part);
+}
+const _Y = new THREE.Vector3(0, 1, 0);
+function placeRod(m, A, B) {
+  const a = v3(A), d = v3(B).sub(a), l = d.length();
+  m.visible = l > 0.05;
+  if (!m.visible) return;
+  m.position.copy(a); m.quaternion.setFromUnitVectors(_Y, d.divideScalar(l)); m.scale.set(1, l, 1);
+}
+/* 以 c 为中心、沿 axis 的短圆柱（销、铰座） */
+function placeAxis(m, c, axis, len) {
+  m.position.copy(v3(c)).addScaledVector(v3(axis), -len / 2);
+  m.quaternion.setFromUnitVectors(_Y, v3(axis).normalize()); m.scale.set(1, len, 1);
+}
+function roundedRect(w, d, r, cx = 0, cy = 0) {
+  const s = new THREE.Shape(), x = cx - w / 2, y = cy - d / 2;
   s.moveTo(x + r, y);
   s.lineTo(x + w - r, y); s.absarc(x + w - r, y + r, r, -Math.PI / 2, 0, false);
   s.lineTo(x + w, y + d - r); s.absarc(x + w - r, y + d - r, r, 0, Math.PI / 2, false);
@@ -831,689 +858,1049 @@ function roundedRect(w, d, r) {
   s.lineTo(x, y + r); s.absarc(x + r, y + r, r, Math.PI, Math.PI * 1.5, false);
   return s;
 }
-
-function extrude(shape, depth) {
-  const g = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false, curveSegments: 10 });
-  g.computeVertexNormals();
-  return g;
+function slab(shape, z0, z1, mat, part, bevel = 0.8) {
+  const g = new THREE.ExtrudeGeometry(shape, { depth: Math.max(0.1, z1 - z0 - 2 * bevel), bevelEnabled: bevel > 0,
+    bevelThickness: bevel, bevelSize: bevel, bevelSegments: 2, curveSegments: 12 });
+  g.translate(0, 0, z0 + bevel);
+  return mesh(g, mat, part);
 }
+function box(sx, sy, sz, mat, part) { return mesh(new THREE.BoxGeometry(sx, sy, sz), mat, part); }
 
-/* 造一个网格并摆好位置。第一个参数既可以是几何体，也可以是 cylZ() 这类
-   已经造好的 Mesh —— 后者会被就地定位，省掉一层嵌套。 */
-function mesh(geo, mat, x = 0, y = 0, z = 0) {
-  const m = geo.isMesh ? geo : new THREE.Mesh(geo, mat);
-  m.position.set(x, y, z);
-  m.castShadow = m.receiveShadow = true;
-  return m;
-}
-
-/* 轴线沿 x 的圆盘（刷辊两端的防缠绕盘、磁耦合盘、壳壁都用它） */
-function diskX(r, t, mat, x) {
-  const m = mesh(new THREE.CylinderGeometry(r, r, t, 32), mat);
-  m.rotation.z = Math.PI / 2;
-  m.position.set(x, 0, 0);
-  return m;
-}
+/* 悬停提示的文字：零件 key → [名字, 一行说明] */
+const PART = {
+  cup:    ['吸盘单元', '∅25 唇边 · ∅20 膜片 · 空心杯 ∅12×24 横放'],
+  leg:    ['腿（两级伸缩）', 'l1 50.4 → 105.9 + l2 30 · 方位铰 + 俯仰'],
+  knee:   ['膝', '被动弹簧铰 + 锁止 · 平贴 0°，过棱 ≤ 85°'],
+  seat:   ['铰点座 a / c', '(±43.3, −25) · 主腔底面凸台'],
+  beam:   ['跨梁 + 铰点座 b', '(0, +50) · 从刷辊上方吊过去 · z 56–64'],
+  cavity: ['主腔', '110 × 85 × 28 · 6061 · z 30–58'],
+  cover:  ['盖板', 'POM 6 mm · O 圈 ∅2.0 · 10 × M3'],
+  shroud: ['前窗模块', 'POM 罩 · Ø50 接收线圈 · 4 光电管 · 罩尖离玻璃 2'],
+  brush:  ['刷辊', '∅34 × 80 · 有效扫宽 75 · 300–500 rpm'],
+  sqg:    ['刮条', 'Shore A 40 · 完全被动'],
+  head:   ['作业头机架', '滑槽可退让 20 mm · 磁耦合快换'],
+  pod:    ['磁耦合驱动仓', '∅30 / 4 极 / 1.2 mm 气隙 · 电机在干侧'],
+  inner:  ['内部件', '主控 / 电池 / 配重 / 腿电机 —— 摆位为示意'],
+  dock:   ['充电坞站（缸外）', 'Ø90 × 22 · 发射线圈 Ø60 · 4 × 940 nm'],
+  glass:  ['玻璃', '5 mm'],
+};
 
 /* ══════════════════════════════════════════════════════════════════
-   ④ build* —— 零件构造器
-   约定：每个函数返回一个 Group，内部坐标就用世界坐标（mm），
-        位置偏移由 assemble() 统一给，函数自己不管摆在哪。
+   ④ build* —— 零件。机身零件用机身局部坐标（经 L() 换算）
    ══════════════════════════════════════════════════════════════════ */
 
-/* ── 玻璃与坞站 ─────────────────────────────────────────────── */
+/* ── 前玻璃 + 阴影接收面 ─────────────────────────────────────── */
 function buildGlass() {
-  const g = new THREE.Group(); g.name = 'glass';
-  const { t, w, h } = CFG.glass;
-  const pane = mesh(new THREE.BoxGeometry(w, h, t), MAT.glass, 0, 0, -t / 2);
-  pane.castShadow = false; pane.receiveShadow = true;
+  const g = new THREE.Group(), G = CFG.glass;
+  const cx = G.xEdge + G.w / 2;
+  const pane = new THREE.Mesh(new THREE.BoxGeometry(G.w, G.h, G.t), MAT.glass);
+  pane.position.set(cx, 0, -G.t / 2); pane.userData.part = 'glass'; pane.renderOrder = 2;
   g.add(pane);
-  const edge = new THREE.LineSegments(
-    new THREE.EdgesGeometry(new THREE.BoxGeometry(w, h, t)),
-    new THREE.LineBasicMaterial({ color: 0x8fb4d6 }));
-  edge.position.set(0, 0, -t / 2);
-  g.add(edge);
+  const edge = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(G.w, G.h, G.t)), MAT.glassEdge);
+  edge.position.copy(pane.position); g.add(edge);
+  const sh = new THREE.Mesh(new THREE.PlaneGeometry(G.w, G.h), MAT.shadow);
+  sh.position.set(cx, 0, 0.12); sh.receiveShadow = true; g.add(sh);
   return g;
 }
+/* ── 侧玻璃 + 缸角玻璃胶 ──────────────────────────────────────── */
+function buildCorner() {
+  const g = new THREE.Group(), G = CFG.glass, D = 340;
+  const pane = new THREE.Mesh(new THREE.BoxGeometry(G.t, G.h, D), MAT.glass);
+  pane.position.set(G.xEdge - G.t / 2, 0, D / 2 - G.t); pane.userData.part = 'glass'; pane.renderOrder = 2;
+  g.add(pane);
+  const edge = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(G.t, G.h, D)), MAT.glassEdge);
+  edge.position.copy(pane.position); g.add(edge);
+  const sh = new THREE.Mesh(new THREE.PlaneGeometry(D, G.h), MAT.shadow);
+  sh.rotation.y = Math.PI / 2; sh.position.set(G.xEdge + 0.12, 0, D / 2); sh.receiveShadow = true; g.add(sh);
+  /* 玻璃胶三角条：截面在 XZ 面里，沿 Y 拉伸 */
+  const s = new THREE.Shape(); s.moveTo(0, 0); s.lineTo(G.bead, 0); s.lineTo(0, G.bead); s.closePath();
+  const bg = new THREE.ExtrudeGeometry(s, { depth: G.h, bevelEnabled: false });
+  bg.rotateX(Math.PI / 2); bg.translate(G.xEdge, G.h / 2, 0);
+  const bead = mesh(bg, MAT.bead, 'glass');
+  g.add(bead);
+  return g;
+}
+/* ── 前玻璃内表面的藻膜（canvas 贴图，刷辊扫过的地方擦掉）─────── */
+const ALGAE = { canvas: null, ctx: null, tex: null, top: -Infinity, y0: null };
+function buildAlgae() {
+  const G = CFG.glass, W = 1200, H = Math.round(W * G.h / G.w);
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  ALGAE.canvas = c; ALGAE.ctx = c.getContext('2d');
+  ALGAE.tex = new THREE.CanvasTexture(c); ALGAE.tex.colorSpace = THREE.SRGBColorSpace;
+  paintAlgae();
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(G.w, G.h), new THREE.MeshStandardMaterial({
+    map: ALGAE.tex, transparent: true, depthWrite: false, roughness: 0.9, metalness: 0, side: THREE.DoubleSide }));
+  m.position.set(G.xEdge + G.w / 2, 0, 0.25); m.renderOrder = 3;
+  const g = new THREE.Group(); g.add(m); return g;
+}
+/* 伪随机，保证每次重绘长得一样 */
+function rng(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
+function paintAlgae() {
+  const { ctx, canvas: c } = ALGAE, r = rng(7);
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.clearRect(0, 0, c.width, c.height);
+  ctx.fillStyle = 'rgba(96,130,62,0.26)'; ctx.fillRect(0, 0, c.width, c.height);
+  /* 一层淡的大斑 + 一层密的小点，看着像膜而不是圆圈 */
+  for (let i = 0; i < 500; i++) {
+    const x = r() * c.width, y = r() * c.height, rad = 12 + r() * 40;
+    const gr = ctx.createRadialGradient(x, y, 0, x, y, rad);
+    gr.addColorStop(0, `rgba(${70 + r() * 30 | 0},${104 + r() * 30 | 0},${40 + r() * 16 | 0},${0.05 + r() * 0.07})`);
+    gr.addColorStop(1, 'rgba(80,110,50,0)');
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y, rad, 0, Math.PI * 2); ctx.fill();
+  }
+  for (let i = 0; i < 9000; i++) {
+    ctx.fillStyle = `rgba(${58 + r() * 40 | 0},${92 + r() * 40 | 0},${34 + r() * 20 | 0},${0.06 + r() * 0.12})`;
+    ctx.fillRect(r() * c.width, r() * c.height, 1 + r() * 2.2, 1 + r() * 2.2);
+  }
+  /* 上一趟已经擦过的一条（弓字形路径的上一列，在机器人右侧一个扫宽处） */
+  eraseRect(-CFG.brush.sweep / 2 + CFG.brush.sweep, -CFG.glass.h / 2, CFG.brush.sweep / 2 + CFG.brush.sweep, CFG.glass.h / 2);
+  ALGAE.top = -Infinity; ALGAE.y0 = null;
+  ALGAE.tex.needsUpdate = true;
+}
+/* 世界坐标矩形（X0..X1, Y0..Y1）→ 擦掉 */
+function eraseRect(X0, Y0, X1, Y1) {
+  const G = CFG.glass, c = ALGAE.canvas, ctx = ALGAE.ctx;
+  const px = X => (X - G.xEdge) / G.w * c.width, py = Y => (G.h / 2 - Y) / G.h * c.height;
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.fillStyle = 'rgba(0,0,0,0.92)';
+  const x = px(Math.min(X0, X1)), y = py(Math.max(Y0, Y1));
+  ctx.fillRect(x, y, Math.abs(px(X1) - px(X0)), Math.abs(py(Y1) - py(Y0)));
+  ALGAE.dirty = true;                          // 贴图上传在 frame() 里节流到 ≤ 20 Hz
+}
 
+/* ── 坞站（缸外）：外壳、窗口、发射线圈、信标、状态灯 ───────────── */
 function buildDock() {
-  const g = new THREE.Group(); g.name = 'dock';
-  const D = CFG.dock, G = CFG.gap;
-  const y0 = CFG.shroud.y;
-  const zOuter = -(G.glass + D.th);            // 坞站外表面 = −27
-  const zFace = -G.glass;                      // 坞站朝玻璃那一面 = −5
-  /* 发射线圈绕组面：从玻璃面往缸外退「外壳 + 灌封」= 3.0 → z = −8.0。
-     接收线圈绕组面 = +2.0 + 1.5 + 1.5 = +5.0。两者相距 13.0 ✓ */
-  const zTx = zFace - G.shell - G.txPot;
-
-  // 外壳：∅90 × 22 的圆盘，贴玻璃外侧
-  g.add(mesh(cylZ(D.dia / 2, D.dia / 2, D.th, MAT.pomD), MAT.pomD, 0, y0, zOuter + D.th / 2));
-  // 朝玻璃那一侧的 Ø70 非金属窗口（同时透磁场和红外）
-  g.add(mesh(cylZ(D.wallDia / 2, D.wallDia / 2, 0.4, MAT.pom), MAT.pom, 0, y0, zFace - 0.2));
-  // 发射线圈：∅60 的环形绕组，绕组面就是 13 mm 的起点
-  g.add(mesh(new THREE.TorusGeometry(D.coilDia / 2 - 3, 1.2, 8, 44), MAT.copper, 0, y0, zTx));
-  // 4 颗 940 nm 信标 LED，按 ±20 mm 布置
+  const g = new THREE.Group(), D = CFG.dock, G = CFG.gap;
+  const zF = -G.glass, zB = -G.glass - D.th, R = D.dia / 2;
+  const shell = lathe([[0, zB], [R - 4, zB], [R - 0.6, zB + 1.2], [R, zB + 4], [R, zF - 1.5], [R - 1.2, zF], [0, zF]],
+    MAT.dockSh, 'dock', 64);
+  shell.castShadow = false; g.add(shell);
+  const win = cylZ(D.winDia / 2, D.winDia / 2, 0.6, MAT.dockWin, 'dock', 64); win.position.z = zF - 0.35; g.add(win);
+  const coil = mesh(new THREE.TorusGeometry(D.coilDia / 2 - 3, 2.2, 10, 64), MAT.copper, 'dock');
+  coil.position.z = DERIVED.zTx - 1.2; coil.userData.glow = 'tx'; g.add(coil);
   const s = D.irSpan / 2;
   [[-s, -s], [s, -s], [-s, s], [s, s]].forEach(([dx, dy]) => {
-    g.add(mesh(cylZ(3, 3, 1.6, MAT.dark), MAT.dark, dx, y0 + dy, zFace - 0.8));
+    const led = mesh(new THREE.SphereGeometry(2.4, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2), MAT.ir, 'dock');
+    led.rotation.x = -Math.PI / 2; led.position.set(dx, dy, zF - 0.9); g.add(led);
   });
-  // 状态灯
-  g.add(mesh(new THREE.SphereGeometry(3, 16, 12), MAT.blade, 0, y0 - D.dia / 2 + 8, zOuter - 1));
+  const st = mesh(new THREE.SphereGeometry(2.2, 16, 10), MAT.ir, 'dock'); st.position.set(0, -R + 9, zB - 0.4); g.add(st);
+  const cable = mesh(new THREE.CylinderGeometry(2.2, 2.2, 60, 12), MAT.dark, 'dock');
+  cable.position.set(0, -R - 26, zB + 8); g.add(cable);
   return g;
 }
 
-/* ── 单只吸盘单元（不含腿：腿的踝端销接在上面那个铰座里）──────
-   z 分层按 body.html §1：0–18 吸盘 + 膜片腔，18–30 传动层。
-   suction.html 的剖面里这台单元轴向长 76 mm（含轴向电机），
-   但 body.html 要求「电机全部横放」，所以这里只画到传动层为止。 */
+/* ── 一只吸盘单元（局部：Z = 玻璃法向，X = 远端段方向）────────────
+   0–18 吸盘 + 膜片腔，18–30 传动层（踝环 + 横放的吸附电机） */
 function buildFoot() {
-  const g = new THREE.Group(); g.name = 'foot';
-  const { padDia, chamberDia } = CFG.foot;
-  const L = CFG.layer;
-
-  // 柔性唇边：一个圆环，∅25
-  g.add(mesh(new THREE.TorusGeometry(padDia / 2 - 1.6, 1.3, 10, 44), MAT.sili, 0, 0, 2.2));
-  // 吸盘碗：∅25 → ∅18 的锥台
-  g.add(mesh(cylZ(9, padDia / 2, 9.6, MAT.sili), MAT.sili, 0, 0, 7.2));
-  // 膜片腔：∅20
-  g.add(mesh(cylZ(chamberDia / 2, 9.6, L.pad - 12, MAT.alu), MAT.alu, 0, 0, (L.pad + 12) / 2));
-  // 传动层壳体：把 ∅20 收到 ∅12，顶上是腿的踝端铰座
-  g.add(mesh(cylZ(6, chamberDia / 2, L.trans - L.pad, MAT.aluD), MAT.aluD, 0, 0, (L.pad + L.trans) / 2));
-  // 铰点：轴线 ⊥ 玻璃，且穿过吸盘接触中心 —— motion.html §10④
-  g.add(mesh(cylZ(CFG.leg.bossD / 2, CFG.leg.bossD / 2, 10, MAT.steel),
-             MAT.steel, 0, 0, CFG.leg.plane));
+  const g = new THREE.Group(), F = CFG.foot, Ly = CFG.layer;
+  const R = F.padDia / 2;
+  const lip = lathe([[R - 2.4, 0], [R, 0.2], [R + 0.2, 1.1], [R - 0.8, 2.8], [R - 2.6, 3.4]], MAT.lip, 'cup');
+  lip.name = 'lip'; g.add(lip);
+  g.add(lathe([[R - 2.6, 3.2], [R - 1.2, 3.6], [F.chamberDia / 2 + 1.2, 8], [F.chamberDia / 2 + 1, 9], [0, 9]], MAT.sili, 'cup'));
+  g.add(lathe([[F.chamberDia / 2 + 1, 8.6], [F.chamberDia / 2 + 1, Ly.pad], [7, Ly.pad + 0.8], [0, Ly.pad + 0.8]], MAT.alu, 'cup'));
+  g.add(lathe([[8, Ly.pad], [8, Ly.trans - 0.8], [7, Ly.trans], [0, Ly.trans]], MAT.aluD, 'cup'));
+  const collar = cylZ(11, 11, 6, MAT.steel, 'cup'); collar.position.z = CFG.leg.plane; g.add(collar);
+  /* 吸附电机 ∅12 × 24 横放在 18–30 层，贴在踝环背后（示意） */
+  const [md, ml] = F.motor;
+  const mot = mesh(new THREE.CylinderGeometry(md / 2, md / 2, ml, 24), MAT.motor, 'cup');
+  mot.position.set(-11 - md / 2, 0, Ly.pad + md / 2); g.add(mot);
+  const cap = mesh(new THREE.CylinderGeometry(md / 2 + 0.4, md / 2 + 0.4, 3, 24), MAT.aluD, 'cup');
+  cap.position.set(-11 - md / 2, ml / 2, Ly.pad + md / 2); g.add(cap);
   return g;
 }
 
-/* ── 一条腿：方位铰 → 面外俯仰 → 两级伸缩 → 膝 → 定长远端段 ──────
-   平贴中位（本页画的位形）：三腿伸直、膝角 0、l1 = L₀ − 30 = 56.6 mm。
-   关节链与节点位置见 motion.html §11C，杆径见 §11D 的选型结论。
-   所有销轴都画在中位：方位销沿 z（⊥ 玻璃），俯仰销与膝销沿 n（面内、
-   垂直腿的方向）—— 换面时腿就是绕 n 摆出玻璃平面的。 */
-function buildLeg(foot, hinge) {
-  const g = new THREE.Group(); g.name = 'leg';
-  const K = CFG.leg, z = K.plane;
-  const a = new THREE.Vector3(foot[0], foot[1], z);     // 踝（吸盘端）
-  const b = new THREE.Vector3(hinge[0], hinge[1], z);   // 髋（机身铰点）
-  const dir = b.clone().sub(a).normalize();             // 由踝指向髋
-  const L = a.distanceTo(b);                            // = L₀ = 86.603
-  const knee = a.clone().addScaledVector(dir, K.l2);    // 膝：离踝 l2 = 30
-  const l1 = L - K.l2;                                  // 伸缩段 = 56.6
-  // n = 面内、垂直腿的方向 —— 俯仰轴与膝轴都沿它（z × dir）
-  const n = new THREE.Vector3(-dir.y, dir.x, 0).normalize();
-  const off = (p, v, d) => p.clone().addScaledVector(v, d);
+/* ── 一条腿：髋叉 + 俯仰销 + 三级杆 + 膝座 + 远端段。几何全是单位件，poseLeg() 每帧摆 ── */
+function buildLeg() {
+  const g = new THREE.Group(), K = CFG.leg;
+  const add = (name, m) => { m.name = name; g.add(m); };
+  add('tube', unitRod(K.tubeD / 2, MAT.alu, 'leg'));
+  add('mid', unitRod(K.midD / 2, MAT.aluD, 'leg'));
+  add('rod', unitRod(K.rodD / 2, MAT.steel, 'leg'));
+  add('yoke', unitRod(K.tubeD / 2 + 1.5, MAT.aluD, 'leg'));
+  add('pitch', unitRod(1.8, MAT.steel, 'leg', 12));
+  add('knee', unitRod(K.kneeD / 2, MAT.brass, 'knee', 28));
+  add('kneePin', unitRod(2, MAT.steel, 'knee', 12));
+  add('distal', unitRod(3.2, MAT.steel, 'leg'));
+  return g;
+}
+function poseLeg(g, s, bodyX) {
+  const d1 = V.norm(V.sub(s.K, s.H)), l1 = s.l1, d2 = V.norm(V.sub(s.P, s.K));
+  const at = (a, t) => V.add(a, V.mul(d1, t));
+  const c = n => g.getObjectByName(n);
+  placeRod(c('yoke'), at(s.H, -3), at(s.H, 7));
+  placeAxis(c('pitch'), s.H, bodyX, 18);
+  placeRod(c('tube'), at(s.H, 6), at(s.H, Math.min(36, l1 - 10)));
+  placeRod(c('mid'), at(s.H, 18), at(s.K, -18));
+  placeRod(c('rod'), at(s.K, -Math.min(30, l1 - 8)), s.K);
+  let ax = V.cross(d1, d2);
+  if (V.len(ax) < 0.08) ax = V.cross(d1, s.n);
+  ax = V.norm(ax);
+  placeAxis(c('knee'), s.K, ax, 12);
+  placeAxis(c('kneePin'), s.K, ax, 16);
+  placeRod(c('distal'), s.K, s.P);
+}
+/* 吸盘单元摆位：C = 杯心（在玻璃上或已抬起），n = 法向，toward = 远端段指向 */
+function poseFoot(g, C, n, toward) {
+  const z = v3(n).normalize();
+  let x = v3(toward).addScaledVector(z, -v3(toward).dot(z));
+  if (x.lengthSq() < 1e-6) x = new THREE.Vector3(1, 0, 0);
+  x.normalize();                                // 局部 +X 指向膝，电机放在 −X 背后
+  const y = new THREE.Vector3().crossVectors(z, x);
+  g.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z));
+  g.position.copy(v3(C));
+}
 
-  /* ① 髋端：方位销（⊥ 玻璃，被动）+ 面外俯仰叉耳（主动）
-     叉耳是两片夹板 + 一根沿 n 的销 —— 换面时伸缩段绕这根销摆出去 */
-  const yokeC = off(b, dir, -K.pitchD * 0.6);           // 叉耳中心，往腿内挪一点
-  [-1, 1].forEach(s => {
-    const p = off(yokeC, n, s * (K.pitchD / 2));
-    g.add(mesh(new THREE.BoxGeometry(10, K.plateT, 10), MAT.aluD, p.x, p.y, z));
-  });
-  g.add(link(off(yokeC, n, -K.pitchD * 0.65), off(yokeC, n, K.pitchD * 0.65),
-             2, MAT.steel, 12));
-
-  /* ② 两级伸缩：外管 ∅10 靠髋（固定），中间级 ∅7 伸向膝。
-     文档给的是「∅4 单级不够、要两级、杆径涨到 ∅8–10」（motion.html §11D）
-     —— ∅7 / ∅10 是示意，选型定下来要改这里和 checks ⑫ */
-  const tubeEnd = off(knee, dir, K.stage2D * 0.5);      // 二级杆截止处（离膝半个杆径）
-  const tubeMid = off(yokeC, dir, l1 * 0.55);
-  g.add(link(yokeC, tubeMid, K.sleeveD / 2, MAT.alu, 20));
-  g.add(link(tubeMid, tubeEnd, K.stage2D / 2, MAT.aluD, 16));
-
-  /* ③ 膝：铰座（沿 n 的圆柱 + 销）+ 锁止凸台。
-     膝是被动弹簧铰 + 锁止，平贴时锁死把刚度补回来 —— 见 motion.html §11C */
-  g.add(link(off(knee, n, -K.kneeD / 2), off(knee, n, K.kneeD / 2),
-             K.kneeD / 2 - 1.5, MAT.aluD, 16));
-  g.add(link(off(knee, n, -K.kneeD * 0.62), off(knee, n, K.kneeD * 0.62),
-             2.2, MAT.steel, 12));
-  g.add(mesh(new THREE.BoxGeometry(7, 5, 8), MAT.steel,
-             off(knee, n, K.kneeD * 0.75).x, off(knee, n, K.kneeD * 0.75).y, z));
-
-  /* ④ 远端段：膝 → 踝，定长 30 mm。它始终与所在玻璃面平行，
-     所以吸盘座的口径和载荷路径一个字都不用改（motion.html §11C）*/
-  g.add(link(knee, a, 3, MAT.steel, 14));
-
-  // ⑤ 两端铰点轴：⊥ 玻璃，就是一截沿 z 的销
-  [a, b].forEach(p => {
-    const pin = mesh(cylZ(3, 3, 12, MAT.steel), MAT.steel, p.x, p.y, z);
-    g.add(pin);
+/* ── 铰点座 a / c：主腔底面伸下来的凸台 ───────────────────────── */
+function buildSeats() {
+  const g = new THREE.Group(), K = CFG.leg, Ly = CFG.layer;
+  [0, 2].forEach(i => {
+    const [x, y] = DERIVED.hinges[i];
+    const b = cylZ(K.bossD / 2, K.bossD / 2 + 1, Ly.trans - Ly.pad + 1, MAT.aluD, 'seat');
+    b.position.copy(L(x, y, (Ly.pad + Ly.trans) / 2 + 0.5)); g.add(b);
+    const pin = cylZ(2.2, 2.2, Ly.trans - Ly.pad + 4, MAT.steel, 'seat'); pin.position.copy(L(x, y, (Ly.pad + Ly.trans) / 2)); g.add(pin);
   });
   return g;
 }
-
-/* ── 主腔：开口盒（四壁 + 底板），展开后能看到内部 ───────────── */
+/* ── 跨梁：主腔尾面 → 刷辊上方 → (0, +50) 下探到传动层，末端是铰点座 b ── */
+function buildBeam() {
+  const g = new THREE.Group(), Bm = CFG.beam, K = CFG.leg, Ly = CFG.layer;
+  const [hx, hy] = DERIVED.hinges[1];
+  const bar = box(Bm.w, hy - CFG.body.y1 + K.bossD / 2, Bm.z1 - Bm.z0, MAT.aluD, 'beam');
+  bar.position.copy(L(hx, (CFG.body.y1 + hy + K.bossD / 2) / 2, (Bm.z0 + Bm.z1) / 2)); bar.name = 'bar'; g.add(bar);
+  const post = cylZ(K.bossD / 2, K.bossD / 2, Bm.z1 - Ly.pad, MAT.aluD, 'beam');
+  post.position.copy(L(hx, hy, (Bm.z1 + Ly.pad) / 2)); post.name = 'post'; g.add(post);
+  const pin = cylZ(2.2, 2.2, Ly.trans - Ly.pad + 4, MAT.steel, 'beam'); pin.position.copy(L(hx, hy, (Ly.pad + Ly.trans) / 2)); g.add(pin);
+  /* 干涉高亮：一层红色外壳，默认透明，退让顶到时亮起 */
+  const hl = new THREE.Mesh(new THREE.BoxGeometry(Bm.w + 1.4, hy - CFG.body.y1 + K.bossD / 2 + 1.4, Bm.z1 - Bm.z0 + 1.4), MAT.beam);
+  hl.position.copy(bar.position); g.add(hl);
+  return g;
+}
+/* ── 主腔：开口盒（四壁 + 底板），透视时能看到里面 ───────────── */
 function buildCavity() {
-  const g = new THREE.Group(); g.name = 'cavity';
-  const B = CFG.body, L = CFG.layer;
-  const outer = roundedRect(B.w, B.d, B.r);
-  outer.holes.push(roundedRect(B.w - 2 * B.wall, B.d - 2 * B.wall, B.r - B.wall));
-  const shell = mesh(extrude(outer, L.cavity - L.trans - B.wall), MAT.alu, 0, B.hy, L.trans);
-  g.add(shell);
-  // 底板（朝玻璃那一面）
-  g.add(mesh(extrude(roundedRect(B.w, B.d, B.r), B.wall), MAT.alu, 0, B.hy, L.trans));
-  // 三条铰点支柱：把机身端的铰点接到主腔底面上
-  const bottom = L.trans;
-  DERIVED.hinges.forEach(h => {
-    g.add(mesh(cylZ(CFG.leg.bossD / 2, CFG.leg.bossD / 2, bottom - CFG.leg.plane + 6, MAT.aluD),
-               MAT.aluD, h[0], h[1], (CFG.leg.plane + bottom) / 2 - 3));
-    // 铰点离主腔远的话，补一根斜撑（三条腿里只有一条需要）
-    const dx = h[0] - 0, dy = h[1] - CFG.body.hy;
-    const inX = Math.abs(dx) < B.w / 2 - 4, inY = Math.abs(dy) < B.d / 2 - 4;
-    if (!inX || !inY) {
-      const t = Math.min((B.w / 2 - 4) / Math.max(Math.abs(dx), 1e-6),
-                         (B.d / 2 - 4) / Math.max(Math.abs(dy), 1e-6));
-      g.add(link([h[0], h[1], bottom - 3],
-                 [dx * t, CFG.body.hy + dy * t, bottom - 3], 5, MAT.aluD, 12));
-    }
-  });
+  const g = new THREE.Group(), B = CFG.body, Ly = CFG.layer;
+  const cy = -(B.y0 + B.y1) / 2;            // 局部 y 中心（文档 y 取反）
+  const outer = roundedRect(B.w, B.d, B.r, 0, cy);
+  outer.holes.push(roundedRect(B.w - 2 * B.wall, B.d - 2 * B.wall, B.r - B.wall, 0, cy));
+  g.add(slab(outer, Ly.trans, Ly.cavity, MAT.shell, 'cavity', 0.6));
+  g.add(slab(roundedRect(B.w, B.d, B.r, 0, cy), Ly.trans, Ly.trans + B.wall, MAT.shell, 'cavity', 0.6));
   return g;
 }
-
-/* ── 盖板 + O 圈 + 周圈螺钉 ─────────────────────────────────── */
+/* ── 盖板 + 周圈螺钉 ─────────────────────────────────────────── */
 function buildCover() {
-  const g = new THREE.Group(); g.name = 'cover';
-  const B = CFG.body, L = CFG.layer;
-  const t = L.cover - L.cavity;
-  g.add(mesh(extrude(roundedRect(B.w - 1, B.d - 1, B.r), t - 1.8), MAT.pom, 0, B.hy, L.cavity));
-  // O 圈：∅2.0 的线径，沿主腔轮廓走一圈
-  const oShape = roundedRect(B.w - 6, B.d - 6, B.r - 3);
-  const oGeo = new THREE.TubeGeometry(
-    new THREE.CatmullRomCurve3(oShape.getPoints(72).map(p => new THREE.Vector3(p.x, p.y, 0)), true),
-    160, 1.0, 8, true);
-  g.add(mesh(oGeo, MAT.siliD, 0, B.hy, L.cavity + 0.9));
-  // 周圈 ~10 个 M3 螺钉头
+  const g = new THREE.Group(), B = CFG.body, Ly = CFG.layer;
+  const cy = -(B.y0 + B.y1) / 2;
+  g.add(slab(roundedRect(B.w, B.d, B.r, 0, cy), Ly.cavity, Ly.cover, MAT.lid, 'cover', 1.2));
   for (let i = 0; i < B.screws; i++) {
-    const a = i / B.screws * Math.PI * 2;
-    const rx = B.w / 2 - 3.5, ry = B.d / 2 - 3.5;
-    g.add(mesh(cylZ(1.5, 1.5, 1.4, MAT.steel), MAT.steel,
-               rx * Math.cos(a), B.hy + ry * Math.sin(a), L.cover - 0.5));
+    const a = (i + 0.5) / B.screws * Math.PI * 2, rx = B.w / 2 - 5, ry = B.d / 2 - 5;
+    const k = Math.max(Math.abs(Math.cos(a)) / rx, Math.abs(Math.sin(a)) / ry);
+    const s = cylZ(2.6, 2.6, 1.2, MAT.steel, 'cover', 20);
+    s.position.set(Math.cos(a) / k, cy + Math.sin(a) / k, Ly.cover + 0.3); g.add(s);
+    const slot = box(3.2, 0.7, 0.4, MAT.dark, 'cover'); slot.position.set(s.position.x, s.position.y, Ly.cover + 0.95);
+    slot.rotation.z = a; g.add(slot);
   }
   return g;
 }
-
-/* ── 刷辊 + 刷丝 + 驱动仓 ───────────────────────────────────── */
-function buildBrush() {
-  const g = new THREE.Group(); g.name = 'brush';
-  const B = CFG.brush, R = B.coreD / 2;
-
-  // 芯轴 ∅34，轴线沿 x
-  const core = mesh(new THREE.CylinderGeometry(R, R, B.len, 40), MAT.brush);
-  core.rotation.z = Math.PI / 2;
-  g.add(core);
-
-  // 刷丝：InstancedMesh，丝尖正好落在 z = 0（芯半径 17 + 丝长 8 = 25 = 轴心离壁）
-  const bGeo = new THREE.CylinderGeometry(0.5, 0.34, B.bristle, 5);
-  bGeo.translate(0, B.bristle / 2, 0);
-  const inst = new THREE.InstancedMesh(bGeo, MAT.brush, B.rows * B.cols);
-  inst.castShadow = true;
-  const m4 = new THREE.Matrix4();
+/* ── 前窗模块：POM 罩（z 30 → 2），内含 Ø50 接收线圈与 4 光电管 ── */
+function buildShroud() {
+  const g = new THREE.Group(), S = CFG.shroud;
+  const rT = S.dTop / 2, rB = S.coilDia / 2 + S.wall;
+  const body = lathe([[0, S.z0], [rB - 2, S.z0], [rB - 0.4, S.z0 + 0.6], [rB, S.z0 + 2], [rT, S.z1 - 3], [rT, S.z1], [0, S.z1]],
+    MAT.hood, 'shroud', 64);
+  g.add(body);
+  const coil = mesh(new THREE.TorusGeometry(S.coilDia / 2 - 2.4, 1.6, 10, 64), MAT.copper, 'shroud');
+  coil.position.z = DERIVED.zRx; coil.userData.glow = 'rx'; g.add(coil);
+  const s = CFG.dock.irSpan / 2;
+  [[-s, -s], [s, -s], [-s, s], [s, s]].forEach(([dx, dy]) => {
+    const pd = cylZ(2.2, 2.2, 0.8, MAT.dark, 'shroud', 16); pd.position.set(dx, dy, S.z0 - 0.3); g.add(pd);
+  });
+  g.position.copy(L(S.at[0], S.at[1], 0));
+  return g;
+}
+/* ── 作业头：刷辊 + 刷丝 + 防缠绕盘 + 端板 + 刮条 + 滑槽（整体沿 z 退让）── */
+function buildHead() {
+  const g = new THREE.Group(), B = CFG.brush, S = CFG.squeegee;
+  const R = B.D / 2, rc = R - B.bristle, zc = DERIVED.brushZ;
+  const roll = new THREE.Group(); roll.name = 'roll'; roll.position.copy(L(0, B.y, zc));
+  const core = mesh(new THREE.CylinderGeometry(rc, rc, B.len - 2, 40), MAT.pom, 'brush'); core.rotation.z = Math.PI / 2; roll.add(core);
+  const bg = new THREE.CylinderGeometry(0.42, 0.3, B.bristle, 5); bg.translate(0, B.bristle / 2, 0);
+  const inst = new THREE.InstancedMesh(bg, MAT.bristle, B.rows * B.cols); inst.castShadow = true; inst.userData.part = 'brush';
+  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), sc = new THREE.Vector3(1, 1, 1);
   let n = 0;
+  const x0 = -B.sweep / 2;
   for (let i = 0; i < B.rows; i++) {
-    const x = -B.len / 2 + B.len * (i + 0.5) / B.rows;
+    const x = x0 + B.sweep * (i + 0.5) / B.rows;
     for (let j = 0; j < B.cols; j++) {
-      const th = j * 2 * Math.PI / B.cols + (i % 2) * Math.PI / B.cols;
-      m4.makeRotationX(th);
-      m4.setPosition(x, Math.cos(th) * R, Math.sin(th) * R);
+      const th = (j + (i % 2) * 0.5) * 2 * Math.PI / B.cols;
+      e.set(th, 0, 0); q.setFromEuler(e);
+      m4.compose(new THREE.Vector3(x, Math.cos(th) * rc, Math.sin(th) * rc), q, sc);
       inst.setMatrixAt(n++, m4);
     }
   }
-  g.add(inst);
-
-  // 两端防缠绕盘
-  [-1, 1].forEach(s => g.add(diskX(20, 3, MAT.pomD, s * (B.len / 2 + 1.5))));
-
-  /* 驱动端（−x 侧）：轴 → 从动盘 → 1.2 mm 气隙 → 壳壁 → 主动盘 → 驱动仓
-     磁盘 ∅30 / 4 极、气隙 1.2 mm 出自 work.html §5；
-     壳壁厚和驱动仓长度文档没给，是示意值。 */
-  const SHAFT = 4, DISC = 2.2, GAPM = 1.2, WALLW = 1.5;
-  const x0 = -B.len / 2 - 3;
-  const xShaftEnd = x0 - SHAFT;
-  const xDriven = xShaftEnd - DISC / 2;                    // 从动盘中心
-  const xWall = xShaftEnd - DISC - GAPM - WALLW / 2;       // 壳壁中心
-  const xDriver = xWall - WALLW / 2 - GAPM - DISC / 2;     // 主动盘中心
-  g.add(link([x0, 0, 0], [xShaftEnd, 0, 0], 3, MAT.steel, 12));
-  g.add(diskX(15, DISC, MAT.steel, xDriven));
-  g.add(diskX(15, DISC, MAT.steel, xDriver));
-  g.add(diskX(24, WALLW, MAT.pom, xWall));
-  const podX = xDriver - DISC / 2 - B.podLen / 2;
-  const pod = mesh(new THREE.CylinderGeometry(19, 17, B.podLen, 32), MAT.aluD);
-  pod.rotation.z = Math.PI / 2; pod.position.set(podX, 0, 0);
-  g.add(pod);
-  return g;
-}
-
-/* ── 刮条：完全被动，文档明确未给几何，这里只做形状 ───────────── */
-function buildSqueegee() {
-  const g = new THREE.Group(); g.name = 'squeegee';
-  const S = CFG.squeegee;
-  const lean = Math.tan(S.lean * DEG) * S.h;
-  const blade = new THREE.Mesh(new THREE.BoxGeometry(S.len, S.t, S.h), MAT.blade);
-  blade.position.set(0, S.y + lean / 2, S.h / 2);
-  blade.rotation.x = -S.lean * DEG;
-  blade.castShadow = true;
-  g.add(blade);
-  // 夹持梁
-  g.add(mesh(new THREE.BoxGeometry(S.len, 8, 6), MAT.pomD, 0, S.y + lean + 2, S.h - 2));
-  return g;
-}
-
-/* ── 前窗模块：POM 导向罩，罩着 Ø50 接收线圈 + 天线 + 4 个光电管 ── */
-function buildShroud() {
-  const g = new THREE.Group(); g.name = 'shroud';
-  const S = CFG.shroud, G = CFG.gap;
-  const h = S.z1 - S.z0;
-  // 罩体：z=30 处 Ø60 → z=2 处 Ø52
-  g.add(mesh(cylZ(S.dBody / 2, S.dTip / 2, h, MAT.pom), MAT.pom, 0, 0, (S.z0 + S.z1) / 2));
-  // 接收线圈 Ø50：绕组面 = 水隙 2 + 罩壁与灌封 1.5 + 自身灌封 1.5 = +5.0
-  const zRx = G.water + G.shroud + G.rxSelf;
-  g.add(mesh(new THREE.TorusGeometry(S.coilDia / 2 - 3, 1.2, 8, 40), MAT.copper, 0, 0, zRx));
-  // 4 个光电二极管，贴在罩的端面上
-  const s = CFG.dock.irSpan / 2;
-  [[-s, -s], [s, -s], [-s, s], [s, s]].forEach(([dx, dy]) => {
-    g.add(mesh(cylZ(2, 2, 1.4, MAT.dark), MAT.dark, dx, dy, S.z0 + 0.7));
+  roll.add(inst);
+  [-1, 1].forEach(s => {
+    const d = mesh(new THREE.CylinderGeometry(rc + 4, rc + 4, 2.5, 36), MAT.pomD, 'brush');
+    d.rotation.z = Math.PI / 2; d.position.x = s * (B.len / 2 - 1.25); roll.add(d);
   });
+  g.add(roll);
+  /* 端板（带轴承座）与滑槽 —— 示意。滑槽装在端板前缘，贴着主腔尾面上下滑 */
+  [-1, 1].forEach(s => {
+    const x = s * (B.len / 2 + 2);
+    const pl = box(3, 40, 30, MAT.pomD, 'head'); pl.position.copy(L(x, 21, 16)); g.add(pl);
+    const hub = mesh(new THREE.CylinderGeometry(5, 5, 5, 20), MAT.steel, 'head'); hub.rotation.z = Math.PI / 2;
+    hub.position.copy(L(x, B.y, zc)); g.add(hub);
+    const rail = box(5, 2, 28, MAT.steel, 'head'); rail.position.copy(L(x, 1, 16)); g.add(rail);
+  });
+  /* 刮条：夹持梁 + 向后倾的刃口，刃口线在 z = 0 */
+  const holder = box(S.len, 6, 6, MAT.pomD, 'sqg'); holder.position.copy(L(0, S.y, S.h + 2)); g.add(holder);
+  const blade = box(S.len - 2, S.t, S.h, MAT.blade, 'sqg');
+  blade.position.copy(L(0, S.y, S.h / 2)); blade.rotation.x = S.lean * DEG; g.add(blade);
+  /* 从动磁盘（+x 端，隔 1.2 mm 气隙对着驱动仓） */
+  const disc = mesh(new THREE.CylinderGeometry(15, 15, 2.4, 32), MAT.steel, 'head'); disc.rotation.z = Math.PI / 2;
+  disc.position.copy(L(B.len / 2 + 5.2, B.y, zc)); g.add(disc);
   return g;
 }
-
-/* ── 内部件：电池 / 主控 / 电机 / 配重（摆位全部示意）─────────── */
+/* ── 磁耦合驱动仓（干侧，属于机身，不随作业头退让）───────────── */
+function buildPod() {
+  const g = new THREE.Group(), B = CFG.brush, zc = DERIVED.brushZ;
+  const x0 = B.len / 2 + 7.6, len = 24;
+  const pod = mesh(new THREE.CylinderGeometry(15, 15, len, 36), MAT.alu, 'pod'); pod.rotation.z = Math.PI / 2;
+  pod.position.copy(L(x0 + len / 2, B.y, zc)); g.add(pod);
+  const neck = box(16, B.y + 2, 18, MAT.alu, 'pod'); neck.position.copy(L(x0 + 10, (B.y - 2) / 2, zc + 9)); g.add(neck);
+  return g;
+}
+/* ── 内部件（摆位全部示意）──────────────────────────────────── */
 function buildInternals() {
-  const g = new THREE.Group(); g.name = 'internals';
-  const B = CFG.body, L = CFG.layer, P = CFG.pack, C = CFG.pcb, M = CFG.motor, W = CFG.weight;
-  const z0 = L.trans + B.wall, z1 = L.cavity;
-
-  // 电池：2S 1000 mAh，放在离玻璃最远处当配重
-  g.add(mesh(new THREE.BoxGeometry(P.w, P.l, P.h), MAT.batt, 0, B.hy, z1 - P.h / 2 - 2));
-  // 主控板
-  g.add(mesh(new THREE.BoxGeometry(C.w, C.l, C.t), MAT.pcb, 0, B.hy - 22, z0 + 6));
-  // 配重：不锈钢片，可调 ±100 g
-  g.add(mesh(new THREE.BoxGeometry(W.w, W.l, W.h), MAT.steel, 0, B.hy + 24, z0 + W.h / 2 + 1));
-  // 三只吸附驱动电机：全部横放（body.html §1 的硬要求）
-  DERIVED.footAng.forEach((a, i) => {
-    const f = DERIVED.feet[i];
-    const m = mesh(new THREE.CylinderGeometry(M.d / 2, M.d / 2, M.l, 20), MAT.motor);
-    m.rotation.z = Math.PI / 2;
-    m.position.set(f[0] * 0.42, B.hy + (f[1] - B.hy) * 0.42, z0 + M.d / 2 + 2);
-    m.rotation.y = -a;
-    g.add(m);
+  const g = new THREE.Group(), Ly = CFG.layer;
+  const z0 = Ly.trans + CFG.body.wall;
+  const pcb = box(62, 40, 1.6, MAT.pcb, 'inner'); pcb.position.copy(L(12, -62, z0 + 3)); g.add(pcb);
+  const chip = box(18, 25, 3, MAT.dark, 'inner'); chip.position.copy(L(22, -62, z0 + 5.3)); g.add(chip);
+  const bat = box(36, 70, 16, MAT.batt, 'inner'); bat.position.copy(L(-24, -44, Ly.cavity - 10)); g.add(bat);
+  const wt = box(40, 26, 11, MAT.weight, 'inner'); wt.position.copy(L(24, -20, Ly.cavity - 7)); g.add(wt);
+  /* 6 颗腿电机：a、c 各两颗在铰点座正上方，b 的两颗在跨梁根部 —— 电机全部横放 */
+  const [md, ml] = CFG.foot.motor;
+  const mot = (x, y, z, rz) => { const m = mesh(new THREE.CylinderGeometry(md / 2, md / 2, ml, 20), MAT.motor, 'inner');
+    m.rotation.z = rz; m.position.copy(L(x, y, z)); g.add(m); };
+  DERIVED.hinges.forEach(([x, y], i) => {
+    const yy = i === 1 ? -9 : y, xx = i === 1 ? 0 : x * 0.78;
+    const rz = i === 1 ? Math.PI / 2 : (i === 0 ? -0.5 : 0.5);
+    mot(xx, yy, z0 + md / 2 + 0.5, rz);
+    mot(xx, yy, z0 + md * 1.5 + 2, rz + Math.PI / 2);
   });
-  // 刷辊电机：驱动仓在湿侧，电机在干侧
-  const bm = mesh(new THREE.CylinderGeometry(M.d / 2, M.d / 2, M.l + 6, 20), MAT.motor);
-  bm.rotation.z = Math.PI / 2;
-  bm.position.set(-38, -4, z1 - 12);
-  g.add(bm);
+  return g;
+}
+/* ── 磁场示意线（回坞充电时亮）─────────────────────────────── */
+function buildField() {
+  const g = new THREE.Group(), zm = (DERIVED.zTx + DERIVED.zRx) / 2;
+  for (let k = 0; k < 8; k++) {
+    const ph = k / 8 * Math.PI * 2;
+    [[8, 9.5], [13, 13], [18, 16.5]].forEach(([a, b]) => {
+      const pts = [];
+      for (let j = 0; j <= 48; j++) { const t = j / 48 * Math.PI * 2;
+        const r = 26 + a * Math.cos(t), z = zm + b * Math.sin(t);
+        pts.push(new THREE.Vector3(r * Math.cos(ph), r * Math.sin(ph), z)); }
+      g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), MAT.field));
+    });
+  }
+  /* 四束红外：LED → 光电管，端点每帧改 */
+  for (let i = 0; i < 4; i++) {
+    const b = unitRod(0.9, new THREE.MeshBasicMaterial({ color: 0xff4d40, transparent: true, opacity: 0, depthWrite: false }), null, 8);
+    b.castShadow = false; b.name = 'ir' + i; g.add(b);
+  }
   return g;
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   ⑤ LAYERS —— 分层展开登记表
-   「分层展开」滑杆按 k 值把每个组沿 +z 推开。**不在这里登记的组不会动。**
+   ⑤ LAYERS —— 分层展开登记表（k × 展开量，沿机身局部 +z）
    ══════════════════════════════════════════════════════════════════ */
 const LAYERS = [
-  { key: 'dock',      k: 0.0 },
-  { key: 'glass',     k: 0.0 },
-  { key: 'foot',      k: 0.0 },
-  { key: 'leg',       k: 0.7 },
-  { key: 'shroud',    k: 1.1 },
-  { key: 'squeegee',  k: 1.4 },
-  { key: 'brush',     k: 1.8 },
-  { key: 'cavity',    k: 2.4 },
-  { key: 'internals', k: 3.0 },
-  { key: 'cover',     k: 3.8 },
+  { key: 'dock',      k: -1.4 },
+  { key: 'feet',      k: 0.0 },
+  { key: 'legs',      k: 0.6 },
+  { key: 'seats',     k: 0.9 },
+  { key: 'shroud',    k: 1.2 },
+  { key: 'head',      k: 1.5 },
+  { key: 'pod',       k: 1.9 },
+  { key: 'beam',      k: 2.3 },
+  { key: 'cavity',    k: 2.7 },
+  { key: 'internals', k: 3.3 },
+  { key: 'cover',     k: 4.2 },
 ];
 
 /* ══════════════════════════════════════════════════════════════════
-   ⑥ 装配
+   ⑥ 时间线 —— 每个返回 { T, at(t) }。at 只给机身位姿、杯位与开关量，腿由 legIK 现算
+   杯 = { C 杯心, n 法向, on 是否吸附 }
    ══════════════════════════════════════════════════════════════════ */
-const WORLD = new THREE.Group();          // 所有零件的父节点
-const VIEW = { groups: {}, labels: null }; // groups: LAYERS 的 key → 该层的 Group
+function cupWorld(pose, i) { const [x, y] = DERIVED.feet[i]; return toWorld(pose, [x, y, 0]); }
+
+/* 步态：前玻璃上、机头朝上，5 个循环 —— motion.html §2 */
+function gaitTimeline() {
+  const G = CFG.gait, per = G.tWork + 3 * G.tSwing, order = [0, 2, 1];
+  const X = 0, Y0 = -70;
+  const T = per * G.cycles + 0.8;
+  const at = t => {
+    const k = Math.min(G.cycles - 1, Math.floor(t / per)), tau = Math.min(per, t - k * per);
+    const w = ease(tau / G.tWork);
+    const bodyY = Y0 + k * G.d + (tau < G.tWork ? w : 1) * G.d;
+    const nomY = Y0 + G.d / 2 + k * G.d;                 // 本循环开始时脚三角形的中位机身
+    const cups = [0, 1, 2].map(i => ({ C: cupWorld(planePose(X, nomY), i), n: [0, 0, 1], on: true }));
+    let phase = '工作相 · n = 3', sw = -1;
+    if (tau >= G.tWork) {
+      const j = Math.min(2, Math.floor((tau - G.tWork) / G.tSwing)), s = (tau - G.tWork - j * G.tSwing) / G.tSwing;
+      order.forEach((i, o) => {
+        if (o < j) cups[i].C[1] += G.d;
+        if (o === j) {
+          const m = ease((s - 0.2) / 0.6);
+          cups[i].C[1] += m * G.d; cups[i].C[2] += G.lift * Math.sin(Math.PI * clamp01((s - 0.12) / 0.76));
+          cups[i].on = !(s > 0.12 && s < 0.88);          // 前 12% 松开、后 12% 吸附
+        }
+      });
+      sw = order[j];
+      phase = `换步相 · n = 2 · 抬起 ${'ABC'[sw]}`;
+    }
+    return { pose: planePose(X, bodyY), cups, brush: tau < G.tWork && t < per * G.cycles, head: 0, phase, sw, locked: true,
+             contactY: bodyY - CFG.brush.y, X };
+  };
+  return { T, at, per };
+}
+
+/* 过棱：前玻璃 → 侧玻璃，90° 内角 —— motion.html §11 */
+function crossTimeline() {
+  const C = CFG.cross, keys = C.keys, xE = CFG.glass.xEdge;
+  const U0 = keys[0][0];
+  /* 杯的落点用「哪一面 + 离棱多远」表示。起点：三杯在前玻璃，离棱 = u + 文档 y；
+     终点：侧玻璃上两尾杯同高 h1、鼻杯 h1 + 150（§11A 刚体三角形锁死） */
+  const start = [0, 1, 2].map(i => ({ face: 'A', s: U0 + DERIVED.feet[i][1] }));
+  const end = [{ face: 'B', s: C.h1 + 150 }, { face: 'B', s: C.h1 }, { face: 'B', s: C.h1 }];
+  const place = (i, c) => {
+    const x = DERIVED.feet[i][0];
+    return c.face === 'A' ? { C: [xE + c.s, x, 0], n: [0, 0, 1] } : { C: [xE, x, c.s], n: [1, 0, 0] };
+  };
+  const pose = k => sectPose(keys[k][0], keys[k][1], keys[k][2] * DEG);
+  /* 段表：hold → (swing?) → move → … */
+  const segs = []; let cups = start.slice(), t = 0;
+  segs.push({ t0: t, dur: 0.8, kind: 'hold', k: 0, cups }); t += 0.8;
+  for (let k = 0; k < keys.length; k++) {
+    const sc = keys[k][3];
+    if (sc >= 0) {
+      const after = cups.slice(); after[sc] = end[sc];
+      segs.push({ t0: t, dur: C.tSwing, kind: 'swing', k, sc, from: cups[sc], to: end[sc], cups }); t += C.tSwing;
+      cups = after;
+    }
+    if (k < keys.length - 1) {
+      const a = keys[k], b = keys[k + 1];
+      const dur = 0.7 + Math.hypot(b[0] - a[0], b[1] - a[1]) / 55 + Math.abs(b[2] - a[2]) / 45;
+      segs.push({ t0: t, dur, kind: 'move', k, cups }); t += dur;
+    }
+  }
+  segs.push({ t0: t, dur: 1.2, kind: 'hold', k: keys.length - 1, cups }); t += 1.2;
+  const lerpPose = (k, s) => {
+    const a = keys[k], b = keys[k + 1];
+    return sectPose(a[0] + (b[0] - a[0]) * s, a[1] + (b[1] - a[1]) * s, (a[2] + (b[2] - a[2]) * s) * DEG);
+  };
+  const at = tt => {
+    const sg = segs.find(s => tt < s.t0 + s.dur) || segs[segs.length - 1];
+    const s = clamp01((tt - sg.t0) / sg.dur);
+    const P = sg.kind === 'move' ? lerpPose(sg.k, ease(s)) : pose(sg.k);
+    const cs = sg.cups.map((c, i) => ({ ...place(i, c), on: true }));
+    let phase, swing = null, stepNo = segs.filter(x => x.kind === 'swing' && x.t0 <= tt).length;
+    if (sg.kind === 'swing') {
+      const a = place(sg.sc, sg.from), b = place(sg.sc, sg.to);
+      swing = { i: sg.sc, a, b, s };
+      cs[sg.sc] = { ...a, on: s < 0.1 };
+      phase = `换面步 ${stepNo} / 3 · 摆动 ${'ABC'[sg.sc]} 杯 · n = 2`;
+    } else phase = sg.kind === 'move' ? `机身调姿 · n = 3` : (stepNo === 3 ? '已贴平侧玻璃' : '贴平前玻璃 · 准备过棱');
+    const k0 = sg.kind === 'move' ? keys[sg.k] : keys[sg.k], k1 = sg.kind === 'move' ? keys[sg.k + 1] : keys[sg.k];
+    const psi = k0[2] + (k1[2] - k0[2]) * (sg.kind === 'move' ? ease(s) : 0);
+    return { pose: P, cups: cs, swing, brush: false, head: 0, phase, psi, step: stepNo, liftAmp: C.lift, liftMix: C.liftMix };
+  };
+  return { T: t, at, segs };
+}
+
+/* 回坞：精定位 → 退让 → 充电 —— dock.html §3–5 */
+function dockTimeline() {
+  const [mx, my] = CFG.dockAnim.miss;
+  const T = 10.5;
+  /* 对接位：罩心正对盘心，机身原点在世界原点 */
+  const docked = planePose(0, 0);
+  const feetAt = planePose(mx / 2, -my / 2);          // 三杯站在行程中点，机身两头各走一半
+  const at = t => {
+    const a = ease((t - 0.6) / 2.6);                  // 0.6–3.2 精定位
+    const r = ease((t - 3.5) / 1.4) * CFG.brush.retract;  // 3.5–4.9 退让
+    const chg = t > 5.1 && t < 10.0;
+    const pose = planePose(mx * (1 - a), -my * (1 - a));
+    const cups = [0, 1, 2].map(i => ({ C: cupWorld(feetAt, i), n: [0, 0, 1], on: true }));
+    const phase = t < 3.2 ? '精定位 · 四象限光电伺服' : t < 5.0 ? '作业头退让' : chg ? '感应充电中' : '待机';
+    return { pose, cups, brush: false, head: r, phase, align: 1 - a, charge: chg ? (t - 5.1) : 0, docked, locked: true };
+  };
+  return { T, at };
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ⑦ 场景装配
+   ══════════════════════════════════════════════════════════════════ */
+const WORLD = new THREE.Group();
+const VIEW = { groups: {}, robot: null, feet: [], legs: [], field: null, dock: null };
+let TL = {};
 
 function assemble() {
+  derive();
   while (WORLD.children.length) WORLD.remove(WORLD.children[0]);
-
-  /* 每类零件收集到一个组里，这样展开滑杆一次移动一整类 */
-  const bank = {};
-  const add = (key, obj) => { (bank[key] || (bank[key] = new THREE.Group())).add(obj); };
-
-  add('glass', buildGlass());
-  add('dock', buildDock());
-
-  // 三只吸盘单元
-  DERIVED.feet.forEach(f => {
-    const foot = buildFoot();
-    foot.position.set(f[0], f[1], 0);
-    add('foot', foot);
-  });
-
-  // 三条腿（每条 = 方位铰 + 面外俯仰 + 两级伸缩 + 膝 + 远端段）
-  DERIVED.feet.forEach((f, i) => add('leg', buildLeg(f, DERIVED.hinges[i])));
-
-  add('cavity', buildCavity());
-  add('cover', buildCover());
-
-  // 刷辊与刮条（刷辊轴心在 (0, brush.y, brush.z)）
-  const brush = buildBrush();
-  brush.position.set(0, CFG.brush.y, CFG.brush.z);
-  add('brush', brush);
-  add('squeegee', buildSqueegee());
-
-  // 前窗模块
-  const shroud = buildShroud();
-  shroud.position.set(0, CFG.shroud.y, 0);
-  add('shroud', shroud);
-
-  add('internals', buildInternals());
-
-  /* 按 LAYERS 挂到 WORLD，并记下每层的基准 z（展开滑杆从这里往上加） */
   VIEW.groups = {};
-  LAYERS.forEach(L => {
-    const grp = bank[L.key];
-    if (!grp) { console.warn('LAYERS 里登记了但没有零件的 key:', L.key); return; }
-    grp.name = L.key;
-    grp.userData.base = grp.position.z;
-    VIEW.groups[L.key] = grp;
-    WORLD.add(grp);
-  });
+  const robot = new THREE.Group(); robot.name = 'robot'; VIEW.robot = robot; WORLD.add(robot);
+  const reg = (key, grp, parent) => { grp.name = key; VIEW.groups[key] = grp; grp.userData.base = grp.position.clone(); parent.add(grp); };
 
-  /* 标注层：不属于任何一层，展开时整体关掉（见 bindUI） */
-  const lab = new THREE.Group(); lab.name = 'labels';
-  buildLabels().forEach(g => lab.add(g));
-  WORLD.add(lab);
-  VIEW.labels = lab;
+  reg('glass', buildGlass(), WORLD);
+  reg('corner', buildCorner(), WORLD);
+  const algae = buildAlgae(); reg('algae', algae, WORLD);
+  const dock = buildDock(); VIEW.dock = dock; reg('dock', dock, WORLD);
+  const field = buildField(); VIEW.field = field; reg('field', field, WORLD);
 
+  reg('seats', buildSeats(), robot);
+  reg('beam', buildBeam(), robot);
+  reg('cavity', buildCavity(), robot);
+  reg('cover', buildCover(), robot);
+  reg('shroud', buildShroud(), robot);
+  reg('head', buildHead(), robot);
+  reg('pod', buildPod(), robot);
+  reg('internals', buildInternals(), robot);
+
+  const feet = new THREE.Group(), legs = new THREE.Group();
+  VIEW.feet = [0, 1, 2].map(() => { const f = buildFoot(); feet.add(f); return f; });
+  VIEW.legs = [0, 1, 2].map(() => { const l = buildLeg(); legs.add(l); return l; });
+  reg('feet', feet, WORLD); reg('legs', legs, WORLD);
+
+  TL = { gait: gaitTimeline(), cross: crossTimeline(), dock: dockTimeline() };
   applyToggles();
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   ⑦ 标注 —— canvas 贴图做的 Sprite，永远正对相机
-   ══════════════════════════════════════════════════════════════════ */
-function makeLabel(title, sub) {
-  const S = 2, fs = 24, sfs = 17, pad = 10;
-  const c = document.createElement('canvas');
-  const g = c.getContext('2d');
-  const F1 = '600 24px ui-sans-serif, -apple-system, "PingFang SC", sans-serif';
-  const F2 = '400 17px ui-sans-serif, -apple-system, "PingFang SC", sans-serif';
-  g.font = F1; const w1 = g.measureText(title).width;
-  g.font = F2; const w2 = sub ? g.measureText(sub).width : 0;
-  const w = Math.ceil(Math.max(w1, w2)) + pad * 2;
-  const h = (sub ? fs + sfs + 8 : fs) + pad * 2;
-  c.width = w * S; c.height = h * S;
-  // 注意：改 canvas 尺寸会重置上下文，字体必须在 resize 之后重设
-  g.scale(S, S);
-  g.font = F1; g.fillStyle = '#37352f'; g.textBaseline = 'top';
-  g.fillText(title, pad, pad - 1);
-  if (sub) { g.font = F2; g.fillStyle = 'rgba(55,53,47,.58)'; g.fillText(sub, pad, pad + fs + 4); }
-
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.minFilter = THREE.LinearFilter;
-  const spr = new THREE.Sprite(new THREE.SpriteMaterial({
-    map: tex, transparent: true, depthTest: false, depthWrite: false }));
-  spr.renderOrder = 999;
-  /* 1 canvas px → k mm。这个数只决定标注看起来多大，位置由 buildLabels()
-     里的 at（屏幕坐标）决定，与它无关。当前 d 下约 1.8 px/mm，
-     所以 24px 的标题字最终渲染成 ≈ 0.36·24·1.8 ≈ 15px，比正文略大。
-     加大它标注会一起变大，可能就压住了 —— 改完跑一遍 labelLayout()。 */
-  const k = 0.36;
-  spr.scale.set(w * k, h * k, 1);
-  return spr;
-}
-
-/* 引线：从锚点拉到标注旁边。两个端点每次摆位都重算（见 placeLabels），
-   所以这里只造一个空的 BufferGeometry 占位。
-   引线和锚点小球都关掉深度测试 —— 它们本来就该画在零件前面。 */
-function leader() {
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
-  const ln = new THREE.Line(geo, new THREE.LineBasicMaterial({
-    color: 0x9a968e, transparent: true, opacity: .8, depthTest: false, depthWrite: false }));
-  ln.renderOrder = 998;
-  const dot = mesh(new THREE.SphereGeometry(1.6, 10, 8),
-    new THREE.MeshBasicMaterial({ color: 0x9a968e, depthTest: false, transparent: true, opacity: .8 }));
-  dot.castShadow = dot.receiveShadow = false; dot.renderOrder = 998;
-  return [ln, dot];
-}
-
-/* 标注 = 「锚点（从 CFG 算出来的零件位置）+ 屏幕位置」。
-   ⚠️ at 是归一化的**屏幕**坐标，不是世界坐标：[u, v]，u 从左边 0→1，
-   v 从上边 0→1。写成屏幕坐标是有原因的 —— 世界坐标的偏移只在调它的
-   那个视角下好看，一换视角就全糊在一起。屏幕坐标一套能管四个视角。
-   锚点仍是世界坐标：改了刷辊的 y，引线自己会跟过去，不用动别处。
-   u/v 可以放心贴边（0.1 / 0.9），引线会把话讲清楚；唯一要守的规矩是
-   两条标注别在屏幕上压住 —— 改完看控制台里 labelLayout() 那张表。 */
-function buildLabels() {
-  const L = CFG.layer, B = CFG.body, R = CFG.brush, S = CFG.shroud, G = CFG.gap;
-  const mk = (t, s, anchor, at) => {
-    const sp = makeLabel(t, s);
-    const g = new THREE.Group();
-    g.add(sp, ...leader());
-    g.userData.label = t;
-    g.userData.sprite = sp;
-    g.userData.anchor = new THREE.Vector3(...anchor);
-    g.userData.at = at;
-    return g;
-  };
-  const foot0 = DERIVED.feet[0];                                    // 顶点那个吸盘
-  /* 右腿的**膝**：踝往髋走 l2 = 30 mm。锚点打在膝上，
-     因为过棱换面加出来的零件（两级伸缩、俯仰叉耳、膝铰座）都在这一段 */
-  const leg2 = (() => {
-    const f = DERIVED.feet[2], h = DERIVED.hinges[2];
-    const dx = h[0] - f[0], dy = h[1] - f[1], L = Math.hypot(dx, dy);
-    const d = CFG.leg.l2 / L;
-    return [f[0] + dx * d, f[1] + dy * d, CFG.leg.plane];
-  })();
-  const zTx = -G.glass - G.shell - G.txPot;
-  const zRx = G.water + G.shroud + G.rxSelf;
-  return [
-    /* 左上 → 左 → 左下，顺时针一圈 */
-    mk('吸盘 ∅25 ×3', 'R_t = 100 · 边长 173.2',
-       [foot0[0], foot0[1], 15], [0.30, 0.12]),
-    mk('主腔 110 × 85 × 28', 'z 30–58 · 电机横放',
-       [0, B.hy, (L.trans + L.cavity) / 2], [0.16, 0.29]),
-    mk('POM 盖板 + O 圈', 'z 58–64 · 约 10 个 M3',
-       [0, B.hy, L.cover], [0.13, 0.51]),
-    mk('刷辊 ∅34 × 80', '离壁 25 · 丝尖触玻璃',
-       [0, R.y, R.z], [0.17, 0.83]),
-    mk('线圈间隙 13.0', '水隙 2.0 是唯一可调余量',
-       [0, S.y, (zTx + zRx) / 2], [0.47, 0.90]),
-    mk('刮条', 'Shore A 40 · 完全被动',
-       [0, CFG.squeegee.y, CFG.squeegee.h / 2], [0.83, 0.80]),
-    /* 前窗模块与推杆在正对玻璃的视角下会挤在一起，所以右中留给前窗 */
-    mk('前窗模块 POM', 'Ø50 线圈 + 4 光电管',
-       [0, S.y, (S.z0 + S.z1) / 2], [0.87, 0.50]),
-    mk('腿 3-RPR（两节）', 'l1 56.6 + l2 30 · 膝可锁止',
-       leg2, [0.78, 0.15]),
-  ];
-
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   ⑧ 干涉自检
-   把第 3 节 B 表里的四条约束实算一遍。改完 CFG 看一眼控制台就知道有没有改坏。
-   ══════════════════════════════════════════════════════════════════ */
-function distToSegment(p, a, b) {
-  const vx = b[0] - a[0], vy = b[1] - a[1];
-  const wx = p[0] - a[0], wy = p[1] - a[1];
-  const L2 = vx * vx + vy * vy;
-  const t = L2 ? Math.max(0, Math.min(1, (wx * vx + wy * vy) / L2)) : 0;
-  return Math.hypot(p[0] - (a[0] + t * vx), p[1] - (a[1] + t * vy));
-}
-
-function checks() {
-  const B = CFG.body, R = CFG.brush, S = CFG.shroud, F = CFG.foot, G = CFG.gap;
-  /* 支撑三角形在高度 y 处的半宽：顶点在 (0, R_t)，底边在 y = −R_t/2，
-     所以是从 0 线性长到 86.6 —— tri(R_t) = 0，tri(−R_t/2) = √3/2·R_t */
-  const tri = y => F.Rt * Math.sqrt(3) / 2 * (F.Rt - y) / (F.Rt * 1.5);
-  const brushR = R.coreD / 2;
+/* 把一帧状态画出来。solver = 每条腿上一帧的 α（连续性用） */
+const SOLVER = { alpha: [null, null, null] };
+let LAST = null;                                  // 最近一帧的腿解，读数面板用
+function solveLegs(S, mem) {
   const out = [];
+  for (let i = 0; i < 3; i++) {
+    const [hx, hy] = DERIVED.hinges[i];
+    const H = toWorld(S.pose, [hx, hy, CFG.leg.plane]);
+    if (S.swing && S.swing.i === i) { out.push(swingLeg(S, i, H, mem)); continue; }
+    const c = S.cups[i];
+    const P = V.add(c.C, V.mul(c.n, CFG.leg.plane));
+    /* 平贴作业时膝锁死（motion.html §11C）：远端段与近端段共线，l1 = |H − P| − l2。
+       不锁的话逆解会在玻璃面内偷偷折膝去凑 l1，把平贴步态的越限藏起来 */
+    const s = S.locked ? lockedLeg(H, P, c.n) : legIK(S.pose, H, P, c.n, mem.alpha[i]);
+    mem.alpha[i] = s.alpha;
+    s.C = c.C; s.on = c.on;
+    out.push(s);
+  }
+  return out;
+}
+function lockedLeg(H, P, n) {
+  const u = V.norm(V.sub(H, P)), K = V.add(P, V.mul(u, CFG.leg.l2));
+  return { H, P, K, l1: V.len(V.sub(H, K)), knee: 0, intr: 0, alpha: null, n };
+}
+/* 摆动腿：两端各逆解一次，中间在关节空间插值，再加一个沿法向的抬起 */
+function swingLeg(S, i, H, mem) {
+  const { a, b, s } = S.swing;
+  const key = `${i}:${a.C.join()}>${b.C.join()}:${S.pose.O.join()}`;
+  if (!mem.sw || mem.sw.key !== key) {
+    const Pa = V.add(a.C, V.mul(a.n, CFG.leg.plane)), Pb = V.add(b.C, V.mul(b.n, CFG.leg.plane));
+    const A = legIK(S.pose, H, Pa, a.n, mem.alpha[i]), B = legIK(S.pose, H, Pb, b.n, null);
+    mem.sw = { key, A, B };
+  }
+  const { A, B } = mem.sw;
+  const m = ease((s - 0.1) / 0.8);
+  const d1 = slerp(V.norm(V.sub(A.K, H)), V.norm(V.sub(B.K, H)), m);
+  const d2 = slerp(V.norm(V.sub(A.P, A.K)), V.norm(V.sub(B.P, B.K)), m);
+  const l1 = A.l1 + (B.l1 - A.l1) * m;
+  const n = slerp(a.n, b.n, m), nm = V.norm(V.add(a.n, b.n));
+  /* 抬起方向：两玻璃面法向的角平分线与「朝髋收腿」各取一半 ——
+     只沿平分线抬会把腿拉出 105.9，只朝髋收又会擦到缸角 */
+  const K0 = V.add(H, V.mul(d1, l1)), P0 = V.add(K0, V.mul(d2, CFG.leg.l2));
+  const dir = V.norm(V.add(V.mul(nm, S.liftMix ?? 1), V.mul(V.norm(V.sub(H, P0)), 1 - (S.liftMix ?? 1))));
+  const lift = V.mul(dir, (S.liftAmp ?? 12) * Math.sin(Math.PI * clamp01((s - 0.08) / 0.84)));
+  const K = V.add(K0, lift);
+  const P = V.add(K, V.mul(d2, CFG.leg.l2));
+  if (s > 0.95) mem.alpha[i] = B.alpha;
+  return { H, K, P, n, l1: V.len(V.sub(K, H)), knee: Math.acos(Math.max(-1, Math.min(1, V.dot(V.norm(V.sub(K, H)), d2)))) / DEG,
+           intr: 0, C: V.sub(P, V.mul(n, CFG.leg.plane)), on: s < 0.1 || s > 0.9, swing: true, mid: s > 0.2 && s < 0.8 };
+}
 
-  // ① 接触线在支撑三角形内
-  out.push({
-    name: '刷辊接触线落在支撑三角形内',
-    want: `${(R.len / 2).toFixed(1)} mm ≤ 半宽`,
-    got: `半宽 ${tri(R.y).toFixed(1)} mm`,
-    ok: tri(R.y) >= R.len / 2,
+function setPose(obj, pose) {
+  obj.position.set(pose.O[0], pose.O[1], pose.O[2]);
+  obj.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(v3(pose.R[0]), v3(pose.R[1]), v3(pose.R[2])));
+}
+
+let SPIN = 0;                                        // 刷辊转角
+function applyState(S, dt = 0) {
+  setPose(VIEW.robot, S.pose);
+  const sols = solveLegs(S, SOLVER);
+  LAST = { S, sols };
+  const bodyX = S.pose.R[0];
+  sols.forEach((s, i) => {
+    poseLeg(VIEW.legs[i], s, bodyX);
+    poseFoot(VIEW.feet[i], s.C, s.n, V.sub(s.K, s.P));
+    VIEW.feet[i].getObjectByName('lip').material = s.on ? MAT.lip : MAT.lipOff;
   });
-  // ② 整个刷辊在三角形内
-  out.push({
-    name: '刷辊外廓完全落在支撑三角形内',
-    want: `${(R.len / 2).toFixed(1)} mm ≤ 半宽`,
-    got: `半宽 ${tri(R.y + brushR).toFixed(1)} mm`,
-    ok: tri(R.y + brushR) >= R.len / 2,
+  /* 作业头：退让 + 刷辊转动（动画按 1/20 放慢，否则只是一团糊） */
+  const head = VIEW.groups.head;
+  head.position.z = head.userData.base.z + S.head;
+  if (S.brush) SPIN += dt * CFG.brush.rpm / 60 * 2 * Math.PI / 20;
+  head.getObjectByName('roll').rotation.x = SPIN;
+  /* 跨梁干涉：退让后刷辊顶 vs 跨梁底 */
+  const top = DERIVED.brushZ + CFG.brush.D / 2 + S.head;
+  MAT.beam.opacity = top > CFG.beam.z0 ? 0.55 : 0;
+  /* 坞站、磁场、红外 */
+  const dockPose = S.docked || planePose(0, 0);
+  const [sx, sy] = CFG.shroud.at;
+  const dc = toWorld(dockPose, [sx, sy, 0]);
+  VIEW.dock.position.set(dc[0], dc[1], VIEW.dock.userData.base.z);
+  VIEW.field.position.set(dc[0], dc[1], 0);
+  const glow = S.charge ? 0.5 + 0.5 * Math.sin(S.charge * 5) : 0;
+  MAT.copper.emissive.setRGB(0.55 * glow, 0.22 * glow, 0.04 * glow);
+  MAT.field.opacity = S.charge ? 0.25 + 0.35 * glow : 0;
+  const irOn = S.align != null && S.align > 0.01 || (S.charge > 0);
+  MAT.ir.emissive.setRGB(irOn ? 0.9 : 0, irOn ? 0.1 : 0, irOn ? 0.08 : 0);
+  const shC = toWorld(S.pose, [sx, sy, CFG.shroud.z0]);
+  const s2 = CFG.dock.irSpan / 2;
+  [[-s2, -s2], [s2, -s2], [-s2, s2], [s2, s2]].forEach(([dx, dy], k) => {
+    const b = VIEW.field.getObjectByName('ir' + k);
+    const A = [dx, dy, -CFG.gap.glass - 0.9], B = [shC[0] - dc[0] + dx, shC[1] - dc[1] + dy, shC[2]];
+    placeRod(b, A, B);
+    b.material.opacity = S.align != null && S.align > 0.01 ? 0.35 : 0;
   });
-  // ③ 与三条推杆的净距
-  DERIVED.feet.forEach((f, i) => {
-    const d = distToSegment([0, R.y], f, DERIVED.hinges[i]);
-    const net = d - brushR - CFG.leg.sleeveD / 2;
-    out.push({
-      name: `刷辊 ↔ 推杆 ${i + 1} 净距`,
-      want: '≥ 3.0 mm',
-      got: `${net.toFixed(1)} mm`,
-      ok: net >= 3.0,
+  /* 藻膜：刷辊扫过的矩形擦掉 */
+  if (S.contactY != null && MODE === 'gait') {
+    if (ALGAE.y0 == null) ALGAE.y0 = S.contactY;
+    const half = CFG.brush.sweep / 2;
+    if (S.contactY < ALGAE.top - 0.2) { paintAlgae(); ALGAE.y0 = S.contactY; }
+    if (S.contactY > ALGAE.top + 0.05 || ALGAE.top === -Infinity) {
+      const from = ALGAE.top === -Infinity ? S.contactY - 4 : ALGAE.top;
+      eraseRect(S.X - half, from, S.X + half, S.contactY + 4);
+      ALGAE.top = S.contactY;
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ⑧ 标注 —— HTML 叠加层。锚点是文档坐标，排布自动：按屏幕位置分左右两栏、逐条避让
+   ══════════════════════════════════════════════════════════════════ */
+function buildLabels() {
+  const B = CFG.body, Ly = CFG.layer, [fx, fy] = DERIVED.feet[0], S = CFG.shroud;
+  const [cx, cy] = DERIVED.hinges[2], [hx, hy] = DERIVED.hinges[1];
+  const legMid = i => { const f = DERIVED.feet[i], h = DERIVED.hinges[i]; return [(f[0] + h[0]) / 2, (f[1] + h[1]) / 2, CFG.leg.plane]; };
+  return [
+    { t: '吸盘 ∅25 × 3', s: 'R_t = 100 · 前足 A', a: [fx, fy, 10] },
+    { t: '腿 a / b / c', s: 'l1 56.6 + l2 30 · 膝可锁止', a: legMid(2) },
+    { t: '主腔 110 × 85 × 28', s: 'z 30–58 · 电机横放', a: [B.w / 2, -30, (Ly.trans + Ly.cavity) / 2] },
+    { t: 'POM 盖板', s: 'z 58–64 · 10 × M3', a: [-20, -60, Ly.cover] },
+    { t: '刷辊 ∅34 × 80', s: '轴线 y = +18 · 丝尖触玻璃', a: [-CFG.brush.len / 2 + 6, CFG.brush.y, DERIVED.brushZ] },
+    { t: '刮条', s: 'y ≈ +40 · Shore A 40', a: [CFG.squeegee.len / 2 - 6, CFG.squeegee.y, 6] },
+    { t: '跨梁 → 铰点座 b', s: '(0, +50) · z 56–64', a: [hx, hy - 12, CFG.beam.z1] },
+    { t: '前窗模块', s: '(−15, −32) · 压住座 c', a: [S.at[0], S.at[1], 12], w: true },
+    { t: '坞站 Ø90（缸外）', s: '线圈间隙 13.0 mm', a: [S.at[0], S.at[1], -16], world: 'dock' },
+    { t: '驱动仓', s: '磁耦合 ∅30 · 4 极', a: [CFG.brush.len / 2 + 20, CFG.brush.y, DERIVED.brushZ + 15] },
+  ];
+}
+const LAB = { items: [], els: [] };
+function initLabels() {
+  const ov = document.getElementById('overlay');
+  LAB.els.forEach(e => e.el.remove());
+  LAB.items = buildLabels();
+  const svg = document.getElementById('leaders');
+  svg.innerHTML = '';
+  LAB.els = LAB.items.map(it => {
+    const el = document.createElement('div'); el.className = 'viewer-tag' + (it.w ? ' w' : '');
+    el.innerHTML = `<b>${it.t}</b><span>${it.s}</span>`; ov.appendChild(el);
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g'); if (it.w) g.setAttribute('class', 'w');
+    const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); dot.setAttribute('r', '2.2');
+    g.appendChild(ln); g.appendChild(dot); svg.appendChild(g);
+    return { el, g, ln, dot, w: 0, h: 0 };
+  });
+}
+function layoutLabels() {
+  const on = MODE === 'struct' && chk('cb-labels') && explodeMm < 1 && stage.clientWidth > 600;
+  LAB.els.forEach(e => { e.el.hidden = !on; e.g.style.display = on ? '' : 'none'; });
+  if (!on) return [];
+  const W = stage.clientWidth, H = stage.clientHeight, pad = 10, gap = 4;
+  camera.updateMatrixWorld();
+  const pts = LAB.items.map((it, i) => {
+    if (it.world === 'dock' && !chk('cb-glass')) return null;
+    const p = it.world === 'dock'
+      ? v3(V.add([VIEW.dock.position.x, VIEW.dock.position.y, 0], [0, 0, it.a[2]]))
+      : v3(toWorld(LAST.S.pose, it.a));
+    p.project(camera);
+    const e = LAB.els[i];
+    if (!e.w) { e.w = e.el.offsetWidth; e.h = e.el.offsetHeight; }
+    return { i, x: (p.x * 0.5 + 0.5) * W, y: (-p.y * 0.5 + 0.5) * H, e };
+  }).filter(Boolean);
+  pts.forEach(p => { p.e.el.hidden = false; });
+  LAB.items.forEach((it, i) => { if (!pts.find(p => p.i === i)) { LAB.els[i].el.hidden = true; LAB.els[i].g.style.display = 'none'; } });
+  /* 锚点在屏幕左半就放左栏、右半放右栏；某一栏超过六成，把离中线最近的几条匀到另一栏 */
+  const sorted = pts.slice().sort((a, b) => a.x - b.x);
+  let nL = sorted.filter(p => p.x < W / 2).length;
+  const cap = Math.ceil(sorted.length * 0.6);
+  nL = Math.max(sorted.length - cap, Math.min(cap, nL));
+  const cols = [sorted.slice(0, nL), sorted.slice(nL)];
+  const out = [];
+  cols.forEach((col, side) => {
+    col.sort((a, b) => a.y - b.y);
+    let y = pad;
+    col.forEach(p => { p.ty = Math.max(y, p.y - p.e.h / 2); y = p.ty + p.e.h + gap; });
+    let over = y - gap - (H - pad);
+    for (let k = col.length - 1; k >= 0 && over > 0; k--) {
+      const lim = k === 0 ? pad : col[k - 1].ty + col[k - 1].e.h + gap;
+      const mv = Math.min(over, col[k].ty - lim); col[k].ty -= mv; over -= mv;
+      if (k < col.length - 1) {
+        for (let q = k + 1; q < col.length; q++) col[q].ty = Math.min(col[q].ty, col[q - 1].ty + col[q - 1].e.h + gap);
+      }
+    }
+    col.forEach(p => {
+      const tx = side === 0 ? pad : W - pad - p.e.w;
+      p.e.el.style.transform = `translate(${tx.toFixed(1)}px, ${p.ty.toFixed(1)}px)`;
+      const ex = side === 0 ? tx + p.e.w : tx, ey = p.ty + p.e.h / 2;
+      p.e.ln.setAttribute('x1', ex); p.e.ln.setAttribute('y1', ey);
+      p.e.ln.setAttribute('x2', p.x); p.e.ln.setAttribute('y2', p.y);
+      p.e.dot.setAttribute('cx', p.x); p.e.dot.setAttribute('cy', p.y);
+      out.push({ name: LAB.items[p.i].t, box: [tx, p.ty, tx + p.e.w, p.ty + p.e.h] });
     });
   });
-  // ④ 与主腔前壁的净距
-  const cavFront = B.hy - B.d / 2, net2 = cavFront - (R.y + brushR);
-  out.push({
-    name: '刷辊 ↔ 主腔前壁净距',
-    want: '≥ 3.0 mm',
-    got: `${net2.toFixed(1)} mm`,
-    ok: net2 >= 3.0,
-  });
-  // ⑤ 前窗罩 ↔ 推杆
-  DERIVED.feet.forEach((f, i) => {
-    const d = distToSegment([0, S.y], f, DERIVED.hinges[i]);
-    const net = d - S.dBody / 2 - CFG.leg.sleeveD / 2;
-    out.push({
-      name: `前窗罩 ↔ 推杆 ${i + 1} 净距`,
-      want: '≥ 3.0 mm',
-      got: `${net.toFixed(1)} mm`,
-      ok: net >= 3.0,
-    });
-  });
-  // ⑥ 前窗罩 ↔ 刮条（罩是锥台，刮条那一段取罩的最大半径 = 顶面 z1 处）
-  const Sq = CFG.squeegee;
-  const net3 = (S.y - S.dBody / 2) - (Sq.y - Sq.t / 2);
-  out.push({
-    name: '前窗罩 ↔ 刮条净距',
-    want: '≥ 2.0 mm',
-    got: `${net3.toFixed(1)} mm`,
-    ok: net3 >= 2.0,
-  });
-  // ⑦ 三条腿中位等长，且等于余弦定理算出的 L₀
-  const dmax = Math.max(...DERIVED.legLen.map(l => Math.abs(l - DERIVED.L0)));
-  out.push({
-    name: '三条腿中位等长 = L₀',
-    want: `偏差 ≤ 0.01 mm`,
-    got: `L₀ ${DERIVED.L0.toFixed(3)} · 最大偏差 ${dmax.toFixed(3)} mm`,
-    ok: dmax <= 0.01,
-  });
-  // ⑧ 厚度分层是否连续（没有缝也没有叠）
-  const L = CFG.layer;
-  const seam = [L.pad === 18, L.trans === 30, L.cavity === 58, L.cover === 64];
-  out.push({
-    name: '厚度分层 0–18–30–58–64 与 body.html §1 一致',
-    want: '四层首尾相接',
-    got: `${[0, L.pad, L.trans, L.cavity, L.cover].join(' / ')} mm`,
-    ok: seam.every(Boolean),
-  });
-  // ⑨ 线圈间隙六层合计，以及由此推出的两线圈间距
-  const zTx = -G.glass - G.shell - G.txPot;
-  const zRx = G.water + G.shroud + G.rxSelf;
-  out.push({
-    name: '线圈间隙六层合计 = 两线圈绕组面间距',
-    want: '13.0 mm（dock.html §3）',
-    got: `${DERIVED.gapTotal.toFixed(1)} mm · z ${zTx.toFixed(1)} → +${zRx.toFixed(1)}`,
-    ok: Math.abs(DERIVED.gapTotal - 13) < 0.05 && Math.abs((zRx - zTx) - 13) < 0.05,
-  });
-  // ⑩ 腿的两节：标称伸缩段 = L₀ − l2（平贴中位三腿伸直，膝角 0）
-  const KL = CFG.leg;
-  out.push({
-    name: '伸缩段标称长 = L₀ − l2（膝角 0）',
-    want: `${(DERIVED.L0 - KL.l2).toFixed(1)} mm`,
-    got: `L₀ ${DERIVED.L0.toFixed(1)} − l2 ${KL.l2} = ${DERIVED.l1nom.toFixed(1)} mm`,
-    ok: DERIVED.l1nom > 0 && DERIVED.l1nom < DERIVED.L0,
-  });
-  // ⑪ 伸缩段要覆盖过棱换面的范围 —— motion.html §11D
-  out.push({
-    name: '伸缩段覆盖过棱范围',
-    want: `中位 ${DERIVED.l1nom.toFixed(1)} 落在 ${KL.l1min} → ${KL.l1max} 内`,
-    got: `要覆盖 ${DERIVED.l1span.toFixed(1)} mm（θ = 90° 直角棱那一步最长）`,
-    ok: KL.l1min <= DERIVED.l1nom && DERIVED.l1nom <= KL.l1max,
-  });
-  // ⑫ 膝铰座塞不塞得进 12 mm 的传动层 —— 这一步决定总厚是 64 还是 66
-  out.push({
-    name: '膝铰座外径 ≤ 传动层 12 mm',
-    want: '≤ 12.0 mm（body.html §1 选项①，总厚不变）',
-    got: `∅${KL.kneeD.toFixed(1)} → 走选项②：传动层 12 → 14 mm，总厚 64 → 66 mm`,
-    ok: KL.kneeD <= L.trans - L.pad,
-  });
+  return out;
+}
+/* 标注排布自检：出框与两两相交 */
+function labelLayout() {
+  const out = layoutLabels(), W = stage.clientWidth, H = stage.clientHeight;
+  out.forEach(b => { b.why = [];
+    if (b.box[0] < 0 || b.box[2] > W) b.why.push('横向出框');
+    if (b.box[1] < 0 || b.box[3] > H) b.why.push('纵向出框'); });
+  for (let i = 0; i < out.length; i++) for (let j = i + 1; j < out.length; j++) {
+    const a = out[i].box, b = out[j].box;
+    if (Math.min(a[2], b[2]) > Math.max(a[0], b[0]) && Math.min(a[3], b[3]) > Math.max(a[1], b[1])) {
+      out[i].why.push('压住「' + out[j].name + '」'); out[j].why.push('压住「' + out[i].name + '」'); }
+  }
+  const bad = out.filter(b => b.why.length);
+  console.table(out.map(b => ({ 标注: b.name, 左: b.box[0].toFixed(0), 上: b.box[1].toFixed(0), 问题: b.why.join(' / ') || '—' })));
+  console.log(bad.length ? `标注排布：${bad.length}/${out.length} 条有问题` : `标注排布：${out.length} 条全部放得下，互不重叠`);
   return out;
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   ⑨ 场景、相机、灯光、交互
+   ⑨ 自检 —— 静态几何 + 逐帧跑一遍步态与过棱
+   ══════════════════════════════════════════════════════════════════ */
+function segDist(p, a, b) {
+  const vx = b[0] - a[0], vy = b[1] - a[1], wx = p[0] - a[0], wy = p[1] - a[1], l2 = vx * vx + vy * vy;
+  const t = l2 ? Math.max(0, Math.min(1, (wx * vx + wy * vy) / l2)) : 0;
+  return Math.hypot(p[0] - a[0] - t * vx, p[1] - a[1] - t * vy);
+}
+/* 把一条时间线从头到尾逐帧逆解，返回极值 */
+function sweep(tl, dt = 0.05) {
+  const mem = { alpha: [null, null, null] };
+  const r = { l1min: Infinity, l1max: -Infinity, knee: 0, intr: 0, clr: Infinity, swMin: Infinity, swMax: -Infinity, swClr: Infinity };
+  const body = [];
+  const B = CFG.body, Ly = CFG.layer, S = CFG.shroud, Br = CFG.brush, zc = DERIVED.brushZ;
+  for (const x of [-B.w / 2, B.w / 2]) for (const y of [B.y0, B.y1]) for (const z of [Ly.trans, Ly.cover]) body.push([x, y, z]);
+  for (let k = 0; k < 16; k++) { const a = k / 16 * Math.PI * 2;
+    body.push([S.at[0] + (S.coilDia / 2 + S.wall) * Math.cos(a), S.at[1] + (S.coilDia / 2 + S.wall) * Math.sin(a), S.z0]);
+    for (const x of [-Br.len / 2, Br.len / 2]) body.push([x, Br.y + Br.D / 2 * Math.sin(a), zc - Br.D / 2 * Math.cos(a)]); }
+  for (const x of [-CFG.squeegee.len / 2, CFG.squeegee.len / 2]) body.push([x, CFG.squeegee.y, 0]);
+  body.push([0, DERIVED.hinges[1][1], CFG.beam.z1], [0, 0, CFG.beam.z1]);
+  const cross = tl === TL.cross, xE = CFG.glass.xEdge;
+  for (let t = 0; t <= tl.T + 1e-6; t += dt) {
+    const S1 = tl.at(t), sols = solveLegs(S1, mem);
+    sols.forEach(s => {
+      if (s.swing) { r.swMin = Math.min(r.swMin, s.l1); r.swMax = Math.max(r.swMax, s.l1);
+        if (cross && s.mid) r.swClr = Math.min(r.swClr, s.C[2], s.C[0] - xE); return; }
+      r.l1min = Math.min(r.l1min, s.l1); r.l1max = Math.max(r.l1max, s.l1);
+      r.knee = Math.max(r.knee, s.knee); r.intr = Math.max(r.intr, s.intr);
+    });
+    if (cross) body.forEach(b => { const w = toWorld(S1.pose, b); r.clr = Math.min(r.clr, w[2], w[0] - xE); });
+  }
+  return r;
+}
+function checks() {
+  const out = [], K = CFG.leg, B = CFG.body, Ly = CFG.layer, Br = CFG.brush, S = CFG.shroud, Sq = CFG.squeegee;
+  const H = DERIVED.hinges, F = DERIVED.feet;
+  const row = (name, want, got, st) => out.push({ name, want, got, st });   // st: ok | warn | bad
+  row('三腿中位等长 = L₀；l1 标称 = L₀ − l2', 'L₀ = 86.603，l1 = 56.6',
+      `L₀ ${DERIVED.L0.toFixed(3)} · l1 ${DERIVED.l1nom.toFixed(1)} mm`, Math.abs(DERIVED.L0 - 86.603) < 0.01 ? 'ok' : 'bad');
+  row('3-RPR 雅可比非奇异（铰点圆错开 60°）', '|det| > 0，径向布置 = 0',
+      `60° → ${Math.abs(DERIVED.jac).toFixed(2)} · 0° → ${Math.abs(DERIVED.jac0).toFixed(2)}`, Math.abs(DERIVED.jac) > 1 ? 'ok' : 'bad');
+  row('厚度分层 0 / 18 / 30 / 58 / 64', '与 body.html §1 一致',
+      [0, Ly.pad, Ly.trans, Ly.cavity, Ly.cover].join(' / '), Ly.pad === 18 && Ly.trans === 30 && Ly.cavity === 58 && Ly.cover === 64 ? 'ok' : 'bad');
+  row('线圈间隙六层 = 两绕组面间距', '13.0 mm（dock.html §3）',
+      `${DERIVED.gapTotal.toFixed(1)} mm · z ${DERIVED.zTx.toFixed(1)} → +${DERIVED.zRx.toFixed(1)}`,
+      Math.abs(DERIVED.gapTotal - 13) < 0.05 ? 'ok' : 'bad');
+  const tri = y => F[1][0] * (y - F[0][1]) / (F[1][1] - F[0][1]);        // 支撑三角形在 y 处的半宽
+  row('刷辊接触线落在支撑三角形内', `半宽 ≥ ${(Br.len / 2).toFixed(0)} mm`, `y = +${Br.y} 处半宽 ${tri(Br.y).toFixed(1)} mm`,
+      tri(Br.y) >= Br.len / 2 ? 'ok' : 'bad');
+  const bc = Math.min(...[[-Br.len / 2, Br.y - Br.D / 2], [-Br.len / 2, Br.y + Br.D / 2], [-Br.len / 2, Br.y]]
+      .map(p => segDist(p, H[2], F[2]))) - K.tubeD / 2;
+  row('刷辊 ↔ 杆 c 净距（居中静止）', '≥ 3.0 mm', `${bc.toFixed(1)} mm`, bc >= 3 ? 'ok' : 'bad');
+  const rear = (Br.y - Br.D / 2) - B.y1;
+  row('刷辊前缘 ↔ 主腔尾面', '≥ 1.0 mm', `${rear.toFixed(1)} mm`, rear >= 1 - 1e-6 ? 'ok' : 'bad');
+  const sqb = Math.min(H[1][1] - K.tubeD / 2, H[1][1] - K.bossD / 2) - (Sq.y + Sq.t / 2);
+  row('刮条 ↔ 杆 b 与铰点座 b', '≥ 1.5 mm', `${sqb.toFixed(1)} mm`, sqb >= 1.5 ? 'ok' : 'bad');
+  const rS = S.coilDia / 2 + S.wall;
+  const sc = Math.hypot(S.at[0] - H[2][0], S.at[1] - H[2][1]) - rS - K.bossD / 2;
+  row('前窗罩 ↔ 铰点座 c', '≥ 2.0 mm', `中心距 ${Math.hypot(S.at[0] - H[2][0], S.at[1] - H[2][1]).toFixed(1)} − ${rS} − ${K.bossD / 2} = ${sc.toFixed(1)} mm`,
+      sc >= 2 ? 'ok' : 'bad');
+  const sa = Math.min(segDist(S.at, H[0], F[0]) - rS - K.tubeD / 2, Math.hypot(S.at[0] - H[0][0], S.at[1] - H[0][1]) - rS - K.bossD / 2);
+  row('前窗罩 ↔ 杆 a 与铰点座 a', '≥ 2.0 mm', `${sa.toFixed(1)} mm`, sa >= 2 ? 'ok' : 'bad');
+  const sb = (Br.y - Br.D / 2) - (S.at[1] + CFG.shroud.dTop / 2);
+  row('前窗罩 ↔ 刷辊前缘', '≥ 2.0 mm', `${sb.toFixed(1)} mm`, sb >= 2 ? 'ok' : 'bad');
+  const dk = Math.hypot(S.at[0] - H[0][0], S.at[1] - H[0][1]) - CFG.dock.dia / 2;
+  row('坞站盘边 ↔ 铰点 a 中心（dock.html §1）', `≥ 座半径 ${K.bossD / 2} mm`, `${dk.toFixed(1)} mm`, dk >= K.bossD / 2 ? 'ok' : 'bad');
+  const topW = DERIVED.brushZ + Br.D / 2, topR = topW + Br.retract;
+  row('跨梁底 ↔ 刷辊顶（贴壁）', '≥ 2.0 mm', `${CFG.beam.z0} − ${topW} = ${(CFG.beam.z0 - topW).toFixed(1)} mm`, CFG.beam.z0 - topW >= 2 ? 'ok' : 'bad');
+  row('跨梁底 ↔ 刷辊顶（退让 20 mm 后）', '≥ 2.0 mm，且跨梁不高出盖板',
+      `${CFG.beam.z0} − ${topR} = ${(CFG.beam.z0 - topR).toFixed(1)} mm · 梁顶 ${CFG.beam.z1}`,
+      CFG.beam.z0 - topR >= 2 - 1e-6 && CFG.beam.z1 <= Ly.cover ? 'ok' : 'bad');
+  row('膝铰座 ≤ 传动层 12 mm', '≤ 12.0（body.html §1 选项①）',
+      `∅${K.kneeD} → 待选型：② 传动层 14、总厚 66`, K.kneeD <= Ly.trans - Ly.pad ? 'ok' : 'warn');
+  /* 逐帧 */
+  const g = sweep(TL.gait), c = sweep(TL.cross);
+  DERIVED.sweep = { g, c };
+  const inR = (a, b) => a >= K.l1min - 0.05 && b <= K.l1max + 0.05;
+  row(`平贴步态 d = ${CFG.gait.d} mm：l1 在伸缩段范围内`, `${K.l1min} → ${K.l1max} mm`,
+      `${g.l1min.toFixed(1)} → ${g.l1max.toFixed(1)} mm`, inR(g.l1min, g.l1max) ? 'ok' : 'bad');
+  const dmax = 2 * ((H[0][1] - F[0][1]) - Math.sqrt((K.l1min + K.l2) ** 2 - (H[0][0] - F[0][0]) ** 2));
+  row('平贴步距上限（l1 ≥ 50.4，对称走）', '≥ 文档步距上限 23 mm', `${dmax.toFixed(1)} mm`, dmax >= 23 ? 'ok' : 'warn');
+  row('过棱：l1 覆盖（贴附的腿，逐帧）', `${K.l1min} → ${K.l1max} mm`, `${c.l1min.toFixed(1)} → ${c.l1max.toFixed(1)} mm`,
+      inR(c.l1min, c.l1max) ? 'ok' : 'bad');
+  row('过棱：膝折角（逐帧最大）', `≤ ${K.kneeMax}°（表里 ≤ ${K.kneeTable}°）`, `${c.knee.toFixed(1)}°`,
+      c.knee <= K.kneeMax + 0.5 ? (c.knee <= K.kneeTable + 0.5 ? 'ok' : 'warn') : 'bad');
+  row('过棱：杆件不进主腔', '0 mm', `${c.intr.toFixed(1)} mm`, c.intr < 0.5 ? 'ok' : 'bad');
+  row('过棱：机身不碰玻璃（刷丝尖、刮条、罩尖都算）', '≥ −0.5 mm', `${c.clr.toFixed(1)} mm`, c.clr >= -0.5 ? 'ok' : 'bad');
+  row('过棱：摆动腿 l1 与杯的离玻璃净距', `l1 在范围内，杯心 ≥ 5 mm`,
+      `${c.swMin.toFixed(1)} → ${c.swMax.toFixed(1)} mm · 杯心 ${c.swClr.toFixed(1)} mm`,
+      inR(c.swMin, c.swMax) && c.swClr >= 5 ? 'ok' : 'bad');
+  row('过棱：起点机身离棱', '≥ 115.5 mm（§11D）', `${CFG.cross.keys[0][0]} mm`, CFG.cross.keys[0][0] >= 115.5 ? 'ok' : 'bad');
+  return out;
+}
+function reportChecks() {
+  const rows = checks();
+  console.table(rows.map(r => ({ 约束: r.name, 要求: r.want, 实算: r.got, 结论: r.st })));
+  const tb = document.getElementById('chk-body');
+  if (tb) tb.innerHTML = rows.map(r =>
+    `<tr class="${r.st === 'ok' ? 'hl' : r.st === 'bad' ? 'bad' : ''}"><td>${r.name}</td><td>${r.want}</td>` +
+    `<td><b>${r.got}</b></td><td>${r.st === 'ok' ? '通过' : r.st === 'bad' ? '<b>不通过</b>' : '⚠ 待定'}</td></tr>`).join('');
+  const ok = rows.filter(r => r.st === 'ok').length, bad = rows.filter(r => r.st === 'bad').length;
+  const sum = document.getElementById('chk-sum');
+  if (sum) sum.textContent = `${ok} 条通过 · ${rows.length - ok - bad} 条待定 · ${bad} 条不通过（逐条原因见第 8 节）`;
+  const c = DERIVED.sweep.c, set = (id, s) => { const e = document.getElementById(id); if (e) e.innerHTML = s; };
+  set('rd-l1', `<b>${c.l1min.toFixed(1)} → ${c.l1max.toFixed(1)} mm</b>（悬空的摆动腿 ${c.swMin.toFixed(1)} → ${c.swMax.toFixed(1)}）`);
+  set('rd-knee', `<b>${c.knee.toFixed(1)}°</b>`);
+  set('rd-intr', `${c.intr.toFixed(1)} mm`);
+  set('rd-clr', `${c.clr.toFixed(1)} mm（刷丝尖与刮条刃口贴玻璃时记 0）`);
+  return rows;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ⑩ 渲染器、相机、视角、交互
    ══════════════════════════════════════════════════════════════════ */
 const stage = document.getElementById('stage');
 const viewer = document.getElementById('viewer');
-let renderer, scene, camera, controls;
+let renderer, scene, camera, controls, key, camP, camO, ctlP, ctlO;
+let MODE = 'struct', VIEWK = 'in', T = 0, PLAY = true, SPEED = 1, explodeMm = 0;
+const chk = id => document.getElementById(id).checked;
 
-function initScene() {
-  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setClearAlpha(0);                       // 背景交给 CSS 渐变
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  stage.appendChild(renderer.domElement);
+/* 视角 = 方向 + 注视点 + 取景半径（距离按画布宽高比自动算）。按模式各一套 */
+const VIEWS = {
+  struct: { t: [0, 22, 30], r: 150, v: {
+    in: [0.60, -0.42, 0.68], out: [0.42, -0.30, -0.86], side: [1, -0.06, 0.02], top: [0.0001, -0.0001, 1] } },
+  gait:   { t: [0, -18, 30], r: 170, v: {
+    in: [0.55, -0.45, 0.70], out: [0.30, -0.22, -0.93], side: [1, -0.06, 0.02], top: [0.0001, -0.0001, 1] } },
+  cross:  { t: [CFG.glass.xEdge + 88, 0, 100], r: 150, v: {
+    in: [0.60, 0.42, 0.68], out: [0.45, -0.35, -0.82], side: [0.0001, -1, 0.0001], top: [0.42, -0.72, 0.55] },
+    names: ['缸内', '缸外', '沿棱', '斜看'], ortho: ['side'] },
+  dock:   { t: [0, 22, 20], r: 150, v: {
+    in: [0.60, -0.42, 0.68], out: [0.42, -0.30, -0.86], side: [1, -0.05, 0.02], top: [0.0001, -0.0001, 1] } },
+};
+const DEFAULT_VIEW = { struct: 'in', gait: 'out', cross: 'side', dock: 'side' };
 
-  scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(32, 1, 1, 4000);
-  camera.position.copy(new THREE.Vector3(...VIEWS.iso.t)
-    .addScaledVector(new THREE.Vector3(...VIEWS.iso.dir).normalize(), VIEWS.iso.d));
-
-  controls = new OrbitControls(camera, renderer.domElement);
-  controls.target.set(...VIEWS.iso.t);
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.075;
-  controls.minDistance = 90;
-  controls.maxDistance = 1400;
-  controls.maxPolarAngle = Math.PI * 0.92;
-  controls.update();
-
-  /* 灯光：r155 之后 intensity 是物理量纲，这几个数是按 0.180 调的，
-     换 three 版本要重新对一遍 —— 见第 7 节 */
-  scene.add(new THREE.HemisphereLight(0xffffff, 0xb8b5ae, 2.1));
-  const key = new THREE.DirectionalLight(0xffffff, 2.6);
-  key.position.set(260, -340, 420);
-  key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024);
-  const d = 260;
-  Object.assign(key.shadow.camera, { left: -d, right: d, top: d, bottom: -d, near: 1, far: 1600 });
-  key.shadow.camera.updateProjectionMatrix();
-  key.shadow.bias = -0.0009;
-  scene.add(key);
-  const fill = new THREE.DirectionalLight(0xdce9f5, 1.1);
-  fill.position.set(-300, 200, 260);
-  scene.add(fill);
-  const rim = new THREE.DirectionalLight(0xffffff, 0.9);
-  rim.position.set(60, 320, -280);
-  scene.add(rim);
-
-  scene.add(WORLD);
-  assemble();
-
-  window.addEventListener('resize', resize);
-  if (window.ResizeObserver) new ResizeObserver(resize).observe(stage);
-  viewer.dataset.ready = '1';
-  viewer.classList.remove('is-dead');
-  bindUI();
-  resize();
-  renderer.setAnimationLoop(tick);
-  reportChecks();
+function fitDist(r) {
+  const vf = camera.fov * DEG, hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
+  return r / Math.sin(Math.min(vf, hf) / 2);
+}
+/* 正交相机的视口：半高 = 取景半径，窄屏按宽度收 */
+function fitOrtho(r) {
+  const W = stage.clientWidth || 1, H = stage.clientHeight || 1, a = W / H;
+  const hh = (a >= 1 ? r : r / a) * 1.05;
+  Object.assign(camO, { left: -hh * a, right: hh * a, top: hh, bottom: -hh });
+  camO.updateProjectionMatrix();
+}
+/* 侧视、正视、沿棱用正交相机 —— 厚度和截面要读尺寸，透视会把玻璃前后两条边拉开 */
+function useCam(ortho) {
+  camera = ortho ? camO : camP; controls = ortho ? ctlO : ctlP;
+  ctlP.enabled = !ortho; ctlO.enabled = ortho;
+}
+function setView(k) {
+  const M = VIEWS[MODE], d = M.v[k]; if (!d) return;
+  VIEWK = k;
+  useCam((M.ortho || ['side', 'top']).includes(k));
+  const n = new THREE.Vector3(...d).normalize();
+  const t = new THREE.Vector3(...M.t);
+  camera.up.set(0, 1, 0);
+  if (Math.abs(n.y) > 0.95) camera.up.set(0, 0, 1);
+  if (camera === camO) { camO.zoom = 1; fitOrtho(M.r); camera.position.copy(t).addScaledVector(n, 1500); }
+  else camera.position.copy(t).addScaledVector(n, fitDist(M.r));
+  controls.target.copy(t); controls.update();
+  document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', b.dataset.view === k));
   modelBounds();
-  labelLayout();
+}
+
+function setMode(m) {
+  MODE = m; T = 0; PLAY = m !== 'struct';
+  SOLVER.alpha = [null, null, null]; SOLVER.sw = null;
+  document.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === m));
+  document.getElementById('bar-struct').hidden = m !== 'struct';
+  document.getElementById('bar-anim').hidden = m === 'struct';
+  document.getElementById('readout').hidden = m === 'struct';
+  const names = VIEWS[m].names || ['缸内', '缸外', '侧视', '正视'];
+  document.querySelectorAll('[data-view]').forEach((b, i) => { b.textContent = names[i]; });
+  if (m !== 'struct') { document.getElementById('explode').value = 0; setExplode(0); applyExplode(); }
+  if (m === 'gait') paintAlgae();
+  applyToggles();
+  setView(DEFAULT_VIEW[m]);
+  frame(0);
+}
+
+/* 当前模式在时刻 T 的状态 */
+function stateAt(t) {
+  if (MODE === 'struct') {
+    const pose = planePose(0, 0);
+    return { pose, cups: [0, 1, 2].map(i => ({ C: cupWorld(pose, i), n: [0, 0, 1], on: true })), brush: false, head: 0, phase: '', locked: true };
+  }
+  return TL[MODE].at(t);
+}
+
+function frame(dt) {
+  if (MODE !== 'struct' && PLAY) {
+    T += dt * SPEED;
+    if (T > TL[MODE].T) { T = 0; SOLVER.alpha = [null, null, null]; SOLVER.sw = null; if (MODE === 'gait') paintAlgae(); }
+  }
+  const S = stateAt(T);
+  applyState(S, MODE === 'struct' ? 0 : dt * SPEED);
+  const now = performance.now();
+  if (ALGAE.dirty && (now - (ALGAE.up || 0) > 50 || !PLAY)) { ALGAE.tex.needsUpdate = true; ALGAE.dirty = false; ALGAE.up = now; }
+  if (MODE === 'struct') applyExplode();
+  updateReadout(S);
+  layoutLabels();
+  if (MODE !== 'struct') {
+    document.getElementById('scrub').value = Math.round(T / TL[MODE].T * 1000);
+    document.getElementById('clock').textContent = `${T.toFixed(1)} / ${TL[MODE].T.toFixed(1)} s`;
+  }
+}
+
+/* 左上角读数 */
+function updateReadout(S) {
+  const el = document.getElementById('readout');
+  if (MODE === 'struct' || !LAST) return;
+  const K = CFG.leg, sols = LAST.sols;
+  const meter = v => { const p = (v - K.l1min) / (K.l1max - K.l1min) * 100;
+    return `<span class="viewer-meter"><i class="${p < -0.3 || p > 100.3 ? 'bad' : ''}" style="left:${Math.max(0, Math.min(100, p)).toFixed(1)}%"></i></span>`; };
+  const bad = (v, lo, hi) => v < lo - 0.05 || v > hi + 0.05 ? ' class="bad"' : '';
+  let h = `<div class="t">${S.phase}</div>`;
+  if (MODE === 'gait') {
+    h += `<div class="s">步距 d = ${CFG.gait.d} mm · 刷辊 ${S.brush ? '<span class="ok">转</span>' : '停'}</div>`;
+  } else if (MODE === 'cross') {
+    h += `<div class="s">机身绕棱 ψ = ${S.psi.toFixed(0)}° · 棱角 θ = 90° · h1 = ${CFG.cross.h1}</div>`;
+  } else {
+    const [sx, sy] = CFG.shroud.at, e = toDoc(S.docked, toWorld(S.pose, [sx, sy, 0]));
+    const top = DERIVED.brushZ + CFG.brush.D / 2 + S.head, net = CFG.beam.z0 - top;
+    h += `<div class="s">线圈间隙 ${DERIVED.gapTotal.toFixed(1)} mm · 5 W 入 → 2.2 W 入电池</div>`;
+    h += `<div class="r">罩心偏差<b>${Math.hypot(e[0] - sx, e[1] - sy).toFixed(1)} mm</b></div>`;
+    h += `<div class="r">作业头退让<b>${S.head.toFixed(1)} / ${CFG.brush.retract} mm</b></div>`;
+    h += `<div class="r">刷辊顶 ↔ 跨梁底<b${net < 2 - 1e-6 ? ' class="bad"' : ''}>${net.toFixed(1)} mm</b></div>`;
+    h += `<div class="r">充电<b${S.charge ? ' class="ok"' : ''}>${S.charge ? '进行中' : '—'}</b></div>`;
+    el.innerHTML = h; return;
+  }
+  sols.forEach((s, i) => {
+    h += `<div class="r"><span>腿 ${'abc'[i]}${s.swing ? ' · 摆动' : ''}</span>${meter(s.l1)}` +
+         `<b${s.swing ? '' : bad(s.l1, K.l1min, K.l1max)}>l1 ${s.l1.toFixed(1)}</b>` +
+         `<b${!s.swing && s.knee > K.kneeMax + 0.5 ? ' class="bad"' : ''}>膝 ${s.knee.toFixed(0)}°</b></div>`;
+  });
+  h += `<div class="s">l1 允许 ${K.l1min} → ${K.l1max} · 膝 ≤ ${K.kneeMax}°</div>`;
+  el.innerHTML = h;
+}
+
+/* 分层展开 */
+function setExplode(v) { explodeMm = parseFloat(v) * 4.5; }
+function applyExplode() {
+  LAYERS.forEach(Lr => {
+    const g = VIEW.groups[Lr.key]; if (!g) return;
+    if (Lr.key === 'feet' || Lr.key === 'legs' || Lr.key === 'dock') g.position.z = g.userData.base.z + Lr.k * explodeMm;
+    else g.position.set(g.userData.base.x, g.userData.base.y, g.userData.base.z + Lr.k * explodeMm);
+  });
+}
+
+function applyToggles() {
+  const glassOn = MODE !== 'struct' || chk('cb-glass');
+  const g = VIEW.groups;
+  if (g.glass) g.glass.visible = glassOn;
+  if (g.corner) g.corner.visible = MODE === 'cross';
+  if (g.algae) g.algae.visible = MODE === 'gait';
+  if (g.dock) g.dock.visible = (MODE === 'struct' && glassOn) || MODE === 'dock';
+  if (g.field) g.field.visible = MODE === 'dock';
+  const xr = MODE === 'struct' ? chk('cb-xray') : chk('cb-xray2');
+  XRAY.forEach(k => { const m = MAT[k]; m.transparent = xr || m.userData.op < 1; m.opacity = xr ? 0.22 : m.userData.op;
+    m.depthWrite = !xr; m.needsUpdate = true; });
+  if (g.internals) g.internals.visible = xr;
+  if (ctlP) ctlP.autoRotate = ctlO.autoRotate = MODE === 'struct' && chk('cb-spin');
+}
+
+/* 取景自检：零件投影到屏幕的包围盒（玻璃、坞站、藻膜是背景板，不算） */
+function modelBounds() {
+  camera.updateMatrixWorld();
+  const box = new THREE.Box3();
+  ['feet', 'legs', 'cavity', 'cover', 'head', 'beam', 'shroud', 'pod'].forEach(k => VIEW.groups[k] && box.expandByObject(VIEW.groups[k]));
+  const W = stage.clientWidth, H = stage.clientHeight;
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity; const v = new THREE.Vector3();
+  for (let i = 0; i < 8; i++) {
+    v.set(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z).project(camera);
+    const x = (v.x * .5 + .5) * W, y = (-v.y * .5 + .5) * H;
+    x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+  }
+  const b = { x0, y0, x1, y1, W, H, cut: x0 < 0 || y0 < 0 || x1 > W || y1 > H };
+  console.log(`取景[${MODE}/${VIEWK}]：模型占 ${((x1 - x0) / W * 100).toFixed(0)}% 宽 × ${((y1 - y0) / H * 100).toFixed(0)}% 高` +
+    `，边距 左 ${x0.toFixed(0)} / 右 ${(W - x1).toFixed(0)} / 上 ${y0.toFixed(0)} / 下 ${(H - y1).toFixed(0)}` + (b.cut ? ' —— 被切了' : ''));
+  return b;
+}
+
+/* 悬停提示：射线命中哪个零件 */
+const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
+function hover(e) {
+  const tip = document.getElementById('tip'), r = renderer.domElement.getBoundingClientRect();
+  mouse.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(mouse, camera);
+  const hits = ray.intersectObjects([VIEW.robot, VIEW.groups.feet, VIEW.groups.legs, VIEW.groups.dock], true)
+    .filter(h => h.object.visible && h.object.userData.part && h.object.material.opacity > 0.3);
+  const p = hits.length && PART[hits[0].object.userData.part];
+  if (!p) { tip.style.display = 'none'; return; }
+  tip.innerHTML = `${p[0]}<span>${p[1]}</span>`;
+  tip.style.display = 'block';
+  const x = Math.min(e.clientX - r.left + 14, r.width - tip.offsetWidth - 6);
+  tip.style.transform = `translate(${x}px, ${e.clientY - r.top + 14}px)`;
+}
+
+function bindUI() {
+  document.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+  document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+  document.querySelectorAll('[data-speed]').forEach(b => b.addEventListener('click', () => {
+    SPEED = parseFloat(b.dataset.speed);
+    document.querySelectorAll('[data-speed]').forEach(x => x.setAttribute('aria-pressed', x === b)); }));
+  document.querySelector('[data-speed="1"]').setAttribute('aria-pressed', 'true');
+  const play = document.getElementById('play');
+  play.addEventListener('click', () => { PLAY = !PLAY; play.textContent = PLAY ? '❚❚' : '▶'; });
+  document.getElementById('scrub').addEventListener('input', e => {
+    const t = e.target.value / 1000 * TL[MODE].T;
+    if (t < T) { SOLVER.alpha = [null, null, null]; SOLVER.sw = null; }
+    T = t; PLAY = false; play.textContent = '▶'; frame(0);
+  });
+  ['cb-xray', 'cb-xray2', 'cb-glass', 'cb-labels', 'cb-spin'].forEach(id =>
+    document.getElementById(id).addEventListener('change', applyToggles));
+  document.getElementById('explode').addEventListener('input', e => setExplode(e.target.value));
+  renderer.domElement.addEventListener('pointermove', hover);
+  renderer.domElement.addEventListener('pointerleave', () => { document.getElementById('tip').style.display = 'none'; });
 }
 
 function resize() {
@@ -1521,238 +1908,84 @@ function resize() {
   const w = stage.clientWidth, h = stage.clientHeight;
   if (!w || !h) return;
   renderer.setSize(w, h, false);
-  camera.aspect = w / h;
-  camera.updateProjectionMatrix();
-  placeLabels();                     // 屏幕坐标的标注必须跟着画布尺寸重算
+  camP.aspect = w / h; camP.updateProjectionMatrix();
+  if (camera === camO) fitOrtho(VIEWS[MODE].r);
 }
 
-function tick() {
-  controls.update();                 // autoRotate 由 OrbitControls 自己处理
+let visible = true, lastT = performance.now();
+function tick(now) {
+  const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
+  if (!visible) return;
+  controls.update();
+  frame(dt);
   renderer.render(scene, camera);
 }
 
-/* ── 视角预设 ───────────────────────────────────────────────
-   写成「方向 + 距离 + 注视点」而不是裸坐标：想拉近拉远只改 d，
-   想换个方位只改 dir，不用重新心算三个坐标。
-   dir 会被归一化，所以随便填什么长度都行。 */
-const VIEWS = {
-  iso:   { dir: [ 0.57, -0.65, 0.51], d: 510, t: [0,  26, 24] },  // 默认：玻璃、坞站、作业头都能看到
-  face:  { dir: [ 0.00, -0.02, 1.00], d: 430, t: [0,   6, 24] },  // 正对玻璃：看三足布局
-  side:  { dir: [ 1.00,  0.00, 0.04], d: 440, t: [0,  30, 18] },  // 侧视：看 64 mm 的厚度分层
-  brush: { dir: [ 0.18, -0.87, 0.46], d: 470, t: [0, -20, 24] },  // 看刷辊：从缸内偏下的角度
-};
-function setView(k) {
-  const v = VIEWS[k]; if (!v) return;
-  const n = new THREE.Vector3(...v.dir).normalize();
-  camera.position.copy(new THREE.Vector3(...v.t)).addScaledVector(n, v.d);
-  controls.target.set(...v.t);
-  controls.update();
-  placeLabels();
-  modelBounds();
-  labelLayout();                     // 换视角顺手报一次取景和标注排布
+function initScene() {
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearAlpha(0);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  stage.insertBefore(renderer.domElement, stage.firstChild);
+
+  scene = new THREE.Scene();
+  const pm = new THREE.PMREMGenerator(renderer);
+  scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environmentIntensity = 0.55;
+
+  camP = new THREE.PerspectiveCamera(30, 1.6, 2, 6000);
+  camO = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 4000);
+  ctlP = new OrbitControls(camP, renderer.domElement);
+  ctlO = new OrbitControls(camO, renderer.domElement);
+  [ctlP, ctlO].forEach(c => { c.enableDamping = true; c.dampingFactor = 0.08; c.autoRotateSpeed = 0.8; });
+  ctlP.minDistance = 120; ctlP.maxDistance = 4000; ctlO.minZoom = 0.3; ctlO.maxZoom = 8;
+  useCam(false);
+
+  /* 灯光按 three 0.180 的物理量纲调的，换版本要重对 */
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xcfd6dc, 1.1));
+  key = new THREE.DirectionalLight(0xffffff, 2.4);
+  key.position.set(160, 260, 520); key.target.position.set(-80, 0, 0);
+  key.castShadow = true; key.shadow.mapSize.set(2048, 2048);
+  Object.assign(key.shadow.camera, { left: -420, right: 420, top: 300, bottom: -300, near: 50, far: 1400 });
+  key.shadow.bias = -0.0004; key.shadow.normalBias = 0.6; key.shadow.radius = 3;
+  scene.add(key, key.target);
+  const fill = new THREE.DirectionalLight(0xe6f0f7, 0.8); fill.position.set(-300, -120, 260); scene.add(fill);
+  const back = new THREE.DirectionalLight(0xffffff, 0.7); back.position.set(80, 120, -400); scene.add(back);
+
+  scene.add(WORLD);
+  assemble();
+  initLabels();
+  resize();
+  bindUI();
+  if (window.ResizeObserver) new ResizeObserver(() => { resize(); }).observe(stage);
+  if (window.IntersectionObserver) new IntersectionObserver(es => { visible = es[0].isIntersecting; }).observe(stage);
+  setMode('struct');
+  reportChecks();
+  viewer.dataset.ready = '1'; viewer.classList.remove('is-dead');
+  document.getElementById('viewer-state').textContent = '就绪 · three r' + THREE.REVISION;
+  renderer.setAnimationLoop(tick);
 }
 
-/* ── 标注摆位 ────────────────────────────────────────────────
-   把 userData.at 这个屏幕坐标反投影回世界，得到标注该待的位置。
-   深度取锚点的深度 —— 这样标注跟它指的零件在同一层，不会被别的零件
-   挡住，远处的标注也不会莫名其妙变小。
-   每次换视角和窗口变化都要重跑，所以它必须足够便宜。 */
-function placeLabels() {
-  if (!VIEW.labels) return;
-  camera.updateMatrixWorld();
-  VIEW.labels.children.forEach(g => {
-    const { anchor, at, sprite } = g.userData;
-    /* 锚点的深度（NDC z）—— 反投影时沿用，等于给标注钉了个景深 */
-    const ndc = anchor.clone().project(camera);
-    const target = new THREE.Vector3(at[0] * 2 - 1, -(at[1] * 2 - 1), ndc.z)
-      .unproject(camera);
-    sprite.position.copy(target);
-    g.userData.depth = ndc.z;
-
-    /* 引线：从锚点拉到标注边上，末端留半个标注宽，免得线压住字 */
-    const off = new THREE.Vector3().subVectors(target, anchor);
-    const d = off.length();
-    const halfLen = 0.5 * Math.hypot(sprite.scale.x, sprite.scale.y);
-    const stop = Math.max(0.35, Math.min(0.92, 1 - halfLen / Math.max(d, 1e-3)));
-    const end = anchor.clone().addScaledVector(off, stop);
-    const [ln, dot] = [g.children[1], g.children[2]];
-    const p = ln.geometry.attributes.position;
-    p.setXYZ(0, anchor.x, anchor.y, anchor.z);
-    p.setXYZ(1, end.x, end.y, end.z);
-    p.needsUpdate = true;
-    ln.geometry.computeBoundingSphere();
-    dot.position.copy(anchor);
-  });
-}
-
-/* ── 取景自检 ────────────────────────────────────────────────
-   模型投影到屏幕上的包围盒（canvas 像素），原点在舞台左上角。
-   左右上下任意一边越界就是被切了 —— 调 VIEWS 的 d（距离）和 t（注视点）
-   之后看这几个数，别靠肉眼。只量零件，不量标注（Sprite 是恒面向相机的，
-   它的包围盒在投影里没有意义）。 */
-function modelBounds() {
-  /* 玻璃和坞站是「背景板」，本来就该比取景框大，不参与取景判据 */
-  const IGNORE = ['glass', 'dock'];
-  camera.updateMatrixWorld();
-  const box = new THREE.Box3();
-  Object.entries(VIEW.groups).forEach(([k, grp]) => {
-    if (grp.visible && !IGNORE.includes(k)) box.expandByObject(grp);
-  });
-  const rect = stage.getBoundingClientRect();
-  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-  const v = new THREE.Vector3();
-  for (let i = 0; i < 8; i++) {
-    v.set(i & 1 ? box.max.x : box.min.x,
-          i & 2 ? box.max.y : box.min.y,
-          i & 4 ? box.max.z : box.min.z).project(camera);
-    const x = (v.x * .5 + .5) * rect.width, y = (-v.y * .5 + .5) * rect.height;
-    x0 = Math.min(x0, x); x1 = Math.max(x1, x);
-    y0 = Math.min(y0, y); y1 = Math.max(y1, y);
-  }
-  const b = { x0, y0, x1, y1, w: x1 - x0, h: y1 - y0, sw: rect.width, sh: rect.height };
-  b.why = [];
-  if (b.x0 < 0) b.why.push(`左切 ${(-b.x0).toFixed(0)}px`);
-  if (b.x1 > b.sw) b.why.push(`右切 ${(b.x1 - b.sw).toFixed(0)}px`);
-  if (b.y0 < 0) b.why.push(`上切 ${(-b.y0).toFixed(0)}px`);
-  if (b.y1 > b.sh) b.why.push(`下切 ${(b.y1 - b.sh).toFixed(0)}px`);
-  console.log(`取景：模型占 ${(b.w / b.sw * 100).toFixed(0)}% 宽 × ` +
-    `${(b.h / b.sh * 100).toFixed(0)}% 高，左边距 ${b.x0.toFixed(0)} / 右边距 ` +
-    `${(b.sw - b.x1).toFixed(0)} / 上边距 ${b.y0.toFixed(0)} / 下边距 ${(b.sh - b.y1).toFixed(0)}` +
-    (b.why.length ? ` —— ${b.why.join('、')}` : ' —— 没切'));
-  return b;
-}
-
-/* ── 标注排布自检 ─────────────────────────────────────────────
-   标注是 Sprite，屏幕上大小恒定，所以「两条压住了没有」只能投影到屏幕
-   上算，靠 CFG 是看不出 3D 里的前后关系的。换完视角跑一遍：
-   console 里会打一张表，条目名叫「标注排布」。
-   ⚠️ 它只对当前相机位置有效 —— 用户自己拖过之后结论就不作数了。
-   返回的框用的是 canvas 像素，原点在舞台左上角。 */
-function labelLayout() {
-  const out = [];
-  if (!VIEW.labels || !VIEW.labels.visible) return out;
-  const rect = stage.getBoundingClientRect();
-  camera.updateMatrixWorld();
-  VIEW.labels.children.forEach(g => {
-    const sp = g.userData.sprite;
-    const world = sp.getWorldPosition(new THREE.Vector3());
-    /* 透视除法：把世界点投到 NDC，再换算成 canvas 像素 */
-    const p = world.clone().project(camera);
-    const x = (p.x * 0.5 + 0.5) * rect.width;
-    const y = (-p.y * 0.5 + 0.5) * rect.height;
-    /* Sprite 的屏幕上尺寸 ∝ scale / 到相机的深度。取视空间 z（相机前方为
-       负，所以取反），不能用欧氏距离 —— 相机侧面的标注会被算小。 */
-    const depth = Math.max(1, -world.clone().applyMatrix4(camera.matrixWorldInverse).z);
-    const ppm = rect.height / (2 * Math.tan(camera.fov * Math.PI / 360) * depth);
-    const w = sp.scale.x * ppm, h = sp.scale.y * ppm;
-    out.push({
-      name: g.userData.label, x, y, w, h, depth,
-      box: [x - w / 2, y - h / 2, x + w / 2, y + h / 2],
-    });
-  });
-
-  /* 出框 */
-  out.forEach(b => {
-    const m = 2;                                     // 容差，免得贴着边也算错
-    b.why = [];
-    if (b.box[0] < m) b.why.push(`左出框 ${(m - b.box[0]).toFixed(0)}px`);
-    if (b.box[2] > rect.width - m) b.why.push(`右出框 ${(b.box[2] - rect.width + m).toFixed(0)}px`);
-    if (b.box[1] < m) b.why.push(`上出框 ${(m - b.box[1]).toFixed(0)}px`);
-    if (b.box[3] > rect.height - m) b.why.push(`下出框 ${(b.box[3] - rect.height + m).toFixed(0)}px`);
-  });
-  /* 两两相交 */
-  for (let i = 0; i < out.length; i++)
-    for (let j = i + 1; j < out.length; j++) {
-      const a = out[i], b = out[j];
-      const ox = Math.min(a.box[2], b.box[2]) - Math.max(a.box[0], b.box[0]);
-      const oy = Math.min(a.box[3], b.box[3]) - Math.max(a.box[1], b.box[1]);
-      if (ox > 0 && oy > 0) (a.why.push(`压住「${b.name}」${(ox * oy).toFixed(0)}px²`), b.why.push(`压住「${a.name}」${(ox * oy).toFixed(0)}px²`));
-    }
-
-  const bad = out.filter(b => b.why.length);
-  console.table(out.map(b => ({
-    标注: b.name, 中心X: b.x.toFixed(0), 中心Y: b.y.toFixed(0),
-    宽: b.w.toFixed(0), 高: b.h.toFixed(0), 问题: b.why.join(' / ') || '—',
-  })));
-  console.log(bad.length
-    ? `标注排布：${bad.length}/${out.length} 条有问题 —— 调 buildLabels() 里的偏移`
-    : `标注排布：${out.length} 条全部放得下，互不重叠`);
-  return out;
-}
-
-/* ── UI 绑定 ──────────────────────────────────────────────── */
-let explodeMm = 0;                        // 当前展开量，mm
-
-function bindUI() {
-  document.querySelectorAll('[data-view]').forEach(b =>
-    b.addEventListener('click', () => setView(b.dataset.view)));
-
-  ['cb-glass', 'cb-inner', 'cb-labels'].forEach(id =>
-    document.getElementById(id).addEventListener('change', applyToggles));
-
-  document.getElementById('cb-spin').addEventListener('change', e => {
-    controls.autoRotate = e.target.checked;
-    controls.autoRotateSpeed = 0.9;
-  });
-
-  const ex = document.getElementById('explode');
-  ex.addEventListener('input', () => {
-    explodeMm = parseFloat(ex.value) * 3.6;          // 滑杆 0–10 → 0–36 mm
-    LAYERS.forEach(L => {
-      const g = VIEW.groups[L.key];
-      if (g) g.position.z = g.userData.base + L.k * explodeMm;
-    });
-    applyToggles();
-  });
-}
-
-function applyToggles() {
-  const on = id => document.getElementById(id).checked;
-  if (VIEW.groups.glass) VIEW.groups.glass.visible = on('cb-glass');
-  if (VIEW.groups.dock) VIEW.groups.dock.visible = on('cb-glass');
-  if (VIEW.groups.internals) VIEW.groups.internals.visible = on('cb-inner');
-  // 展开后零件分散在各处，标注留在原地只会乱指，索性整体关掉
-  if (VIEW.labels) VIEW.labels.visible = on('cb-labels') && explodeMm < 1;
-  const st = document.getElementById('viewer-state');
-  if (st) st.textContent = '就绪 · three r' + THREE.REVISION;
-}
-
-/* ── 自检结果：写控制台，也写进页面上的表 ─────────────────── */
-function reportChecks() {
-  const rows = checks();
-  const bad = rows.filter(r => !r.ok);
-  console.table(rows.map(r => ({ 约束: r.name, 要求: r.want, 实算: r.got, 通过: r.ok ? '✓' : '✗' })));
-  if (bad.length) console.warn('干涉自检未通过：', bad.map(r => r.name).join('、'));
-
-  const tb = document.getElementById('chk-body');
-  if (!tb) return;
-  tb.innerHTML = rows.map(r =>
-    `<tr class="${r.ok ? 'hl' : 'bad'}"><td>${r.name}</td><td>${r.want}</td>` +
-    `<td><b>${r.got}</b></td><td>${r.ok ? '通过' : '<b>不通过</b>'}</td></tr>`).join('');
-  const sum = document.getElementById('chk-sum');
-  /* 未通过的行不一定都是错：⑫（膝铰座）本来就报红 ——
-     它是「待选型」而不是「算错」，见第 6 节 ⑦。所以这句文案要中性。 */
-  const tail = `腿中位长 ${DERIVED.L0.toFixed(3)} mm（l1 ${DERIVED.l1nom.toFixed(1)} + l2 ${DERIVED.l2}）`
-    + ` · 三角形边长 ${DERIVED.edge.toFixed(1)} mm · 间隙合计 ${DERIVED.gapTotal.toFixed(1)} mm`;
-  if (sum) sum.textContent = bad.length
-    ? `● ${rows.length - bad.length} 条通过 · ${bad.length} 条未通过（不一定是错，逐条看第 6 节）· ${tail}`
-    : `✓ ${rows.length} 条约束全部通过 · ${tail}`;
-}
-
-/* ── 对外接口：控制台里改参数用 ───────────────────────────── */
+/* ── 控制台接口 ─────────────────────────────────────────────── */
 window.BOT = {
-  CFG, DERIVED, MAT, WORLD, THREE, checks, labelLayout, modelBounds, VIEWS, setView,
-  rebuild() { assemble(); reportChecks(); resize(); },
-  apply() { applyToggles(); },
+  CFG, DERIVED, MAT, WORLD, THREE, VIEWS, LAYERS, checks: reportChecks, labelLayout, modelBounds, setView, setMode,
+  setTime(t) { if (MODE === 'struct') return; SOLVER.alpha = [null, null, null]; SOLVER.sw = null; PLAY = false;
+    const pts = TL[MODE]; T = 0; for (let s = 0; s < t; s += 0.05) { T = s; solveLegs(pts.at(s), SOLVER); } T = t; frame(0); },
+  rebuild() { const m = MODE; assemble(); initLabels(); reportChecks(); setMode(m); },
+  /* 强制出一帧（无头截图用：视图不在视口里时渲染循环是停的） */
+  render() { controls.update(); frame(0); renderer.render(scene, camera); },
+  /* 停掉 / 恢复渲染循环（无头测试时软件 GL 太慢，只按需出帧） */
+  stop() { renderer.setAnimationLoop(null); }, start() { lastT = performance.now(); renderer.setAnimationLoop(tick); },
+  get state() { return LAST; },
 };
 
-/* ── 启动 ─────────────────────────────────────────────────── */
-try {
-  initScene();
-} catch (err) {
+try { initScene(); }
+catch (err) {
   console.error('三维视图初始化失败：', err);
-  viewer.classList.add('is-dead');
-  viewer.dataset.ready = '1';
+  viewer.classList.add('is-dead'); viewer.dataset.ready = '1';
 }
 </script>
 <script src="assets/toc.js"></script>

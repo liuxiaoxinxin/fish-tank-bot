@@ -357,11 +357,74 @@ text{ font-family: ui-sans-serif, -apple-system, "PingFang SC", "Microsoft YaHei
 /* 三维视图里的读数表（自检结果等） */
 .viewer-table{ font-size:13.5px }
 
+/* hidden 属性要压过上面的 display:flex，否则按模式隐藏的工具条会露出来 */
+.viewer [hidden]{ display:none !important }
+
+/* 按下态：模式切换与视角按钮共用 */
+.viewer-btn[aria-pressed="true"]{ background:var(--fg); border-color:var(--fg); color:#fff }
+.viewer-btn[disabled]{ opacity:.45; cursor:default }
+
+/* 画布上的叠加层：标注、引线、读数、悬停提示。整层不吃鼠标事件 */
+.viewer-overlay{ position:absolute; inset:0; pointer-events:none; overflow:hidden }
+.viewer-overlay svg{ position:absolute; inset:0; width:100%; height:100% }
+.viewer-overlay line{ stroke:var(--fg-3); stroke-width:1 }
+.viewer-overlay circle{ fill:var(--fg-2) }
+.viewer-overlay .w line{ stroke:var(--red-fg) }
+.viewer-overlay .w circle{ fill:var(--red-fg) }
+
+.viewer-tag{
+  position:absolute; left:0; top:0; white-space:nowrap;
+  font-size:12px; line-height:1.4; color:var(--fg);
+  background:rgba(255,255,255,.9); border:1px solid var(--line-2); border-radius:4px;
+  padding:3px 8px; box-shadow:0 1px 2px rgba(15,15,15,.05);
+}
+.viewer-tag b{ display:block; font-weight:600 }
+.viewer-tag span{ display:block; font-size:11px; color:var(--fg-3) }
+.viewer-tag.w{ border-color:var(--red-fg); background:var(--red-bg) }
+.viewer-tag.w b{ color:var(--red-fg) }
+
+/* 左上角读数面板（动画模式用） */
+.viewer-readout{
+  position:absolute; left:10px; top:10px; min-width:210px; max-width:calc(100% - 20px);
+  font-size:12px; line-height:1.55; color:var(--fg-2); font-variant-numeric:tabular-nums;
+  background:rgba(255,255,255,.9); border:1px solid var(--line-2); border-radius:5px;
+  padding:8px 11px; box-shadow:0 1px 3px rgba(15,15,15,.06);
+}
+.viewer-readout .t{ font-size:12.5px; font-weight:600; color:var(--fg) }
+.viewer-readout .s{ color:var(--fg-3); margin-bottom:4px }
+.viewer-readout .r{ display:flex; justify-content:space-between; gap:14px }
+.viewer-readout .r b{ font-weight:600; color:var(--fg) }
+.viewer-readout .ok{ color:var(--green-fg) }
+.viewer-readout .bad, .viewer-readout .r b.bad{ color:var(--red-fg) }
+/* 一行里的小进度条：l1 在允许区间里的位置 */
+.viewer-meter{ position:relative; flex:0 0 64px; height:6px; margin-top:7px; border-radius:3px; background:var(--callout) }
+.viewer-meter i{ position:absolute; top:-2px; width:3px; height:10px; margin-left:-1.5px; border-radius:1px; background:var(--green-fg) }
+.viewer-meter i.bad{ background:var(--red-fg) }
+
+/* 悬停提示 */
+.viewer-tip{
+  position:absolute; left:0; top:0; display:none; white-space:nowrap;
+  font-size:12px; line-height:1.4; color:#fff; background:rgba(55,53,47,.92);
+  border-radius:4px; padding:4px 8px;
+}
+.viewer-tip span{ display:block; color:rgba(255,255,255,.7); font-size:11px }
+
+/* 时间轴：播放键 + 进度条 + 时间 */
+.viewer-time{ display:flex; align-items:center; gap:8px; flex:1 1 260px; min-width:0; font-size:12.5px; color:var(--fg-2) }
+.viewer-time input[type=range]{ flex:1 1 auto; min-width:60px; margin:0; accent-color:rgb(68,131,97) }
+.viewer-time output{ flex:0 0 auto; font-variant-numeric:tabular-nums; color:var(--fg-3) }
+
 @media (max-width:860px){
   .viewer-stage{ aspect-ratio:4/3; min-height:260px }
   .viewer-bar{ gap:6px; padding:8px 10px }
   .viewer-range input[type=range]{ width:80px }
   .viewer-table{ font-size:12.5px }
+  .viewer-readout{ min-width:0; font-size:11px; padding:6px 8px }
+  .viewer-meter{ display:none }
+}
+/* 手机宽度下画布太小，标注只会糊在模型上 —— 收起，改看悬停提示与下方表格 */
+@media (max-width:600px){
+  .viewer-tag, .viewer-overlay svg{ display:none }
 }
 
 /* ============================================================
