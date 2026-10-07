@@ -428,6 +428,234 @@ text{ font-family: ui-sans-serif, -apple-system, "PingFang SC", "Microsoft YaHei
 }
 
 /* ============================================================
+   交互演示（attention/attention.html）
+   — 论文精读页的控件、矩阵、动画图，类名统一 att- 前缀，
+     避免和上面的 .hl / .bad / .on 撞名。
+   颜色即角色，全页一致：Q = --blue-fg、K = --orange-fg、
+   V = --green-fg、注意力权重 = --purple-fg
+   ============================================================ */
+.att-fig{
+  margin:20px 0 28px; padding:18px 18px 14px;
+  border:1px solid var(--line-2); border-radius:6px; background:#fff;
+}
+.att-note{ font-size:13px; color:var(--fg-3); line-height:1.6; margin:12px 0 0 }
+.att-ctrl{
+  display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center;
+  margin-bottom:14px; font-size:13.5px; color:var(--fg-2);
+}
+.att-grp{ display:inline-flex; gap:7px; align-items:center }
+.att-btn{
+  font:inherit; font-size:13px; color:var(--fg-2); cursor:pointer; line-height:1.5;
+  padding:4px 11px; border-radius:4px; border:1px solid var(--line); background:#fff;
+}
+.att-btn:hover{ background:var(--hover); color:var(--fg) }
+.att-btn.att-pri, .att-btn[aria-pressed="true"]{ background:var(--fg); border-color:var(--fg); color:#fff }
+.att-btn:disabled{ opacity:.4; cursor:default }
+.att-seg{ display:inline-flex; flex-wrap:wrap; gap:4px }
+.att-fig input[type=range]{ accent-color:var(--purple-fg); width:140px; margin:0 }
+.att-fig input[type=checkbox]{ accent-color:var(--purple-fg); width:15px; height:15px; margin:0 }
+.att-chk{ display:inline-flex; gap:6px; align-items:center; cursor:pointer }
+.att-fig select{
+  font:inherit; font-size:13px; color:var(--fg); background:#fff;
+  border:1px solid var(--line); border-radius:4px; padding:2px 6px;
+}
+.att-fig output, .att-num{
+  font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size:12.5px; font-variant-numeric:tabular-nums; color:var(--fg);
+}
+.att-read{ font-size:14.5px; line-height:1.7; color:var(--fg-2); min-height:3.4em; margin:12px 0 0 }
+.att-read b{ color:var(--fg); font-weight:600 }
+.att-cols{ display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start }
+.att-cols > *{ min-width:0 }
+.att-scroll{ overflow-x:auto }
+.att-q{ color:var(--blue-fg); font-weight:600 }
+.att-k{ color:var(--orange-fg); font-weight:600 }
+.att-v{ color:var(--green-fg); font-weight:600 }
+.att-h{ color:var(--purple-fg); font-weight:600 }
+.att-m{ font-family:"Times New Roman", "STIX Two Text", Times, serif; font-style:italic; font-size:1.1em }
+.att-hot{ color:#fff !important }
+.att-mono{ font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:10.5px; fill:var(--fg-3) }
+
+/* 代码块（多行）；.att-ln 一行，可高亮 / 置灰 */
+.att-code{
+  font:12.5px/1.7 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background:var(--callout); color:var(--fg); border-radius:4px;
+  padding:12px 14px; margin:16px 0; overflow-x:auto;
+}
+.att-code .c{ color:var(--fg-3) }
+.att-ln{ display:block; margin:0 -6px; padding:0 6px; border-radius:3px }
+.att-ln.att-on{ background:var(--purple-bg) }
+.att-ln.att-fut{ opacity:.35 }
+
+/* 公式排版（不是 .formula 提示框） */
+.att-eq{
+  font:400 24px/1.4 "Times New Roman", "STIX Two Text", Times, serif;
+  text-align:center; white-space:nowrap; overflow-x:auto; padding:12px 4px; margin:8px 0;
+}
+.att-eq.att-sm{ font-size:18px }
+.att-eq i{ font-style:italic }
+.att-fp{ border-radius:4px; padding:1px 3px; transition:background .2s }
+.att-fp.att-on{ background:var(--purple-bg); box-shadow:0 0 0 1px var(--purple-fg) }
+.att-frac{ display:inline-flex; flex-direction:column; vertical-align:middle; text-align:center; line-height:1.3 }
+.att-frac > :first-child{ border-bottom:1.5px solid currentColor; padding:0 6px 2px }
+.att-frac > :last-child{ padding-top:2px }
+
+/* 开头的 it → animal / street */
+.att-stage{ position:relative; padding-top:100px }
+.att-stage.att-flat{ padding-top:10px }
+.att-arcs{ position:absolute; left:0; top:0; width:100%; height:100%; margin:0; pointer-events:none; overflow:visible }
+.att-words{ display:flex; flex-wrap:wrap; gap:5px; position:relative }
+.att-w{
+  font:17px/1.15 "Times New Roman", Times, serif; color:var(--fg); cursor:pointer;
+  border:1px solid var(--line); background:#fff; border-radius:5px; min-width:42px;
+  padding:7px 8px 5px; display:flex; flex-direction:column; align-items:center; gap:3px;
+  transition:background .25s, color .25s;
+}
+.att-w small{ font:10.5px ui-monospace, Menlo, monospace; opacity:.85 }
+.att-w.att-sel{ border:2px solid var(--blue-fg); color:var(--blue-fg); padding:6px 7px 4px }
+.att-arc{ fill:none; stroke:var(--purple-fg); stroke-linecap:round }
+
+/* RNN 与自注意力赛跑 */
+.att-tok{ fill:var(--callout); stroke:var(--line) }
+.att-tok.att-done{ fill:var(--blue-bg); stroke:var(--blue-fg) }
+.att-tok.att-cur{ fill:var(--blue-fg) }
+.att-rline{ stroke:var(--fg-3); stroke-width:1.5 }
+.att-rline.att-on{ stroke:var(--blue-fg); stroke-width:2 }
+.att-tarc{ fill:none; stroke:var(--purple-fg); stroke-opacity:.3; stroke-width:1 }
+
+/* 二维“模糊字典” */
+.att-dict{ width:100%; max-width:360px; margin:0; touch-action:none; cursor:crosshair }
+.att-grid{ stroke:var(--line-2); stroke-width:1 }
+.att-axis{ stroke:var(--fg-3); stroke-width:1 }
+.att-karr{ stroke:var(--orange-fg); stroke-width:2.5 }
+.att-qarr{ stroke:var(--blue-fg); stroke-width:3 }
+.att-handle{ fill:var(--blue-fg); stroke:#fff; stroke-width:3; cursor:grab }
+.att-side{ flex:1 1 280px }
+.att-drow{
+  display:grid; grid-template-columns:16px 46px 56px 1fr 40px; gap:8px; align-items:center;
+  font-size:13.5px; padding:5px 0; border-bottom:1px solid var(--line-2);
+}
+.att-drow.att-hd{ font-size:11px; font-weight:600; letter-spacing:.05em; color:var(--fg-3) }
+.att-sw{ width:15px; height:15px; border-radius:3px; display:inline-block }
+.att-track{ display:block; background:var(--callout); border-radius:4px }
+.att-bar{ display:block; height:9px; border-radius:4px; background:var(--purple-fg); min-width:2px; transition:width .15s }
+.att-out{ display:flex; gap:14px; align-items:center; margin-top:14px; font-size:14px; color:var(--fg-2) }
+.att-out .att-sw{ width:52px; height:52px; border-radius:8px; flex:none }
+
+/* 矩阵（覆盖全局 table 样式） */
+.att-mxs{ display:flex; flex-wrap:wrap; gap:12px 14px; align-items:center; min-height:190px; padding:4px 0 }
+.att-mxb{ display:flex; flex-direction:column; gap:3px }
+.att-mxn{ display:flex; gap:8px; align-items:baseline }
+.att-mxn .att-m{ font-size:19px; font-weight:600 }
+.att-mxn small{ font:11px ui-monospace, Menlo, monospace; color:var(--fg-3) }
+.att-r-q .att-mxn .att-m{ color:var(--blue-fg) }
+.att-r-k .att-mxn .att-m{ color:var(--orange-fg) }
+.att-r-v .att-mxn .att-m{ color:var(--green-fg) }
+.att-r-h .att-mxn .att-m{ color:var(--purple-fg) }
+table.att-mx{
+  width:auto; margin:0; border-collapse:separate; border-spacing:2px; font-size:12px;
+  border-left:2px solid var(--fg-3); border-right:2px solid var(--fg-3); border-radius:4px;
+}
+.att-r-q table.att-mx{ border-color:var(--blue-fg) }
+.att-r-k table.att-mx{ border-color:var(--orange-fg) }
+.att-r-v table.att-mx{ border-color:var(--green-fg) }
+.att-r-h table.att-mx{ border-color:var(--purple-fg) }
+table.att-mx th, table.att-mx td{ border:0; padding:0 4px; min-width:0; vertical-align:middle }
+table.att-mx th{ background:none; font-size:11px; font-weight:500; color:var(--fg-3); white-space:nowrap }
+table.att-mx th:first-child{ text-align:right }
+table.att-mx td{
+  font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric:tabular-nums;
+  min-width:46px; height:27px; text-align:center; background:var(--callout); border-radius:3px;
+  transition:opacity .15s;
+}
+table.att-mx tbody tr:hover{ background:none }
+table.att-mx td.att-masked{ background:repeating-linear-gradient(-45deg, var(--callout) 0 4px, #fff 4px 8px); color:var(--fg-3) }
+table.att-mx td.att-on{ outline:2px solid var(--purple-fg); outline-offset:-1px }
+table.att-mx tr.att-rsel th{ color:var(--blue-fg); font-weight:700 }
+.att-mxs.att-hov td.att-dim{ opacity:.3 }
+.att-op{ font:400 22px "Times New Roman", Times, serif; color:var(--fg-3); padding:0 2px; text-align:center }
+.att-op small{ display:block; font-size:12px }
+.att-steps{ display:flex; flex-wrap:wrap; gap:8px 10px; align-items:center; margin-bottom:10px }
+.att-dots{ display:flex; gap:5px }
+.att-dots i{ width:8px; height:8px; border-radius:50%; background:var(--line) }
+.att-dots i.att-on{ background:var(--purple-fg) }
+.att-calc{
+  font:12.5px/1.7 ui-monospace, SFMono-Regular, Menlo, monospace; color:var(--fg-2);
+  background:var(--callout); border-radius:4px; padding:9px 12px; min-height:44px; overflow-x:auto;
+}
+
+/* √dk 实验的权重条 */
+.att-sbar{ display:grid; grid-template-columns:28px 64px 1fr 50px; gap:10px; align-items:center; font-size:12.5px; padding:2px 0 }
+.att-stat{ display:flex; flex-wrap:wrap; gap:6px 24px; margin-top:12px; font-size:13.5px; color:var(--fg-2) }
+.att-verdict{ margin-top:10px; font-size:14px; padding:9px 12px; border-radius:4px; background:var(--callout) }
+.att-verdict.att-bad{ background:var(--orange-bg) }
+.att-verdict.att-ok{ background:var(--green-bg) }
+
+/* 多头矩阵 */
+.att-heads{ width:100%; max-width:464px; margin:0 }
+
+/* 位置编码 */
+.att-pe{ width:100%; height:240px; display:block; cursor:crosshair }
+.att-perm{ display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px }
+.att-perm > div{ background:var(--callout); border-radius:4px; padding:10px 12px; min-width:0 }
+.att-perm .att-s{ font-size:17px; font-weight:600; letter-spacing:.2em }
+.att-perm .att-num{ display:block; overflow-x:auto; white-space:nowrap; color:var(--fg-2) }
+.att-lab{ font-size:11px; font-weight:600; letter-spacing:.05em; color:var(--fg-3); margin:4px 0 4px }
+.att-badge{ display:inline-block; font-size:12px; font-weight:600; padding:2px 9px; border-radius:3px; background:#fff; color:var(--fg-2) }
+.att-badge.att-ok{ background:var(--green-bg); color:var(--green-fg) }
+
+/* 架构图 */
+.att-arch{ width:100%; max-width:640px; margin:0 auto }
+.att-an{ cursor:pointer }
+.att-an rect.att-box{ fill:#fff; stroke:var(--fg-3); stroke-width:1.2; transition:fill .2s }
+.att-an.att-att rect.att-box{ fill:var(--purple-bg) }
+.att-an:hover rect.att-box{ stroke:var(--purple-fg) }
+.att-an.att-sel rect.att-box{ fill:color-mix(in srgb, var(--purple-fg) 28%, #fff); stroke:var(--purple-fg); stroke-width:2 }
+.att-an text{ font-size:13px; font-weight:500; fill:var(--fg); pointer-events:none }
+.att-frame{ fill:var(--callout); stroke:var(--line); stroke-width:1.2; cursor:pointer }
+.att-frame.att-sel{ stroke:var(--purple-fg); stroke-width:2 }
+.att-aline{ fill:none; stroke:var(--fg-3); stroke-width:1.4 }
+.att-pec{ fill:#fff; stroke:var(--fg-3); stroke-width:1.4 }
+.att-an.att-sel .att-pec{ stroke:var(--purple-fg); fill:var(--purple-bg) }
+.att-info{ margin-top:14px; padding:14px 16px; background:var(--callout); border-radius:4px; font-size:14.5px; line-height:1.7 }
+.att-info .att-t{ font-weight:600; font-size:16px }
+.att-info .att-ref{ font-size:12px; color:var(--fg-3); margin-bottom:6px }
+.att-info .att-num{ display:block; margin-top:6px; color:var(--fg-2) }
+.att-info .att-code{ background:#fff; margin:10px 0 0 }
+
+/* 解码演示 */
+.att-drows{ display:grid; gap:12px }
+.att-chips{ display:flex; flex-wrap:wrap; gap:6px }
+.att-chip{
+  font:14px ui-monospace, SFMono-Regular, Menlo, monospace; padding:5px 11px; border-radius:4px;
+  background:var(--callout); border:1px solid var(--line-2); transition:background .3s, color .3s;
+}
+.att-chip small{ font-size:11px; opacity:.85 }
+.att-chip.att-new{ border:1.5px dashed var(--purple-fg); color:var(--purple-fg); background:#fff }
+.att-prow{ display:grid; grid-template-columns:64px 1fr 44px; gap:10px; align-items:center; font-size:13px; padding:2px 0 }
+.att-prow .att-bar{ background:var(--fg-3) }
+.att-prow.att-pick .att-bar{ background:var(--purple-fg) }
+.att-prow.att-pick .att-num{ color:var(--purple-fg); font-weight:700 }
+
+/* 学习率曲线 */
+.att-lr-line{ fill:none; stroke:var(--purple-fg); stroke-width:2.2 }
+.att-lr-area{ fill:var(--purple-fg); fill-opacity:.1 }
+.att-lr-dot{ fill:var(--purple-fg); stroke:#fff; stroke-width:2 }
+
+/* 关键尺寸卡片 */
+.att-spec{ display:grid; grid-template-columns:repeat(auto-fill, minmax(124px, 1fr)); gap:8px; margin:16px 0 }
+.att-spec div{ background:var(--callout); border-radius:4px; padding:9px 11px }
+.att-spec b{ display:block; font:600 19px ui-monospace, SFMono-Regular, Menlo, monospace }
+.att-spec span{ font-size:12.5px; color:var(--fg-3) }
+
+@media (max-width:560px){
+  .att-fig{ padding:14px 12px 12px }
+  .att-w{ font-size:15.5px; min-width:38px }
+  .att-drow{ grid-template-columns:14px 40px 50px 1fr 36px; gap:6px }
+  .att-eq{ font-size:20px }
+}
+
+/* ============================================================
    响应式
    ============================================================ */
 @media (max-width:1080px){

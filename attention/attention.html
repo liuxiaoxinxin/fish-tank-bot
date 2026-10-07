@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>读懂 Attention Is All You Need — Transformer 论文精读</title>
+<link rel="stylesheet" href="../assets/notion.css">
+</head>
+<body>
+<nav class="side" id="side">
+  <div class="side-doc"><span class="side-icon">👀</span><span class="side-name">Attention 论文精读</span></div>
+  <div class="side-label">目录</div>
+  <ul class="side-list">
+    <li><a href="#s1" title="1 · RNN 为什么不够好">1 · RNN 为什么不够好</a></li>
+    <li><a href="#s2" title="2 · 注意力是一次模糊的字典查询">2 · 注意力是一次模糊的字典查询</a></li>
+    <li><a href="#s3" title="3 · 把公式一步步算出来">3 · 把公式一步步算出来</a></li>
+    <li><a href="#s4" title="4 · 为什么要除以 √dₖ">4 · 为什么要除以 √dₖ</a></li>
+    <li><a href="#s5" title="5 · 多头注意力：同时用几种方式看句子">5 · 多头注意力：同时用几种方式看句子</a></li>
+    <li><a href="#s6" title="6 · 位置编码：告诉注意力词的顺序">6 · 位置编码：告诉注意力词的顺序</a></li>
+    <li><a href="#s7" title="7 · 整体架构：读懂论文图 1">7 · 整体架构：读懂论文图 1</a></li>
+    <li><a href="#s8" title="8 · 遮罩与逐词生成">8 · 遮罩与逐词生成</a></li>
+    <li class="lv2"><a href="#s8a1" title="A · 因果遮罩：训练时不许偷看">A · 因果遮罩：训练时不许偷看</a></li>
+    <li class="lv2"><a href="#s8a2" title="B · 推理：一个词一个词写">B · 推理：一个词一个词写</a></li>
+    <li><a href="#s9" title="9 · 训练与结果">9 · 训练与结果</a></li>
+    <li class="lv2"><a href="#s9a1" title="A · 训练设置">A · 训练设置</a></li>
+    <li class="lv2"><a href="#s9a2" title="B · 学习率预热">B · 学习率预热</a></li>
+    <li class="lv2"><a href="#s9a3" title="C · 翻译成绩">C · 翻译成绩</a></li>
+    <li><a href="#s10" title="10 · 它为什么改变了一切">10 · 它为什么改变了一切</a></li>
+    <li><a href="#s11" title="11 · 现在去读原文">11 · 现在去读原文</a></li>
+    <li class="lv2"><a href="#s11a1" title="A · 阅读顺序">A · 阅读顺序</a></li>
+    <li class="lv2"><a href="#s11a2" title="B · 论文章节与本页对照">B · 论文章节与本页对照</a></li>
+    <li class="lv2"><a href="#s11a3" title="C · 符号速查">C · 符号速查</a></li>
+  </ul>
+</nav>
+<button class="side-btn" type="button" aria-label="目录">&#9776;</button>
+<main class="page">
+<div class="page-inner">
+
+<header>
+  <div class="page-icon">👀</div>
+  <h1>读懂 Attention Is All You Need</h1>
+  <p class="sub">给程序员的 Transformer 论文交互式精读 · Vaswani 等 · NeurIPS 2017 · arXiv 1706.03762</p>
+</header>
+
+<div class="att-fig" id="hero">
+  <div class="att-ctrl">
+    <span>点任意一个词，看它在“注意”谁。再换掉句尾那个词：</span>
+    <span class="att-seg" role="group" aria-label="句尾的词">
+      <button class="att-btn" type="button" data-last="tired" aria-pressed="true">tired（累）</button>
+      <button class="att-btn" type="button" data-last="wide" aria-pressed="false">wide（宽）</button>
+    </span>
+  </div>
+  <div class="att-stage" id="heroStage">
+    <svg class="att-arcs" id="heroArcs" aria-hidden="true"></svg>
+    <div class="att-words" id="heroWords"></div>
+  </div>
+  <p class="att-read" id="heroRead"></p>
+  <p class="att-note">紫色越深，表示被选中的词（蓝框）分给这个词的注意力越多。权重为演示手工设定，用来说明真实模型里观察到的现象。</p>
+</div>
+
+<div class="keybox">
+  <h3>结论先行：整篇论文的一句话版本</h3>
+  <p>把句子里每个词都变成三个向量：<span class="att-q">Query</span>、<span class="att-k">Key</span>、<span class="att-v">Value</span>。每个词拿自己的 Query 去和所有词的 Key 比相似度，按相似度把所有词的 Value 加权平均，结果就是这个词的新表示。把这件事并排做 8 份（多头），再叠 6 层，就是 Transformer。</p>
+  <p>这篇 15 页的论文是 GPT、BERT 和今天大语言模型的起点。下面 11 节按论文顺序讲，每节都有一个能动手的实验。你只需要会写代码，记得矩阵乘法是什么。</p>
+</div>
+
+<!-- ══════ 1 ══════ -->
+<div class="card">
+<h2 id="s1"><span class="n">1</span>RNN 为什么不够好<span class="tag b">§1 · §4 · 表 1</span></h2>
+<p class="cap">论文要解决的问题：串行计算太慢，远处的词互相够不着。</p>
+
+<p>2017 年以前，机器翻译的主力是 RNN（LSTM、GRU）。RNN 的工作方式像一个 for 循环：读完第 1 个词才能读第 2 个，第 t 步的状态依赖第 t−1 步。</p>
+<p>这带来两个问题。第一是<b>慢</b>：GPU 有几千个核，RNN 却只能一个词一个词串着算，句子越长越吃亏。第二是<b>远处的词很难互相影响</b>：第 1 个词的信息要经过 n−1 次传递才能到达第 n 个词，一路上被逐渐冲淡。</p>
+
+<pre class="att-code"><span class="c"># RNN：天然串行，第 t 步必须等第 t-1 步算完</span>
+h = h0
+for x in xs:
+    h = f(h, x)
+
+<span class="c"># 自注意力：一次矩阵运算，所有位置同时算</span>
+out = softmax(Q @ K.T / sqrt(d_k)) @ V</pre>
+
+<div class="att-fig">
+  <div class="att-ctrl">
+    <span class="att-grp"><label for="raceN">句子长度 n</label><input type="range" id="raceN" min="4" max="16" value="10"><output id="raceNOut">10</output></span>
+    <button class="att-btn att-pri" type="button" id="raceRun">播放</button>
+  </div>
+  <div class="att-scroll"><svg id="raceSvg" viewBox="0 0 720 230" style="width:100%;min-width:520px;height:auto" role="img" aria-label="RNN 与自注意力的串行步数对比"></svg></div>
+  <p class="att-note">上：RNN 每个时钟周期只能处理一个词，第一个词到最后一个词要走 n−1 步。下：自注意力一步算完，任意两个词之间都有直接连线（紫线）。</p>
+</div>
+
+<table>
+  <thead><tr><th>层类型</th><th>每层计算量</th><th>串行操作数</th><th>任意两词的最长路径</th></tr></thead>
+  <tbody>
+    <tr class="hl"><td>Self-Attention</td><td>O(n²·d)</td><td>O(1)</td><td>O(1)</td></tr>
+    <tr><td>Recurrent（RNN）</td><td>O(n·d²)</td><td>O(n)</td><td>O(n)</td></tr>
+    <tr><td>Convolutional（CNN）</td><td>O(k·n·d²)</td><td>O(1)</td><td>O(log<sub>k</sub> n)</td></tr>
+  </tbody>
+</table>
+
+<div class="formula">
+  <p><b>论文表 1 的读法</b>：n 是句子长度，d 是向量维度（512），k 是卷积核宽度。翻译的句子通常远短于 512 个词，所以自注意力的 <code>n²·d</code> 反而比 RNN 的 <code>n·d²</code> 更省；串行步数和最长路径都从 O(n) 降到 O(1)。论文的主张因此写在标题里：把循环整个扔掉，只用注意力。</p>
+</div>
+</div>
+
+<!-- ══════ 2 ══════ -->
+<div class="card">
+<h2 id="s2"><span class="n">2</span>注意力是一次模糊的字典查询<span class="tag b">§3.2</span></h2>
+<p class="cap">用程序员熟悉的 dict 理解 query、key、value。</p>
+
+<p>论文对注意力的定义只有一句：把一个 query 和一组 key-value 对映射成一个输出；输出是所有 value 的加权和，每个 value 的权重由 query 和对应 key 的相似度决定。</p>
+<p>这就是字典查询，只是变模糊了。普通字典要求 key 完全相等，命中一个就返回一个。注意力拿 query 跟<b>每一个</b> key 都算一个相似度，再把<b>所有</b> value 按相似度加权平均。</p>
+
+<pre class="att-code"><span class="c"># 普通字典：key 必须完全相等，只返回一个 value</span>
+d = {"猫": v_cat, "狗": v_dog, "汽车": v_car}
+d["猫"]
+
+<span class="c"># 注意力：和每个 key 算相似度，返回所有 value 的加权平均</span>
+w = softmax([q @ k for k in keys])     <span class="c"># 权重加起来等于 1</span>
+out = sum(w[i] * values[i] for i in range(len(keys)))</pre>
+
+<div class="att-fig">
+  <div class="att-ctrl">
+    <span>拖动蓝色的 <span class="att-q">query</span> 箭头（也可以点选后用方向键）</span>
+    <span class="att-grp"><label for="dictS">分数放大倍数</label><input type="range" id="dictS" min="0.2" max="3" step="0.1" value="1"><output id="dictSOut">1.0×</output></span>
+  </div>
+  <div class="att-cols">
+    <svg class="att-dict" id="dictSvg" viewBox="0 0 360 360" role="img" aria-label="二维平面上的 query 与 key 向量"></svg>
+    <div class="att-side">
+      <div class="att-drow att-hd"><span></span><span>KEY</span><span>q·k</span><span>权重</span><span></span></div>
+      <div id="dictRows"></div>
+      <div class="att-out"><span class="att-sw" id="dictOut"></span><span id="dictOutText"></span></div>
+    </div>
+  </div>
+  <p class="att-note">每个 <span class="att-k">key</span> 是一个二维向量（橙色箭头），它对应的 <span class="att-v">value</span> 是一种颜色。相似度用点积 q·k：方向越一致、箭头越长，分数越高。softmax 把分数变成加起来为 1 的权重，输出就是按权重混合出来的颜色。数字由页面实时计算。</p>
+</div>
+
+<p>试着把 query 拖远一点：方向不变，长度变长，分数整体变大，权重会越来越集中到一个 key 上。记住这个现象，<a href="#s4">第 4 节</a>会用到。</p>
+
+<div class="formula">
+  <p><b>自注意力里，每个词同时扮演三个角色</b>：用 <span class="att-q">Q</span> 去问别人，用 <span class="att-k">K</span> 回应别人的询问，用 <span class="att-v">V</span> 提供自己的内容。三者都是同一个词向量分别乘以三个矩阵 <span class="att-m">W<sup>Q</sup></span>、<span class="att-m">W<sup>K</sup></span>、<span class="att-m">W<sup>V</sup></span> 得到的，这三个矩阵是训练学出来的。</p>
+</div>
+</div>
+
+<!-- ══════ 3 ══════ -->
+<div class="card">
+<h2 id="s3"><span class="n">3</span>把公式一步步算出来<span class="tag b">§3.2.1 · 公式 (1)</span></h2>
+<p class="cap">全文最重要的一行，用 4 个词的句子手算一遍。</p>
+
+<p>下面这个句子的词向量是 4 维，<span class="att-m">d<sub>k</sub></span> = 3，数字全部由页面实时计算。点“下一步”往前走，鼠标停在结果矩阵的格子上，看它是怎么来的。</p>
+
+<div class="att-fig">
+  <div class="att-eq" id="mxFormula">Attention(<span class="att-fp" data-p="qkv"><i class="att-q">Q</i>, <i class="att-k">K</i>, <i class="att-v">V</i></span>) = <span class="att-fp" data-p="softmax">softmax</span>(<span class="att-frac"><span class="att-fp" data-p="qk"><i class="att-q">Q</i><i class="att-k">K</i><sup>T</sup></span><span class="att-fp" data-p="scale">√<i>d</i><sub>k</sub></span></span>) <span class="att-fp" data-p="v"><i class="att-v">V</i></span></div>
+  <div class="att-steps">
+    <button class="att-btn" type="button" id="mxPrev">上一步</button>
+    <button class="att-btn att-pri" type="button" id="mxNext">下一步</button>
+    <span class="att-dots" id="mxDots"></span>
+    <b id="mxTitle"></b>
+  </div>
+  <p class="att-read" id="mxText" style="min-height:0;margin:0 0 8px"></p>
+  <div class="att-scroll"><div class="att-mxs" id="mxStage"></div></div>
+  <div class="att-calc" id="mxCalc"></div>
+  <pre class="att-code" id="mxCode"></pre>
+</div>
+
+<div class="formula">
+  <p><b>回头看这个过程</b>：softmax 是<b>按行</b>做的，每一行是一个词分配给所有词的注意力；整个计算只有矩阵乘法和一次 softmax，没有任何循环，所以 GPU 能一口气算完整个句子。<a href="#s1">第 1 节</a>说的“一步到位”指的就是这件事。</p>
+  <p>论文也比较了“加性注意力”（用一个小网络算相似度）。两者理论复杂度差不多，但点积能直接用高度优化的矩阵乘法，实际更快、更省内存。</p>
+</div>
+</div>
+
+<!-- ══════ 4 ══════ -->
+<div class="card">
+<h2 id="s4"><span class="n">4</span>为什么要除以 √dₖ<span class="tag b">§3.2.1 · 脚注 4</span></h2>
+<p class="cap">公式里唯一看起来奇怪的地方。</p>
+
+<p>论文在脚注里给了解释：假设 q 和 k 的每个分量都是均值 0、方差 1 的独立随机数，那么点积 <span class="att-m">q·k</span> 的方差就是 <span class="att-m">d<sub>k</sub></span>。维度是 64 的时候，分数的标准差就是 8。</p>
+<p>分数之间差距一大，softmax 就会把几乎全部权重给最大的那个，其余接近 0。</p>
+
+<div class="att-fig">
+  <div class="att-ctrl">
+    <span class="att-grp"><label for="scD">d<sub>k</sub></label><input type="range" id="scD" min="0" max="10" value="6"><output id="scDOut">64</output></span>
+    <label class="att-chk"><input type="checkbox" id="scOn">除以 √d<sub>k</sub></label>
+    <button class="att-btn" type="button" id="scRe">重新抽一组 q、k</button>
+  </div>
+  <div id="scBars"></div>
+  <div class="att-stat" id="scStat"></div>
+  <div class="att-verdict" id="scVerdict"></div>
+  <p class="att-note">1 个 query 和 8 个 key，每个分量从标准正态分布随机抽取，数字由页面实时计算。先不勾选，把 d<sub>k</sub> 往右拖；再勾上对比。</p>
+</div>
+
+<div class="formula w">
+  <p><b>不缩放的后果</b>：softmax 饱和后梯度趋近 0，除了得分最高的那个 key，其他 key 的参数几乎收不到更新，模型学不动。<b>对策</b>就是除以 <span class="att-m">√d<sub>k</sub></span>，把分数的方差拉回 1。论文用 <span class="att-m">d<sub>k</sub></span> = 64，所以实际是除以 8，“Scaled Dot-Product Attention”里的 Scaled 指的就是它。</p>
+</div>
+</div>
+
+<!-- ══════ 5 ══════ -->
+<div class="card">
+<h2 id="s5"><span class="n">5</span>多头注意力：同时用几种方式看句子<span class="tag b">§3.2.2 · 附录图 3–5</span></h2>
+<p class="cap">一次注意力只能学到一种关注方式，所以并排做 8 份。</p>
+
+<p>一个词和其他词的关系有很多种：它指代谁，它修饰谁，它前面是谁。论文把 512 维拆成 8 份，每份 64 维，各自独立做一次注意力，最后再拼回 512 维。每一份叫一个“头”（head）。</p>
+
+<div class="att-fig">
+  <div class="att-ctrl"><span class="att-seg" id="headBtns" role="group" aria-label="选择注意力头"></span></div>
+  <div class="att-cols">
+    <svg class="att-heads" id="headSvg" viewBox="0 0 464 456" role="img" aria-label="注意力权重矩阵"></svg>
+    <div class="att-side">
+      <p class="att-read" id="headNote" style="margin-top:0"></p>
+      <p class="att-read" id="headRead"></p>
+    </div>
+  </div>
+  <p class="att-note">每一行是一个词（左侧）分给所有词（上方）的注意力，紫色越深权重越大。点任意一行查看。句子取自论文附录图 4；4 个头的权重为演示手工设定，模仿论文附录图里真实观察到的模式。</p>
+</div>
+
+<div class="att-eq att-sm">MultiHead(<i class="att-q">Q</i>, <i class="att-k">K</i>, <i class="att-v">V</i>) = Concat(head<sub>1</sub>, …, head<sub>8</sub>) <i>W</i><sup>O</sup>，&nbsp; head<sub>i</sub> = Attention(<i class="att-q">Q</i><i>W</i><sub>i</sub><sup>Q</sup>, <i class="att-k">K</i><i>W</i><sub>i</sub><sup>K</sup>, <i class="att-v">V</i><i>W</i><sub>i</sub><sup>V</sup>)</div>
+<pre class="att-code"><span class="c"># x: (n, 512)</span>
+heads = []
+for i in range(8):                          <span class="c"># 真实实现是一次 reshape，没有循环</span>
+    q, k, v = x @ Wq[i], x @ Wk[i], x @ Wv[i]   <span class="c"># 各 (n, 64)</span>
+    heads.append(attention(q, k, v))        <span class="c"># (n, 64)</span>
+out = concat(heads, axis=-1) @ Wo           <span class="c"># (n, 512) @ (512, 512) → (n, 512)</span></pre>
+
+<div class="formula">
+  <p><b>8 个头几乎是白送的</b>：每个头只有 64 维，8 个头加起来的计算量和一个 512 维的单头差不多。论文表 3 的消融实验：只用 1 个头，BLEU 从 25.8 掉到 24.9；头太多也不好，32 个头掉到 25.4。</p>
+</div>
+</div>
+
+<!-- ══════ 6 ══════ -->
+<div class="card">
+<h2 id="s6"><span class="n">6</span>位置编码：告诉注意力词的顺序<span class="tag b">§3.5</span></h2>
+<p class="cap">注意力天生不看顺序，要另外把位置“加”进去。</p>
+
+<p>把句子打乱，自注意力给每个词算出来的结果完全一样，只是换了个位置。下面这个小实验是真算的：同一个自注意力，分别处理“狗咬人”和“人咬狗”，比较“狗”这个词的输出。</p>
+
+<div class="att-fig">
+  <div class="att-ctrl"><label class="att-chk"><input type="checkbox" id="permPE">给词向量加上位置编码</label></div>
+  <div class="att-perm" id="perm"></div>
+  <p class="att-note">词向量 4 维，Q = K = V = 词向量（省略了投影矩阵），数字由页面实时计算。</p>
+</div>
+
+<p>没有位置编码时，自注意力看到的是一个“词袋”，狗咬人和人咬狗对它来说没有区别。论文的办法是给每个位置一个固定向量，<b>直接加</b>到词向量上（不是拼接）：</p>
+<div class="att-eq att-sm"><i>PE</i>(<i>pos</i>, 2<i>i</i>) = sin(<i>pos</i> / 10000<sup>2<i>i</i>/<i>d</i><sub>model</sub></sup>) &nbsp;&nbsp; <i>PE</i>(<i>pos</i>, 2<i>i</i>+1) = cos(<i>pos</i> / 10000<sup>2<i>i</i>/<i>d</i><sub>model</sub></sup>)</div>
+<p>可以把它想成二进制计数器的连续版本。数 <code>0000</code>、<code>0001</code>、<code>0010</code>、<code>0011</code>……最低位每一步都翻转，越高的位翻得越慢。位置编码也一样：低维度波长短、变化快，高维度波长长、变化慢，组合起来每个位置都有独一无二的“指纹”。</p>
+
+<div class="att-fig">
+  <div class="att-ctrl">
+    <span class="att-grp"><label for="peD">d<sub>model</sub></label><select id="peD"><option>32</option><option>64</option><option selected>128</option><option>256</option><option>512</option></select></span>
+    <span id="peRead" class="att-num">把鼠标移到图上读数，点击选中一行</span>
+  </div>
+  <canvas class="att-pe" id="peCanvas" aria-label="位置编码热力图"></canvas>
+  <p class="att-note">纵轴是位置 0–49，横轴是维度。<span class="att-k">橙色</span>为正，<span class="att-q">蓝色</span>为负。左边几列条纹密（变化快），越往右条纹越宽（变化慢）。</p>
+</div>
+
+<div class="formula">
+  <p><b>为什么选正弦而不是学一张表</b>：论文两种都试了，效果几乎一样（表 3 第 E 行：25.7 对 25.8）。正弦版有可能外推到比训练时更长的句子，而且任意固定偏移 k 的 <span class="att-m">PE<sub>pos+k</sub></span> 都能写成 <span class="att-m">PE<sub>pos</sub></span> 的线性函数，方便模型学习“相对位置”。</p>
+</div>
+</div>
+
+<!-- ══════ 7 ══════ -->
+<div class="card">
+<h2 id="s7"><span class="n">7</span>整体架构：读懂论文图 1<span class="tag b">§3.1 · §3.3 · §3.4</span></h2>
+<p class="cap">左边编码器读原文，右边解码器一个词一个词写译文。点图上任意一块查看说明。</p>
+
+<div class="att-fig">
+  <svg class="att-arch" id="archSvg" viewBox="0 0 720 532" style="height:auto" role="img" aria-label="Transformer 架构图"></svg>
+  <div class="att-info" id="archInfo"></div>
+  <p class="att-note">按论文图 1 重画。紫色底的是三种注意力，两侧的细线是残差连接。</p>
+</div>
+
+<div class="att-spec">
+  <div><b>6</b><span>N，编码器、解码器各 6 层</span></div>
+  <div><b>512</b><span>d<sub>model</sub>，每个词的向量维度</span></div>
+  <div><b>8</b><span>h，注意力头数</span></div>
+  <div><b>64</b><span>d<sub>k</sub> = d<sub>v</sub>，每个头的维度</span></div>
+  <div><b>2048</b><span>d<sub>ff</sub>，前馈网络中间层</span></div>
+  <div><b>65M</b><span>基础版参数量（大模型 213M）</span></div>
+</div>
+</div>
+
+<!-- ══════ 8 ══════ -->
+<div class="card">
+<h2 id="s8"><span class="n">8</span>遮罩与逐词生成<span class="tag b">§3.1 · §3.2.3</span></h2>
+<p class="cap">训练时整句并行但不许偷看，推理时只能一个词一个词写。</p>
+
+<h3 id="s8a1"><span class="n">A</span>因果遮罩：训练时不许偷看</h3>
+<p>解码器生成译文时，第 3 个词还没写出来，第 2 个位置当然不能看它。但训练时为了并行，整句译文是一次性喂进去的，所以要人为挡住“未来”：在 softmax 之前把右上三角的分数设成 −∞。<span class="att-m">e<sup>−∞</sup></span> = 0，这些位置的权重就变成 0。</p>
+
+<div class="att-fig">
+  <div class="att-ctrl"><label class="att-chk"><input type="checkbox" id="maskOn" checked>开启因果遮罩</label><span>点任意一行</span></div>
+  <div class="att-scroll"><div class="att-mxs" id="maskStage"></div></div>
+  <p class="att-read" id="maskRead"></p>
+  <p class="att-note">解码器输入是右移一位的译文：开头补一个起始符 &lt;s&gt;，第 i 个位置负责预测第 i+1 个词。分数为示意的随机数，softmax 由页面实时计算。</p>
+</div>
+
+<h3 id="s8a2"><span class="n">B</span>推理：一个词一个词写</h3>
+<p>推理时没有正确答案可抄，只能逐词生成：每生成一个词，就把它接到解码器输入后面，再跑一遍。编码器只需要跑一次，它的输出会在每一步被交叉注意力反复查阅。</p>
+
+<div class="att-fig">
+  <div class="att-ctrl">
+    <button class="att-btn att-pri" type="button" id="decNext">生成下一个词</button>
+    <button class="att-btn" type="button" id="decReset">重来</button>
+  </div>
+  <div class="att-drows">
+    <div><div class="att-lab">编码器输入（英文原句，只算一次）· 紫色深浅 = 当前这一步的交叉注意力</div><div class="att-chips" id="decSrc"></div></div>
+    <div><div class="att-lab">解码器输入（已经写出的德语）</div><div class="att-chips" id="decTgt"></div></div>
+    <div><div class="att-lab">下一个词的概率（前 3 名）</div><div id="decProb"></div></div>
+  </div>
+  <p class="att-read" id="decRead"></p>
+  <p class="att-note">概率与交叉注意力权重为示意。这里每步取概率最高的词（贪心）；论文实际使用束搜索，beam size = 4，长度惩罚 α = 0.6。</p>
+</div>
+
+<div class="formula w">
+  <p><b>关掉遮罩会怎样</b>：训练时每个位置都能看到答案，损失会降得很漂亮；推理时后面的词根本不存在，模型从没学过“只看左边”该怎么预测，生成结果直接崩掉。<b>对策</b>：解码器的自注意力必须带遮罩，编码器的自注意力和交叉注意力不需要。</p>
+</div>
+</div>
+
+<!-- ══════ 9 ══════ -->
+<div class="card">
+<h2 id="s9"><span class="n">9</span>训练与结果<span class="tag b">§5 · §6 · 表 2</span></h2>
+<p class="cap">8 块 P100 训练 12 小时，就超过了当时所有的翻译模型。</p>
+
+<h3 id="s9a1"><span class="n">A</span>训练设置</h3>
+<ul class="pts">
+  <li><b>数据</b>：WMT 2014 英德约 450 万句对，用 BPE 切成子词，共享词表约 37000；英法 3600 万句对，词表 32000。每个批次约 25000 个源语言 token 和 25000 个目标语言 token。</li>
+  <li><b>硬件</b>：一台机器、8 块 NVIDIA P100。基础版每步 0.4 秒，训练 10 万步共 12 小时；大模型每步 1.0 秒，30 万步共 3.5 天。</li>
+  <li><b>优化器</b>：Adam，β<sub>1</sub> = 0.9，β<sub>2</sub> = 0.98，ε = 10<sup>−9</sup>，配合下面这个先升后降的学习率。</li>
+  <li><b>正则化</b>：dropout 0.1（每个子层的输出、嵌入加位置编码之后）；label smoothing ε<sub>ls</sub> = 0.1，困惑度会变差，但准确率和 BLEU 变好。</li>
+</ul>
+
+<h3 id="s9a2"><span class="n">B</span>学习率预热</h3>
+<div class="att-eq att-sm"><i>lrate</i> = <i>d</i><sub>model</sub><sup>−0.5</sup> · min(<i>step</i><sup>−0.5</sup>, <i>step</i> · <i>warmup</i><sup>−1.5</sup>)</div>
+<div class="att-fig">
+  <div class="att-ctrl">
+    <span class="att-grp"><label for="lrWarm">warmup 步数</label><input type="range" id="lrWarm" min="500" max="16000" step="500" value="4000"><output id="lrWarmOut">4000</output></span>
+    <span class="att-grp"><label for="lrD">d<sub>model</sub></label><select id="lrD"><option>256</option><option selected>512</option><option>1024</option></select></span>
+  </div>
+  <svg id="lrSvg" viewBox="0 0 720 260" style="width:100%;height:auto" role="img" aria-label="学习率随训练步数变化曲线"></svg>
+  <p class="att-note">前 warmup 步线性升高，之后按步数平方根的倒数衰减。论文取 warmup = 4000。图中只画前 4 万步，曲线由页面实时计算。</p>
+</div>
+<p>刚开始参数是随机的，梯度方向不可靠，所以先迈小步，等模型稳定了再加速，之后慢慢减速。</p>
+
+<h3 id="s9a3"><span class="n">C</span>翻译成绩</h3>
+<table>
+  <thead><tr><th>模型</th><th>英→德 BLEU</th><th>英→法 BLEU</th><th>训练成本 FLOPs（英德 / 英法）</th></tr></thead>
+  <tbody>
+    <tr><td>GNMT + RL</td><td>24.6</td><td>39.92</td><td>2.3·10¹⁹ / 1.4·10²⁰</td></tr>
+    <tr><td>ConvS2S</td><td>25.16</td><td>40.46</td><td>9.6·10¹⁸ / 1.5·10²⁰</td></tr>
+    <tr><td>Transformer（base）</td><td>27.3</td><td>38.1</td><td>3.3·10¹⁸</td></tr>
+    <tr class="hl"><td>Transformer（big）</td><td>28.4</td><td>41.8</td><td>2.3·10¹⁹</td></tr>
+  </tbody>
+</table>
+<div class="formula">
+  <p><b>怎么读这张表</b>：论文表 2（节选）。BLEU 衡量译文和人工参考译文的重合程度，越高越好。大模型在英德翻译上比之前所有结果（包括多个模型的集成）高出 2 个 BLEU 以上；在英法上超过所有单模型，训练成本不到此前最好模型的四分之一。作者还把它直接用在英语句法分析上，没有专门调参，也拿到了接近最好的成绩，说明它不是一个只会翻译的专用结构。</p>
+</div>
+</div>
+
+<!-- ══════ 10 ══════ -->
+<div class="card">
+<h2 id="s10"><span class="n">10</span>它为什么改变了一切</h2>
+<p class="cap">能并行、结构通用，拆开一半也能用。</p>
+
+<p>论文本身只做了翻译。它的影响来自两点：一是<b>能并行</b>，同样的时间里可以喂进多得多的数据、用上多得多的算力；二是<b>结构通用</b>，拆开一半也能用。</p>
+<ul class="pts">
+  <li>只用编码器：BERT（2018），擅长理解类任务。</li>
+  <li>只用解码器：GPT（2018）、GPT-2（2019）、GPT-3（2020，1750 亿参数）。今天的大语言模型基本都是这一路。</li>
+  <li>把图片切成小块当成“词”：ViT（2020），把 Transformer 带进了计算机视觉。</li>
+</ul>
+<p>如果你接下来要读 GPT 类模型的代码，会发现它和论文有几处不同。骨架没变，零件换了：</p>
+<table>
+  <thead><tr><th>部件</th><th>2017 论文</th><th>今天常见做法</th></tr></thead>
+  <tbody>
+    <tr><td>整体结构</td><td>编码器 + 解码器</td><td>只用解码器（GPT 类）</td></tr>
+    <tr><td>归一化位置</td><td>子层之后：LayerNorm(x + Sublayer(x))</td><td>子层之前（Pre-LN），深层更好训练；常用 RMSNorm</td></tr>
+    <tr><td>位置编码</td><td>固定正弦，加在输入上</td><td>旋转位置编码 RoPE 等相对位置方案</td></tr>
+    <tr><td>前馈网络激活</td><td>ReLU</td><td>GELU、SwiGLU</td></tr>
+    <tr><td>注意力实现</td><td>标准多头</td><td>多个头共享 K/V（MQA、GQA），FlashAttention 等显存优化</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ══════ 11 ══════ -->
+<div class="card">
+<h2 id="s11"><span class="n">11</span>现在去读原文</h2>
+<p class="cap">原文：<a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">arxiv.org/abs/1706.03762</a>。不要从第一页硬啃。</p>
+
+<h3 id="s11a1"><span class="n">A</span>阅读顺序</h3>
+<ul class="pts">
+  <li>先看图 1（架构）和图 2（注意力），对照本页<a href="#s7">第 7 节</a>、<a href="#s3">第 3 节</a>、<a href="#s5">第 5 节</a>。</li>
+  <li>读 §3.2 Attention，全文核心，一页半。公式 (1) 就是第 3 节算过的那一行。</li>
+  <li>读 §3.1、§3.3–§3.5，把零件补全。</li>
+  <li>读 §4 Why Self-Attention 和表 1，理解作者为什么这样设计。</li>
+  <li>§5、§6 和表 2、表 3 看训练细节和实验。表 3 的消融实验很值得看，它告诉你哪些设计真的有用。</li>
+  <li>最后翻附录的注意力可视化图，和第 5 节对照。</li>
+</ul>
+
+<h3 id="s11a2"><span class="n">B</span>论文章节与本页对照</h3>
+<table>
+  <thead><tr><th>论文章节</th><th>讲了什么</th><th>本页</th></tr></thead>
+  <tbody>
+    <tr><td>§1–2 Introduction · Background</td><td>RNN、CNN 的局限</td><td><a href="#s1">1</a></td></tr>
+    <tr><td>§3.1 Encoder and Decoder Stacks</td><td>6 层编码器、6 层解码器、残差与 LayerNorm</td><td><a href="#s7">7</a></td></tr>
+    <tr><td>§3.2.1 Scaled Dot-Product Attention</td><td>核心公式与缩放</td><td><a href="#s2">2</a> · <a href="#s3">3</a> · <a href="#s4">4</a></td></tr>
+    <tr><td>§3.2.2 Multi-Head Attention</td><td>多头</td><td><a href="#s5">5</a></td></tr>
+    <tr><td>§3.2.3 Applications of Attention</td><td>编码器自注意力、解码器遮罩自注意力、交叉注意力</td><td><a href="#s7">7</a> · <a href="#s8">8</a></td></tr>
+    <tr><td>§3.3 Position-wise Feed-Forward</td><td>每个位置独立的两层全连接</td><td><a href="#s7">7</a></td></tr>
+    <tr><td>§3.4 Embeddings and Softmax</td><td>词嵌入、共享权重、乘 √d<sub>model</sub></td><td><a href="#s7">7</a></td></tr>
+    <tr><td>§3.5 Positional Encoding</td><td>正弦位置编码</td><td><a href="#s6">6</a></td></tr>
+    <tr><td>§4 Why Self-Attention</td><td>复杂度与路径长度对比</td><td><a href="#s1">1</a></td></tr>
+    <tr><td>§5 Training · §6 Results</td><td>数据、硬件、优化器、正则化、BLEU、消融</td><td><a href="#s9">9</a></td></tr>
+  </tbody>
+</table>
+
+<h3 id="s11a3"><span class="n">C</span>符号速查</h3>
+<table>
+  <thead><tr><th>符号</th><th>含义</th><th>基础版取值</th></tr></thead>
+  <tbody>
+    <tr><td><code>n</code></td><td>句子长度（token 数）</td><td>不定</td></tr>
+    <tr><td><code>d_model</code></td><td>每个 token 的向量维度，所有子层的输入输出都是这个宽度</td><td>512</td></tr>
+    <tr><td><code>h</code></td><td>注意力头数</td><td>8</td></tr>
+    <tr><td><code>d_k, d_v</code></td><td>每个头里 query/key 和 value 的维度 = d_model / h</td><td>64</td></tr>
+    <tr><td><code>d_ff</code></td><td>前馈网络中间层宽度</td><td>2048</td></tr>
+    <tr><td><code>N</code></td><td>编码器、解码器各自的层数</td><td>6</td></tr>
+    <tr><td><code>P_drop</code></td><td>dropout 比例</td><td>0.1</td></tr>
+    <tr><td><code>ε_ls</code></td><td>label smoothing 系数</td><td>0.1</td></tr>
+  </tbody>
+</table>
+</div>
+
+<footer>这是独立项目：一篇论文的交互式精读，与本仓库的鱼缸机器人无关，只借用同一套文档风格。标注“实时计算”的数字由页面脚本当场算出；其余注意力权重和概率为演示手工设定，用来说明真实模型中观察到的现象，并非来自某个训练好的模型。论文与表格数据引自 Vaswani et al., “Attention Is All You Need”, NeurIPS 2017（arXiv:1706.03762）。</footer>
+</div>
+</main>
+
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const NS = 'http://www.w3.org/2000/svg';
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+function el(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  if (attrs) for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text != null) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function softmax(a) {
+  const m = Math.max(...a.filter(x => x !== -Infinity));
+  const e = a.map(x => x === -Infinity ? 0 : Math.exp(x - m));
+  const s = e.reduce((p, c) => p + c, 0);
+  return e.map(x => x / s);
+}
+const normalize = a => { const s = a.reduce((p, c) => p + c, 0); return a.map(x => x / s); };
+const matmul = (A, B) => A.map(r => B[0].map((_, j) => r.reduce((s, a, k) => s + a * B[k][j], 0)));
+const T = A => A[0].map((_, j) => A.map(r => r[j]));
+const f2 = x => (Math.abs(x) < 0.005 ? 0 : x).toFixed(2);
+const pct = w => Math.round(w * 100) + '%';
+// 注意力权重 → 紫色深浅；深到一定程度换白字
+const inten = w => Math.min(1, Math.pow(Math.max(0, w), 0.72));
+const heatBg = w => `color-mix(in srgb, var(--purple-fg) ${Math.round(inten(w) * 90)}%, transparent)`;
+const isHot = w => inten(w) > 0.55;
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function gauss(rng) { let u = 0, v = 0; while (u === 0) u = rng(); while (v === 0) v = rng(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+// 从 notion.css 读色板，返回 [r, g, b]
+function token(name) {
+  const s = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const m = s.match(/\d+(\.\d+)?/g);
+  return m ? m.slice(0, 3).map(Number) : [0, 0, 0];
+}
+const rgb = c => `rgb(${c.map(v => Math.round(v)).join(',')})`;
+const WHITE = [255, 255, 255];
+
+/* ---------- 开头：it → animal / street ---------- */
+const HERO = ['The', 'animal', "didn't", 'cross', 'the', 'street', 'because', 'it', 'was', 'too', '*'];
+const hero = { sel: 7, last: 'tired' };
+function heroRow(i, last) {
+  const tired = last === 'tired';
+  const S = [
+    { 1: .6, 0: .3 }, { 0: .3, 1: .3, 3: .15, 2: .1 }, { 3: .45, 1: .2, 2: .15 }, { 1: .35, 5: .3, 2: .15, 3: .1 },
+    { 5: .6, 4: .3 }, { 4: .35, 3: .25, 5: .2 }, { 3: .2, 8: .2, 10: .2, 6: .2, 2: .1 },
+    tired ? { 1: .62, 7: .12, 10: .08, 5: .06, 0: .04 } : { 5: .6, 7: .12, 1: .08, 10: .08, 4: .04 },
+    { 7: .4, 10: .3, 8: .15 }, { 10: .55, 9: .25, 8: .1 },
+    tired ? { 7: .35, 1: .3, 9: .15, 10: .1 } : { 7: .3, 5: .35, 9: .15, 10: .1 }
+  ][i];
+  return normalize(HERO.map((_, j) => 0.012 + (S[j] || 0)));
+}
+const heroWords = () => HERO.map(w => w === '*' ? hero.last : w);
+const heroBtns = HERO.map((_, j) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'att-w';
+  b.innerHTML = '<span></span><small></small>';
+  b.addEventListener('click', () => { hero.sel = j; renderHero(); });
+  $('#heroWords').appendChild(b);
+  return b;
+});
+$$('#hero [data-last]').forEach(b => b.addEventListener('click', () => {
+  hero.last = b.dataset.last;
+  $$('#hero [data-last]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  renderHero();
+}));
+function renderHero() {
+  const words = heroWords(), row = heroRow(hero.sel, hero.last);
+  heroBtns.forEach((b, j) => {
+    const me = j === hero.sel;
+    b.querySelector('span').textContent = words[j];
+    b.querySelector('small').textContent = me ? 'query' : pct(row[j]);
+    b.classList.toggle('att-sel', me);
+    b.classList.toggle('att-hot', !me && isHot(row[j]));
+    b.style.background = me ? '' : heatBg(row[j]);
+    b.setAttribute('aria-label', `${words[j]}，注意力 ${pct(row[j])}`);
+  });
+  drawHeroArcs(row);
+  const top = row.map((w, j) => [w, j]).filter(([, j]) => j !== hero.sel).sort((a, b) => b[0] - a[0]).slice(0, 3);
+  let s = `<b>“${esc(words[hero.sel])}”</b> 关注最多的是 ` + top.map(([w, j]) => `<b>${esc(words[j])}</b> ${pct(w)}`).join('、') + '。';
+  if (hero.sel === 7) s += hero.last === 'tired'
+    ? ' 会“累”的是动物，所以 it 指 animal。只改句尾一个词，换成 wide 试试。'
+    : ' 会“宽”的是街道，所以 it 指 street。只改了句尾一个词，it 的注意力就换了对象。';
+  else s += ' 点 <b>it</b> 看最有意思的那一行。';
+  $('#heroRead').innerHTML = s;
+}
+function drawHeroArcs(row) {
+  const stage = $('#heroStage'), svg = $('#heroArcs');
+  svg.innerHTML = '';
+  const one = new Set(heroBtns.map(b => b.offsetTop)).size === 1;
+  stage.classList.toggle('att-flat', !one);
+  if (!one) return;
+  const sr = stage.getBoundingClientRect();
+  svg.setAttribute('viewBox', `0 0 ${sr.width} ${sr.height}`);
+  const pts = heroBtns.map(b => { const r = b.getBoundingClientRect(); return [r.left - sr.left + r.width / 2, r.top - sr.top - 3]; });
+  const [x0, y0] = pts[hero.sel];
+  row.forEach((w, j) => {
+    if (j === hero.sel || w < 0.025) return;
+    const x1 = pts[j][0], h = Math.min(y0 - 10, 16 + Math.abs(x1 - x0) * 0.3);
+    el('path', { d: `M${x0} ${y0} Q${(x0 + x1) / 2} ${y0 - 2 * h} ${x1} ${y0}`, class: 'att-arc', 'stroke-width': (1 + w * 9).toFixed(1), 'stroke-opacity': (0.22 + w * 0.78).toFixed(2) }, svg);
+  });
+  el('circle', { cx: x0, cy: y0, r: 4, style: 'fill:var(--blue-fg)' }, svg);
+}
+
+/* ---------- 1 · RNN 与自注意力赛跑 ---------- */
+const race = { n: 10, t: 10, timer: null };
+function drawRace() {
+  const svg = $('#raceSvg'); svg.innerHTML = '';
+  const mk = el('marker', { id: 'f1Head', viewBox: '0 0 8 8', refX: 7, refY: 4, markerWidth: 6, markerHeight: 6, orient: 'auto' }, el('defs', null, svg));
+  el('path', { d: 'M0 0L8 4L0 8z', style: 'fill:var(--fg-3)' }, mk);
+  const n = race.n, L = 160, R = 704, sp = (R - L) / n, bw = Math.min(34, sp - 10);
+  const xs = Array.from({ length: n }, (_, i) => L + sp * i + sp / 2);
+  const yR = 62, yT = 192, t = race.t;
+  el('text', { x: 16, y: yR - 4, class: 's-lbl' }, svg, 'RNN');
+  el('text', { x: 16, y: yR + 14, class: 's-sub' }, svg, `串行步数 ${Math.min(t, n)} / ${n}`);
+  for (let i = 0; i < n - 1; i++)
+    el('line', { x1: xs[i] + bw / 2 + 1, y1: yR, x2: xs[i + 1] - bw / 2 - 2, y2: yR, class: 'att-rline' + (i < t - 1 ? ' att-on' : ''), 'marker-end': 'url(#f1Head)' }, svg);
+  xs.forEach((x, i) => {
+    el('rect', { x: x - bw / 2, y: yR - 14, width: bw, height: 28, rx: 5, class: 'att-tok' + (i < t ? ' att-done' : '') + (i === t - 1 && t < n ? ' att-cur' : '') }, svg);
+    el('text', { x, y: yR + 31, class: 'att-mono', 'text-anchor': 'middle' }, svg, 'x' + (i + 1));
+  });
+  el('text', { x: 16, y: yT - 4, class: 's-lbl' }, svg, 'Self-Attention');
+  el('text', { x: 16, y: yT + 14, class: 's-sub' }, svg, `串行步数 ${t >= 1 ? 1 : 0} / 1`);
+  if (t >= 1) for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+    const h = Math.min(46, 6 + (xs[j] - xs[i]) * 0.09), y = yT - 15;
+    el('path', { d: `M${xs[i]} ${y} Q${(xs[i] + xs[j]) / 2} ${y - 2 * h} ${xs[j]} ${y}`, class: 'att-tarc' }, svg);
+  }
+  xs.forEach((x, i) => {
+    el('rect', { x: x - bw / 2, y: yT - 14, width: bw, height: 28, rx: 5, class: 'att-tok' + (t >= 1 ? ' att-done' : '') }, svg);
+    el('text', { x, y: yT + 31, class: 'att-mono', 'text-anchor': 'middle' }, svg, 'x' + (i + 1));
+  });
+}
+$('#raceN').addEventListener('input', e => {
+  clearInterval(race.timer); race.n = +e.target.value; race.t = race.n;
+  $('#raceNOut').textContent = race.n; drawRace();
+});
+$('#raceRun').addEventListener('click', () => {
+  clearInterval(race.timer);
+  if (reduceMotion) { race.t = race.n; drawRace(); return; }
+  race.t = 0; drawRace();
+  race.timer = setInterval(() => { race.t++; drawRace(); if (race.t >= race.n) clearInterval(race.timer); }, 300);
+});
+
+/* ---------- 2 · 模糊字典 ---------- */
+const DICT = [
+  { name: '猫', k: [2.2, 1.2], c: '--red-fg' },
+  { name: '狗', k: [1.2, 2.3], c: '--brown-fg' },
+  { name: '汽车', k: [-2.4, 0.5], c: '--blue-fg' },
+  { name: '苹果', k: [0.4, -2.4], c: '--green-fg' },
+];
+const dict = { q: [1.6, 1.3], s: 1 };
+const DU = 46, DO = 180;
+const dpx = ([x, y]) => [DO + x * DU, DO - y * DU];
+const clampQ = v => Math.max(-3.4, Math.min(3.4, v));
+function drawDict() {
+  const svg = $('#dictSvg'); svg.innerHTML = '';
+  const defs = el('defs', null, svg);
+  [['f2HeadK', '--orange-fg'], ['f2HeadQ', '--blue-fg']].forEach(([id, v]) => {
+    const m = el('marker', { id, viewBox: '0 0 8 8', refX: 6, refY: 4, markerWidth: 5, markerHeight: 5, orient: 'auto' }, defs);
+    el('path', { d: 'M0 0L8 4L0 8z', style: `fill:var(${v})` }, m);
+  });
+  for (let g = -3; g <= 3; g++) {
+    el('line', { x1: DO + g * DU, y1: 20, x2: DO + g * DU, y2: 340, class: g ? 'att-grid' : 'att-axis' }, svg);
+    el('line', { x1: 20, y1: DO + g * DU, x2: 340, y2: DO + g * DU, class: g ? 'att-grid' : 'att-axis' }, svg);
+  }
+  DICT.forEach(d => {
+    const [x, y] = dpx(d.k);
+    el('line', { x1: DO, y1: DO, x2: x, y2: y, class: 'att-karr', 'marker-end': 'url(#f2HeadK)' }, svg);
+    const len = Math.hypot(d.k[0], d.k[1]), ox = d.k[0] / len * 20, oy = -d.k[1] / len * 20;
+    el('circle', { cx: x + ox, cy: y + oy, r: 8, style: `fill:var(${d.c})` }, svg);
+    el('text', { x: x + ox + (ox >= 0 ? 13 : -13), y: y + oy + 4, class: 's-lbl', 'text-anchor': ox >= 0 ? 'start' : 'end' }, svg, d.name);
+  });
+  const [qx, qy] = dpx(dict.q);
+  el('line', { x1: DO, y1: DO, x2: qx, y2: qy, class: 'att-qarr', 'marker-end': 'url(#f2HeadQ)' }, svg);
+  const h = el('circle', { cx: qx, cy: qy, r: 10, class: 'att-handle', tabindex: 0, role: 'slider', 'aria-label': '查询向量，可用方向键移动' }, svg);
+  el('text', { x: qx + 14, y: qy - 10, class: 's-lbl', style: 'fill:var(--blue-fg)' }, svg, 'query');
+  h.addEventListener('keydown', e => {
+    const st = { ArrowLeft: [-.2, 0], ArrowRight: [.2, 0], ArrowUp: [0, .2], ArrowDown: [0, -.2] }[e.key];
+    if (!st) return; e.preventDefault();
+    dict.q = [clampQ(dict.q[0] + st[0]), clampQ(dict.q[1] + st[1])];
+    drawDict(); $('#dictSvg .att-handle').focus();
+  });
+  const sc = DICT.map(d => d.k[0] * dict.q[0] + d.k[1] * dict.q[1]);
+  const w = softmax(sc.map(x => x * dict.s));
+  $('#dictRows').innerHTML = DICT.map((d, i) => `<div class="att-drow"><span class="att-sw" style="background:var(${d.c})"></span><span>${d.name}</span><span class="att-num">${f2(sc[i])}</span><span class="att-track"><span class="att-bar" style="width:${(w[i] * 100).toFixed(1)}%"></span></span><span class="att-num" style="text-align:right">${pct(w[i])}</span></div>`).join('');
+  const cols = DICT.map(d => token(d.c));
+  const mix = [0, 1, 2].map(c => cols.reduce((s, col, i) => s + w[i] * col[c], 0));
+  $('#dictOut').style.background = rgb(mix);
+  const best = w.indexOf(Math.max(...w));
+  $('#dictOutText').innerHTML = `输出 = 加权混合的颜色。<br>query 最像 <b>${DICT[best].name}</b>（${pct(w[best])}），${w[best] > 0.9 ? '几乎就是精确查找。' : '但其他 value 也掺进来了一些。'}`;
+}
+(() => {
+  const svg = $('#dictSvg'); let drag = false;
+  const toQ = e => {
+    const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+    dict.q = [clampQ((p.x - DO) / DU), clampQ((DO - p.y) / DU)]; drawDict();
+  };
+  svg.addEventListener('pointerdown', e => { drag = true; svg.setPointerCapture(e.pointerId); toQ(e); });
+  svg.addEventListener('pointermove', e => { if (drag) toQ(e); });
+  svg.addEventListener('pointerup', () => { drag = false; });
+  svg.addEventListener('pointercancel', () => { drag = false; });
+})();
+$('#dictS').addEventListener('input', e => { dict.s = +e.target.value; $('#dictSOut').textContent = dict.s.toFixed(1) + '×'; drawDict(); });
+
+/* ---------- 3 · 矩阵分步计算 ---------- */
+const MX = (() => {
+  const tok = ['我', '爱', '吃', '苹果'];
+  const X = [[1.0, 0.2, -0.5, 0.3], [0.1, 1.1, 0.4, -0.6], [-0.3, 0.7, 0.9, 0.2], [0.6, -0.4, 0.8, 1.0]];
+  const Wq = [[0.5, -0.2, 0.3], [0.1, 0.6, -0.4], [-0.3, 0.2, 0.7], [0.4, 0.1, 0.2]];
+  const Wk = [[0.6, 0.1, -0.2], [-0.1, 0.5, 0.3], [0.2, -0.4, 0.6], [0.3, 0.2, 0.1]];
+  const Wv = [[1, 0, 0.2], [0, 1, 0.1], [0.3, 0.2, 1], [-0.2, 0.4, 0.3]];
+  const Q = matmul(X, Wq), K = matmul(X, Wk), V = matmul(X, Wv);
+  const S = matmul(Q, T(K)), S2 = S.map(r => r.map(x => x / Math.sqrt(3)));
+  const A = S2.map(softmax), Z = matmul(A, V);
+  return { tok, X, Q, K, Kt: T(K), V, S, S2, A, Z };
+})();
+function mxHTML(id, name, M, o = {}) {
+  const fmt = o.fmt || (x => typeof x === 'string' ? x : f2(x));
+  let h = `<div class="att-mxb att-r-${o.role || 'n'}"><div class="att-mxn"><span class="att-m">${name}</span><small>${M.length} × ${M[0].length}</small></div><table class="att-mx" data-id="${id}">`;
+  if (o.cols) h += '<tr><th></th>' + o.cols.map(c => `<th>${esc(c)}</th>`).join('') + '</tr>';
+  M.forEach((r, i) => {
+    h += `<tr data-row="${i}"><th>${o.rows ? esc(o.rows[i]) : ''}</th>`;
+    r.forEach((x, j) => {
+      const masked = o.masked && o.masked(i, j);
+      const cls = [masked ? 'att-masked' : '', o.heat && !masked && isHot(x) ? 'att-hot' : ''].filter(Boolean).join(' ');
+      const st = o.heat && !masked ? ` style="background:${heatBg(x)}"` : '';
+      h += `<td data-r="${i}" data-c="${j}"${cls ? ` class="${cls}"` : ''}${st}>${masked && o.maskText ? o.maskText : fmt(x)}</td>`;
+    });
+    h += '</tr>';
+  });
+  return h + '</table></div>';
+}
+const op = (s, sub) => `<div class="att-op">${s}${sub ? `<small>${sub}</small>` : ''}</div>`;
+const D4 = ['1', '2', '3', '4'], D3 = ['1', '2', '3'];
+const mX = () => mxHTML('X', 'X', MX.X, { rows: MX.tok, cols: D4 });
+const mQ = () => mxHTML('Q', 'Q', MX.Q, { rows: MX.tok, cols: D3, role: 'q' });
+const mV = () => mxHTML('V', 'V', MX.V, { rows: MX.tok, cols: D3, role: 'v' });
+const mS = () => mxHTML('S', 'S', MX.S, { rows: MX.tok, cols: MX.tok });
+const mS2 = () => mxHTML('S2', 'S′', MX.S2, { rows: MX.tok, cols: MX.tok });
+const mA = () => mxHTML('A', 'A', MX.A, { rows: MX.tok, cols: MX.tok, heat: true, role: 'h' });
+const STAGES = [
+  { t: '第 0 步 · 输入', p: null, html: () => mX(),
+    d: '每个词先变成一个向量，一行一个词。这里只有 4 维，论文里是 512 维。', hint: '把鼠标停在格子上。' },
+  { t: '第 1 步 · 算出 Q、K、V', p: 'qkv', html: () => mX() + op('→', '× W') + mQ() + mxHTML('K', 'K', MX.K, { rows: MX.tok, cols: D3, role: 'k' }) + mV(),
+    d: 'X 分别乘以三个可学习的矩阵 W<sup>Q</sup>、W<sup>K</sup>、W<sup>V</sup>（4 × 3），得到每个词的 query、key、value。', hint: '把鼠标停在 Q、K、V 的格子上。' },
+  { t: '第 2 步 · 两两打分 QKᵀ', p: 'qk', html: () => mQ() + op('×') + mxHTML('Kt', 'Kᵀ', MX.Kt, { rows: D3, cols: MX.tok, role: 'k' }) + op('=') + mS(),
+    d: '每个词的 query 和每个词的 key 做点积，得到一张 4 × 4 的分数表。第 i 行第 j 列 = 第 i 个词对第 j 个词有多“感兴趣”。', hint: '把鼠标停在 S 的格子上，看它是哪一行乘哪一列。' },
+  { t: '第 3 步 · 缩放 ÷ √dₖ', p: 'scale', html: () => mS() + op('÷', '√3 ≈ 1.73') + mS2(),
+    d: '所有分数除以 √d<sub>k</sub>，这里 d<sub>k</sub> = 3。为什么要除，见第 4 节。', hint: '把鼠标停在 S′ 的格子上。' },
+  { t: '第 4 步 · 按行 softmax', p: 'softmax', html: () => mS2() + op('→', 'softmax') + mA(),
+    d: '对每一行做 softmax，分数变成加起来等于 1 的权重。这张 A 就是“注意力矩阵”，开头那个例子画的就是它的一行。', hint: '把鼠标停在 A 的格子上。' },
+  { t: '第 5 步 · 加权求和 AV', p: 'v', html: () => mA() + op('×') + mV() + op('=') + mxHTML('Z', 'Z', MX.Z, { rows: MX.tok, cols: D3 }),
+    d: '用权重把所有词的 value 加权平均。Z 的每一行就是这个词“看过全句之后”的新表示，形状和输入一样，可以继续送进下一层。', hint: '把鼠标停在 Z 的格子上。' },
+];
+const CODE = [
+  ['X = embed(["我", "爱", "吃", "苹果"])', '(4, 4)'],
+  ['Q, K, V = X @ W_q, X @ W_k, X @ W_v', '各 (4, 3)'],
+  ['S = Q @ K.T', '(4, 4)'],
+  ['S = S / np.sqrt(d_k)', 'd_k = 3'],
+  ['A = softmax(S, axis=-1)', '每行和为 1'],
+  ['Z = A @ V', '(4, 3)'],
+];
+let mxStep = 0;
+function renderMx() {
+  const s = STAGES[mxStep];
+  $('#mxTitle').textContent = s.t;
+  $('#mxText').innerHTML = s.d;
+  $('#mxStage').innerHTML = s.html();
+  $('#mxStage').classList.remove('att-hov');
+  $('#mxCalc').textContent = s.hint;
+  $$('#mxFormula .att-fp').forEach(f => f.classList.toggle('att-on', f.dataset.p === s.p));
+  $('#mxDots').innerHTML = STAGES.map((_, i) => `<i class="${i <= mxStep ? 'att-on' : ''}"></i>`).join('');
+  $('#mxCode').innerHTML = CODE.map(([c, cm], i) => `<span class="att-ln${i === mxStep ? ' att-on' : i > mxStep ? ' att-fut' : ''}">${esc(c.padEnd(38))}<span class="c"># ${cm}</span></span>`).join('');
+  $('#mxPrev').disabled = mxStep === 0;
+  $('#mxNext').disabled = mxStep === STAGES.length - 1;
+}
+$('#mxPrev').addEventListener('click', () => { if (mxStep > 0) { mxStep--; renderMx(); } });
+$('#mxNext').addEventListener('click', () => { if (mxStep < STAGES.length - 1) { mxStep++; renderMx(); } });
+function mxHL(stage, id, kind, idx) {
+  const t = $(`table[data-id="${id}"]`, stage); if (!t) return;
+  $$('td', t).forEach(td => {
+    const on = kind === 'row' ? +td.dataset.r === idx : +td.dataset.c === idx;
+    td.classList.toggle('att-dim', !on); td.classList.toggle('att-on', on);
+  });
+}
+function mxExplain(e) {
+  const td = e.target.closest('td[data-r]'), stage = $('#mxStage');
+  if (!td) return;
+  const id = td.closest('table').dataset.id, i = +td.dataset.r, j = +td.dataset.c, tk = MX.tok;
+  $$('td', stage).forEach(x => x.classList.remove('att-on', 'att-dim'));
+  stage.classList.add('att-hov');
+  let txt = '';
+  if (id === 'X') txt = `“${tk[i]}”的词向量第 ${j + 1} 维 = ${f2(MX.X[i][j])}。真实模型里这张表是训练学出来的。`;
+  else if (id === 'Q' || id === 'K' || (id === 'V' && mxStep === 1)) {
+    mxHL(stage, 'X', 'row', i);
+    txt = `${id}[${tk[i]}] 的第 ${j + 1} 维 = “${tk[i]}”的词向量 x 乘以 W_${id.toLowerCase()} 的第 ${j + 1} 列 = ${f2(MX[id][i][j])}`;
+  } else if (id === 'Kt') txt = `Kᵀ 是把 K 转置：第 ${j + 1} 列就是“${tk[j]}”的 key。`;
+  else if (id === 'S' && mxStep === 2) {
+    mxHL(stage, 'Q', 'row', i); mxHL(stage, 'Kt', 'col', j);
+    const terms = MX.Q[i].map((q, k) => `(${f2(q)})(${f2(MX.K[j][k])})`).join(' + ');
+    txt = `S[${tk[i]}, ${tk[j]}] = q_${tk[i]} · k_${tk[j]} = ${terms} = ${f2(MX.S[i][j])}`;
+  } else if (id === 'S' || id === 'S2') txt = `S′[${tk[i]}, ${tk[j]}] = ${f2(MX.S[i][j])} ÷ 1.73 = ${f2(MX.S2[i][j])}`;
+  else if (id === 'A' && mxStep === 4) {
+    $$(`tr[data-row="${i}"] td`, $('table[data-id="A"]', stage)).forEach(x => x.classList.add('att-on'));
+    txt = `“${tk[i]}”把 ${pct(MX.A[i][j])} 的注意力给了“${tk[j]}”。这一行：` + MX.A[i].map((a, k) => `${tk[k]} ${pct(a)}`).join('，') + '，合计 100%。';
+  } else if (id === 'Z') {
+    mxHL(stage, 'A', 'row', i); mxHL(stage, 'V', 'col', j);
+    const terms = MX.A[i].map((a, k) => `${f2(a)}×${f2(MX.V[k][j])}`).join(' + ');
+    txt = `Z[${tk[i]}] 第 ${j + 1} 维 = A 的“${tk[i]}”行 · V 的第 ${j + 1} 列 = ${terms} = ${f2(MX.Z[i][j])}`;
+  }
+  td.classList.remove('att-dim'); td.classList.add('att-on');
+  $('#mxCalc').textContent = txt || STAGES[mxStep].hint;
+}
+$('#mxStage').addEventListener('mouseover', mxExplain);
+$('#mxStage').addEventListener('click', mxExplain);
+$('#mxStage').addEventListener('mouseleave', () => { const s = $('#mxStage'); s.classList.remove('att-hov'); $$('td', s).forEach(x => x.classList.remove('att-on', 'att-dim')); });
+
+/* ---------- 4 · √dk ---------- */
+const sc = { e: 6, on: false, seed: 1 };
+function renderScale() {
+  const d = 2 ** sc.e, rng = mulberry32(sc.seed * 7919 + sc.e * 31);
+  const q = Array.from({ length: d }, () => gauss(rng));
+  const ks = Array.from({ length: 8 }, () => Array.from({ length: d }, () => gauss(rng)));
+  const s = ks.map(k => k.reduce((a, x, i) => a + x * q[i], 0));
+  const used = sc.on ? s.map(x => x / Math.sqrt(d)) : s;
+  const w = softmax(used);
+  $('#scDOut').textContent = d;
+  $('#scBars').innerHTML = w.map((x, i) => `<div class="att-sbar"><span class="att-num">k${i + 1}</span><span class="att-num">${used[i].toFixed(2)}</span><span class="att-track"><span class="att-bar" style="width:${(x * 100).toFixed(1)}%"></span></span><span class="att-num" style="text-align:right">${(x * 100).toFixed(1)}%</span></div>`).join('');
+  const mx = Math.max(...w);
+  $('#scStat').innerHTML = `<span>点积标准差理论值 √d<sub>k</sub> = <b class="att-num">${Math.sqrt(d).toFixed(1)}</b></span><span>送进 softmax 的分数：<b class="att-num">${Math.min(...used).toFixed(1)}</b> 到 <b class="att-num">${Math.max(...used).toFixed(1)}</b></span><span>最大权重 <b class="att-num">${(mx * 100).toFixed(1)}%</b></span>`;
+  const v = $('#scVerdict');
+  if (mx > 0.9) { v.className = 'att-verdict att-bad'; v.textContent = '几乎全押在一个 key 上，softmax 进入饱和区：梯度趋近 0，其他 key 学不到东西。'; }
+  else if (sc.on) { v.className = 'att-verdict att-ok'; v.textContent = '缩放后分数的标准差回到 1 左右。分布有起伏，每个 key 都分到一些权重，梯度能正常回传。'; }
+  else { v.className = 'att-verdict'; v.textContent = '维度还小，分数差距不大，暂时没问题。把 d_k 往右拖。'; }
+}
+$('#scD').addEventListener('input', e => { sc.e = +e.target.value; renderScale(); });
+$('#scOn').addEventListener('change', e => { sc.on = e.target.checked; renderScale(); });
+$('#scRe').addEventListener('click', () => { sc.seed++; renderScale(); });
+
+/* ---------- 5 · 多头 ---------- */
+const MH = ['The', 'Law', 'will', 'never', 'be', 'perfect', ',', 'but', 'its', 'application', 'should', 'be', 'just', '.'];
+const HEADS = [
+  { name: '头 A · 前一个词', note: '每个词都盯着它左边那个词。这个头学到的是“我前面是谁”，帮模型弥补注意力天生不知道顺序的缺陷。', f: i => ({ [Math.max(0, i - 1)]: 1 }) },
+  { name: '头 B · 指代', note: '“its” 几乎把全部注意力给了 “Law”，也就是弄清楚 its 指的是什么。论文附录图 4 展示了第 5 层里两个真实的头有这种行为，而且 its 这一行的注意力非常集中。', f: i => ({ 8: { 1: .8, 8: .06 }, 9: { 8: .4, 1: .25, 9: .15 }, 1: { 1: .5, 0: .25, 8: .15 }, 0: { 1: .5, 0: .3 } }[i] || { [i]: .5 }) },
+  { name: '头 C · 句法', note: '助动词找主语，形容词找它修饰的名词，its 找 application。论文附录图 5 的说法是：很多头表现出的行为似乎和句子结构有关。', f: i => ([{ 1: .6 }, { 2: .35, 5: .3 }, { 1: .55, 4: .2 }, { 2: .4, 4: .35 }, { 2: .4, 5: .35 }, { 1: .45, 4: .3 }, { 7: .4, 5: .2 }, { 6: .3, 10: .3 }, { 9: .7 }, { 10: .35, 12: .3, 8: .15 }, { 9: .55, 11: .2 }, { 10: .45, 12: .3 }, { 9: .55, 11: .2 }, { 12: .3, 10: .2 }][i]) },
+  { name: '头 D · 标点', note: '很多位置都把注意力放到句号和逗号上。后来分析 BERT 的研究发现，这类“没什么可看就看标点”的头在真实模型里很常见。', f: i => { const o = { 13: .55, 6: .25 }; o[i] = (o[i] || 0) + .08; return o; } },
+];
+const hs = { head: 1, row: 8 };
+const headRow = (h, i) => { const S = HEADS[h].f(i); return normalize(MH.map((_, j) => 0.015 + (S[j] || 0))); };
+HEADS.forEach((h, k) => {
+  const b = document.createElement('button');
+  b.className = 'att-btn'; b.type = 'button'; b.textContent = h.name;
+  b.addEventListener('click', () => { hs.head = k; renderHeads(); });
+  $('#headBtns').appendChild(b);
+});
+function renderHeads() {
+  $$('#headBtns .att-btn').forEach((b, k) => b.setAttribute('aria-pressed', String(k === hs.head)));
+  const svg = $('#headSvg'); svg.innerHTML = '';
+  const L = 92, Tp = 84, C = 26;
+  MH.forEach((w, j) => el('text', { transform: `translate(${L + j * C + C / 2 + 4},${Tp - 6}) rotate(-55)`, class: 's-sub', style: 'font-size:12px' }, svg, w));
+  MH.forEach((w, i) => {
+    const row = headRow(hs.head, i), me = i === hs.row;
+    const lab = el('text', { x: L - 8, y: Tp + i * C + C / 2 + 4, 'text-anchor': 'end', class: me ? 's-lbl' : 's-sub', style: (me ? 'fill:var(--blue-fg);' : '') + 'font-size:12.5px;cursor:pointer' }, svg, w);
+    lab.addEventListener('click', () => { hs.row = i; renderHeads(); });
+    row.forEach((x, j) => {
+      const g = el('g', { style: 'cursor:pointer' }, svg);
+      el('rect', { x: L + j * C + 1, y: Tp + i * C + 1, width: C - 2, height: C - 2, rx: 3, style: 'fill:var(--callout)' }, g);
+      el('rect', { x: L + j * C + 1, y: Tp + i * C + 1, width: C - 2, height: C - 2, rx: 3, style: 'fill:var(--purple-fg)', 'fill-opacity': (inten(x) * 0.95).toFixed(2) }, g);
+      el('title', null, g, `${w} → ${MH[j]}：${pct(x)}`);
+      g.addEventListener('click', () => { hs.row = i; renderHeads(); });
+    });
+  });
+  el('rect', { x: L - 1, y: Tp + hs.row * C - 1, width: MH.length * C + 2, height: C + 2, rx: 4, style: 'fill:none;stroke:var(--blue-fg);stroke-width:2' }, svg);
+  $('#headNote').innerHTML = `<b>${HEADS[hs.head].name}</b><br>${HEADS[hs.head].note}`;
+  const row = headRow(hs.head, hs.row);
+  const top = row.map((x, j) => [x, j]).sort((a, b) => b[0] - a[0]).slice(0, 3);
+  $('#headRead').innerHTML = `在这个头里，<b class="att-q">“${esc(MH[hs.row])}”</b> 看得最多的是：` + top.map(([x, j]) => `<b>${esc(MH[j])}</b> ${pct(x)}`).join('、') + '。';
+}
+
+/* ---------- 6 · 位置编码 ---------- */
+function permRun(words, usePE) {
+  const E = { 狗: [1, 0, 1, 0], 咬: [0, 1, 0, 1], 人: [1, 1, 0, 0] };
+  const pe = p => [Math.sin(p), Math.cos(p), Math.sin(p / 100), Math.cos(p / 100)];
+  const X = words.map((w, p) => E[w].map((x, k) => x + (usePE ? pe(p)[k] : 0)));
+  const A = matmul(X, T(X)).map(r => softmax(r.map(x => x / 2)));
+  return matmul(A, X);
+}
+function renderPerm() {
+  const on = $('#permPE').checked;
+  const a = permRun(['狗', '咬', '人'], on)[0], b = permRun(['人', '咬', '狗'], on)[2];
+  const same = a.every((x, k) => Math.abs(x - b[k]) < 1e-9);
+  const v = x => '[ ' + x.map(n => n.toFixed(3)).join(', ') + ' ]';
+  $('#perm').innerHTML =
+    `<div><div class="att-s">狗 咬 人</div><div class="att-lab">“狗”的输出（位置 0）</div><span class="att-num">${v(a)}</span></div>` +
+    `<div><div class="att-s">人 咬 狗</div><div class="att-lab">“狗”的输出（位置 2）</div><span class="att-num">${v(b)}</span></div>` +
+    `<div><span class="att-badge${same ? '' : ' att-ok'}">${same ? '完全相同' : '不一样了'}</span><p class="att-read" style="min-height:0;margin-top:6px">${same ? '模型分不出谁咬了谁。' : '加上位置编码后，同一个词在不同位置得到了不同的表示。'}</p></div>`;
+}
+$('#permPE').addEventListener('change', renderPerm);
+const pe = { sel: 10 };
+function peVal(p, j, d) { const a = p / Math.pow(10000, (j - j % 2) / d); return j % 2 ? Math.cos(a) : Math.sin(a); }
+function drawPE() {
+  const cv = $('#peCanvas'), d = +$('#peD').value, P = 50;
+  const W = cv.clientWidth, H = 240, dpr = devicePixelRatio || 1;
+  if (!W) return;
+  cv.width = W * dpr; cv.height = H * dpr;
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const pl = 34, pb = 22, pt = 4, pr = 4, pw = W - pl - pr, ph = H - pt - pb;
+  const cq = token('--blue-fg'), ck = token('--orange-fg');
+  const cw = pw / d, rh = ph / P;
+  for (let p = 0; p < P; p++) for (let j = 0; j < d; j++) {
+    const v = peVal(p, j, d), tgt = v < 0 ? cq : ck, a = Math.abs(v);
+    ctx.fillStyle = rgb(WHITE.map((c, k) => c + (tgt[k] - c) * a));
+    ctx.fillRect(pl + j * cw, pt + p * rh, Math.ceil(cw), Math.ceil(rh));
+  }
+  ctx.strokeStyle = rgb(token('--fg')); ctx.lineWidth = 1.5;
+  ctx.strokeRect(pl + .5, pt + pe.sel * rh, pw - 1, rh);
+  ctx.fillStyle = rgb(token('--fg')); ctx.globalAlpha = .5; ctx.font = '11px ui-monospace, Menlo, monospace';
+  ctx.textAlign = 'right';
+  [0, 10, 20, 30, 40, 49].forEach(p => ctx.fillText(p, pl - 6, pt + p * rh + rh / 2 + 4));
+  ctx.textAlign = 'center';
+  [0, d / 4, d / 2, 3 * d / 4, d - 1].forEach(j => ctx.fillText(Math.round(j), pl + j * cw + cw / 2, H - 6));
+  ctx.globalAlpha = 1;
+  cv._geo = { pl, pt, pw, ph, P, d };
+}
+function peAt(e) {
+  const cv = $('#peCanvas'), g = cv._geo; if (!g) return null;
+  const r = cv.getBoundingClientRect();
+  const p = Math.floor((e.clientY - r.top - g.pt) / (g.ph / g.P)), j = Math.floor((e.clientX - r.left - g.pl) / (g.pw / g.d));
+  return (p >= 0 && p < g.P && j >= 0 && j < g.d) ? { p, j, d: g.d } : null;
+}
+$('#peCanvas').addEventListener('mousemove', e => {
+  const h = peAt(e); if (!h) return;
+  $('#peRead').textContent = `位置 ${h.p} · 第 ${h.j} 维 · 值 ${peVal(h.p, h.j, h.d).toFixed(3)} · 这一维的波长约 ${(2 * Math.PI * Math.pow(10000, (h.j - h.j % 2) / h.d)).toFixed(0)} 个位置`;
+});
+$('#peCanvas').addEventListener('click', e => { const h = peAt(e); if (h) { pe.sel = h.p; drawPE(); } });
+$('#peD').addEventListener('change', drawPE);
+
+/* ---------- 7 · 架构图 ---------- */
+const INFO = {
+  emb: { t: 'Input Embedding · 词嵌入', r: '§3.4', d: '把每个词（实际是 BPE 子词）查表变成 512 维向量。这张表约 37000 × 512，和模型一起训练。论文把查出的向量再乘以 √d<sub>model</sub> ≈ 22.6，并让两张嵌入表和最后的 Linear 共享同一份权重。', s: '[n] → [n, 512]', c: 'x = E[token_ids] * math.sqrt(512)' },
+  pe: { t: 'Positional Encoding · 位置编码', r: '§3.5', d: '注意力不知道词序，所以给每个位置加一个固定的正弦/余弦向量。是直接相加，不是拼接。详见第 6 节。', s: '[n, 512] + [n, 512]', c: 'x = x + PE[:n]' },
+  stack: { t: 'N = 6 · 堆叠', r: '§3.1', d: '编码器和解码器各叠 6 个结构相同的层（参数不共享）。每层的输入输出都是 [n, 512]，所以可以随意往上叠。', s: '[n, 512] → [n, 512]', c: 'for layer in layers:\n    x = layer(x)' },
+  mha: { t: 'Multi-Head Self-Attention', r: '§3.2.2 · §3.2.3', d: '编码器里的自注意力：Q、K、V 都来自同一个句子，每个词都能直接看到原句里所有的词。就是第 3、5 节算的东西。', s: '[n, 512] → [n, 512]', c: 'x = mha(q=x, k=x, v=x)' },
+  addnorm: { t: 'Add & Norm · 残差 + 层归一化', r: '§3.1', d: '每个子层外面都套着这一层：输出 = LayerNorm(x + Sublayer(x))。残差让梯度能直接穿过很多层，归一化让数值保持稳定。图中两侧的细线就是残差连接。', s: '[n, 512] → [n, 512]', c: 'x = layer_norm(x + dropout(sublayer(x)))' },
+  ffn: { t: 'Feed Forward · 逐位置前馈网络', r: '§3.3', d: '两层全连接，中间 2048 维加 ReLU：FFN(x) = max(0, xW<sub>1</sub> + b<sub>1</sub>)W<sub>2</sub> + b<sub>2</sub>。每个位置单独计算，共享参数。可以这样理解分工：注意力负责词与词之间交流，FFN 负责每个词自己消化。', s: '[n, 512] → [n, 2048] → [n, 512]', c: 'x = relu(x @ W1 + b1) @ W2 + b2' },
+  outemb: { t: 'Output Embedding · 译文嵌入', r: '§3.1 · §3.4', d: '解码器的输入是译文“右移一位”：开头补一个起始符。训练时整句一次喂进去，靠遮罩防止偷看后面的词。', s: '[m] → [m, 512]', c: "y_in = ['<s>'] + target[:-1]" },
+  masked: { t: 'Masked Multi-Head Self-Attention', r: '§3.2.3', d: '解码器的自注意力，但每个位置只能看它自己和左边的词。实现方法是在 softmax 之前把右上三角设成 −∞。详见第 8 节。', s: '[m, 512] → [m, 512]', c: 'scores = scores.masked_fill(future, -inf)' },
+  cross: { t: 'Encoder-Decoder Attention · 交叉注意力', r: '§3.2.3', d: 'Q 来自解码器，K 和 V 来自编码器的输出。这是翻译时“回头看原文”的地方：写每个德语词时，去英语原句里找最相关的词。', s: 'Q: [m, 512]，K、V: [n, 512] → [m, 512]', c: 'x = mha(q=x, k=enc_out, v=enc_out)' },
+  linear: { t: 'Linear · 投影到词表', r: '§3.4', d: '把 512 维向量投影到词表大小（约 37000），得到每个候选词的分数。权重和嵌入表共享。', s: '[m, 512] → [m, 37000]', c: 'logits = x @ E.T' },
+  softmax: { t: 'Softmax · 输出概率', r: '§3.4', d: '把分数变成概率。推理时选下一个词（论文用 beam size = 4 的束搜索），训练时和正确答案算交叉熵。', s: '[m, 37000] → 概率', c: 'probs = softmax(logits, axis=-1)' },
+};
+const NODES = [
+  ['emb', 80, 462, 30, 'Input Embedding'], ['mha', 80, 346, 36, 'Multi-Head Attention'], ['addnorm', 80, 308, 24, 'Add & Norm'],
+  ['ffn', 80, 256, 36, 'Feed Forward'], ['addnorm', 80, 218, 24, 'Add & Norm'],
+  ['outemb', 420, 462, 30, 'Output Embedding'], ['masked', 420, 348, 36, 'Masked Multi-Head Attention'], ['addnorm', 420, 310, 24, 'Add & Norm'],
+  ['cross', 420, 258, 36, 'Multi-Head Attention'], ['addnorm', 420, 220, 24, 'Add & Norm'], ['ffn', 420, 168, 36, 'Feed Forward'],
+  ['addnorm', 420, 130, 24, 'Add & Norm'], ['linear', 420, 74, 26, 'Linear'], ['softmax', 420, 32, 26, 'Softmax'],
+];
+let archSel = 'cross';
+function buildArch() {
+  const svg = $('#archSvg'); svg.innerHTML = '';
+  const mk = el('marker', { id: 'f7Head', viewBox: '0 0 8 8', refX: 7, refY: 4, markerWidth: 6, markerHeight: 6, orient: 'auto' }, el('defs', null, svg));
+  el('path', { d: 'M0 0L8 4L0 8z', style: 'fill:var(--fg-3)' }, mk);
+  const sel = k => { archSel = k; updateArch(); };
+  const keyed = (g, k) => {
+    g.addEventListener('click', () => sel(k));
+    g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sel(k); } });
+  };
+  [[62, 206, 256, 196], [402, 118, 256, 284]].forEach(([x, y, w, h]) => {
+    keyed(el('rect', { x, y, width: w, height: h, rx: 10, class: 'att-frame', 'data-key': 'stack' }, svg), 'stack');
+  });
+  [[36, 308, 'N×'], [688, 264, '×N']].forEach(([x, y, t]) => {
+    keyed(el('text', { x, y, 'text-anchor': 'middle', class: 's-lbl', style: 'font-size:15px;cursor:pointer' }, svg, t), 'stack');
+  });
+  el('text', { x: 190, y: 152, 'text-anchor': 'middle', class: 's-lbl', style: 'font-size:15px' }, svg, '编码器');
+  el('text', { x: 190, y: 170, 'text-anchor': 'middle', class: 's-sub' }, svg, '读原文，一次算完');
+  el('text', { x: 300, y: 52, 'text-anchor': 'middle', class: 's-lbl', style: 'font-size:15px' }, svg, '解码器 →');
+  el('text', { x: 300, y: 70, 'text-anchor': 'middle', class: 's-sub' }, svg, '一个词一个词写译文');
+  [[[190, 506], [190, 494]], [[190, 462], [190, 442]], [[190, 420], [190, 384]], [[190, 346], [190, 334]], [[190, 308], [190, 294]], [[190, 256], [190, 244]],
+   [[190, 218], [190, 190], [372, 190], [372, 276], [418, 276]],
+   [[530, 506], [530, 494]], [[530, 462], [530, 442]], [[530, 420], [530, 386]], [[530, 348], [530, 336]], [[530, 310], [530, 296]], [[530, 258], [530, 246]],
+   [[530, 220], [530, 206]], [[530, 168], [530, 156]], [[530, 130], [530, 102]], [[530, 74], [530, 60]], [[530, 32], [530, 25]],
+   [[190, 398], [68, 398], [68, 320], [78, 320]], [[190, 300], [68, 300], [68, 230], [78, 230]],
+   [[530, 398], [652, 398], [652, 322], [642, 322]], [[530, 302], [652, 302], [652, 232], [642, 232]], [[530, 212], [652, 212], [652, 142], [642, 142]],
+  ].forEach(p => el('polyline', { points: p.map(q => q.join(',')).join(' '), class: 'att-aline', 'marker-end': 'url(#f7Head)' }, svg));
+  el('text', { x: 282, y: 184, 'text-anchor': 'middle', class: 'att-mono' }, svg, '编码器输出 → K, V');
+  el('text', { x: 530, y: 18, 'text-anchor': 'middle', class: 's-sub' }, svg, 'Output Probabilities');
+  el('text', { x: 190, y: 522, 'text-anchor': 'middle', class: 's-sub' }, svg, 'Inputs（英文原句）');
+  el('text', { x: 530, y: 522, 'text-anchor': 'middle', class: 's-sub' }, svg, 'Outputs（右移一位的译文）');
+  NODES.forEach(([k, x, y, h, label]) => {
+    const g = el('g', { class: 'att-an' + (['mha', 'masked', 'cross'].includes(k) ? ' att-att' : ''), 'data-key': k, tabindex: 0, role: 'button', 'aria-label': label }, svg);
+    el('rect', { x, y, width: 220, height: h, rx: 6, class: 'att-box' }, g);
+    el('text', { x: x + 110, y: y + h / 2 + 4.5, 'text-anchor': 'middle' }, g, label);
+    keyed(g, k);
+  });
+  [[190, 'end', 168], [530, 'start', 552]].forEach(([cx, anchor, tx]) => {
+    const g = el('g', { class: 'att-an', 'data-key': 'pe', tabindex: 0, role: 'button', 'aria-label': 'Positional Encoding' }, svg);
+    el('circle', { cx, cy: 430, r: 10, class: 'att-pec' }, g);
+    el('path', { d: `M${cx - 6} 430H${cx + 6}M${cx} 424V436`, class: 'att-aline' }, g);
+    el('text', { x: tx, y: 434, 'text-anchor': anchor, class: 's-sub' }, g, '位置编码');
+    keyed(g, 'pe');
+  });
+  updateArch();
+}
+function updateArch() {
+  $$('#archSvg [data-key]').forEach(n => n.classList.toggle('att-sel', n.dataset.key === archSel));
+  const i = INFO[archSel];
+  $('#archInfo').innerHTML = `<div class="att-t">${i.t}</div><div class="att-ref">论文 ${i.r}</div><div>${i.d}</div><span class="att-num">形状：${esc(i.s)}</span><pre class="att-code">${esc(i.c)}</pre>`;
+}
+
+/* ---------- 8 · 遮罩 ---------- */
+const MK = (() => {
+  const rng = mulberry32(42), tok = ['<s>', 'Ich', 'liebe', 'dich', '.'];
+  return { tok, next: ['Ich', 'liebe', 'dich', '.', '<EOS>'], S: tok.map(() => tok.map(() => +(gauss(rng) * 1.2).toFixed(1))) };
+})();
+let maskRow = 2;
+function renderMask() {
+  const on = $('#maskOn').checked;
+  const isM = (i, j) => on && j > i;
+  const A = MK.S.map((r, i) => softmax(r.map((x, j) => isM(i, j) ? -Infinity : x)));
+  $('#maskStage').innerHTML = mxHTML('MS', 'S', MK.S, { rows: MK.tok, cols: MK.tok, masked: isM, maskText: '−∞', fmt: x => x.toFixed(1) }) + op('→', 'softmax') + mxHTML('MA', 'A', A, { rows: MK.tok, cols: MK.tok, heat: true, role: 'h', masked: isM, maskText: '0' });
+  $$('#maskStage tr[data-row]').forEach(tr => { if (+tr.dataset.row === maskRow) { tr.classList.add('att-rsel'); $$('td', tr).forEach(td => td.classList.add('att-on')); } });
+  $('#maskRead').innerHTML = on
+    ? `第 ${maskRow + 1} 行：在位置 <b>${esc(MK.tok[maskRow])}</b> 要预测下一个词 <b>${esc(MK.next[maskRow])}</b>，只能看到 <b>${esc(MK.tok.slice(0, maskRow + 1).join(' '))}</b>。答案藏在右边，被遮住了。`
+    : `遮罩关掉了。第 ${maskRow + 1} 行在预测 <b>${esc(MK.next[maskRow])}</b> 时能看到整句 <b>${esc(MK.tok.join(' '))}</b>，等于直接偷看答案。`;
+}
+$('#maskOn').addEventListener('change', renderMask);
+$('#maskStage').addEventListener('click', e => { const tr = e.target.closest('tr[data-row]'); if (tr) { maskRow = +tr.dataset.row; renderMask(); } });
+
+/* ---------- 8 · 逐词生成 ---------- */
+const DEC = {
+  src: ['I', 'love', 'you', '.'],
+  steps: [
+    { out: 'Ich', cand: [['Ich', .82], ['Mein', .06], ['Du', .04]], att: [.78, .1, .07, .05] },
+    { out: 'liebe', cand: [['liebe', .74], ['mag', .12], ['habe', .05]], att: [.08, .8, .08, .04] },
+    { out: 'dich', cand: [['dich', .88], ['Sie', .05], ['euch', .03]], att: [.05, .12, .78, .05] },
+    { out: '.', cand: [['.', .9], ['!', .05], ['sehr', .02]], att: [.03, .04, .07, .86] },
+    { out: '<EOS>', cand: [['<EOS>', .95], ['Ich', .01], ['.', .01]], att: [.12, .1, .1, .68] },
+  ]
+};
+let decK = 0;
+function renderDec() {
+  const st = DEC.steps[decK], done = decK >= DEC.steps.length;
+  $('#decSrc').innerHTML = DEC.src.map((w, i) => {
+    const a = done ? 0 : st.att[i];
+    return `<span class="att-chip${isHot(a) ? ' att-hot' : ''}" style="background:${done ? '' : heatBg(a)}">${esc(w)}${done ? '' : ` <small>${pct(a)}</small>`}</span>`;
+  }).join('');
+  const tgt = ['<s>', ...DEC.steps.slice(0, decK).map(s => s.out)];
+  $('#decTgt').innerHTML = tgt.map(w => `<span class="att-chip">${esc(w)}</span>`).join('') + (done ? '' : '<span class="att-chip att-new">?</span>');
+  $('#decProb').innerHTML = done ? '<span class="att-read">已结束</span>' : st.cand.map(([w, p], i) => `<div class="att-prow${i === 0 ? ' att-pick' : ''}"><span class="att-num">${esc(w)}</span><span class="att-track"><span class="att-bar" style="width:${p * 100}%"></span></span><span class="att-num" style="text-align:right">${pct(p)}</span></div>`).join('');
+  $('#decRead').innerHTML = done
+    ? '生成了 <b>&lt;EOS&gt;</b>，翻译结束：<b>Ich liebe dich .</b> 一共跑了 5 次解码器，编码器只跑了 1 次。'
+    : `第 ${decK + 1} 步：解码器拿着 <b>${esc(tgt.join(' '))}</b>，通过交叉注意力主要看原文的 <b>${esc(DEC.src[st.att.indexOf(Math.max(...st.att))])}</b>，选出 <b>${esc(st.out)}</b>。`;
+  $('#decNext').disabled = done;
+}
+$('#decNext').addEventListener('click', () => { if (decK < DEC.steps.length) { decK++; renderDec(); } });
+$('#decReset').addEventListener('click', () => { decK = 0; renderDec(); });
+
+/* ---------- 9 · 学习率 ---------- */
+function niceCeil(v) { const e = 10 ** Math.floor(Math.log10(v)), m = v / e; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * e; }
+function drawLR() {
+  const warm = +$('#lrWarm').value, d = +$('#lrD').value;
+  $('#lrWarmOut').textContent = warm;
+  const svg = $('#lrSvg'); svg.innerHTML = '';
+  const W = 720, H = 260, ml = 58, mr = 20, mt = 20, mb = 36, XM = 40000;
+  const f = s => Math.pow(d, -.5) * Math.min(Math.pow(s, -.5), s * Math.pow(warm, -1.5));
+  const peak = f(warm), yMax = niceCeil(peak * 1.12);
+  const x = s => ml + s / XM * (W - ml - mr), y = v => mt + (1 - v / yMax) * (H - mt - mb);
+  for (let k = 0; k <= 4; k++) {
+    const v = yMax * k / 4;
+    el('line', { x1: ml, x2: W - mr, y1: y(v), y2: y(v), class: k ? 'att-grid' : 'att-axis' }, svg);
+    el('text', { x: ml - 8, y: y(v) + 4, 'text-anchor': 'end', class: 'att-mono' }, svg, (v * 1e3).toFixed(2));
+  }
+  el('text', { x: 4, y: 14, class: 'att-mono' }, svg, '×10⁻³');
+  for (let s = 0; s <= XM; s += 10000) el('text', { x: x(s), y: H - 12, 'text-anchor': 'middle', class: 'att-mono' }, svg, s ? s / 1000 + 'k' : '0');
+  const pts = []; for (let s = 1; s <= XM; s += 100) pts.push([x(s), y(f(s))]);
+  pts.push([x(warm), y(peak)]); pts.sort((a, b) => a[0] - b[0]);
+  const dl = 'M' + pts.map(p => p.map(n => n.toFixed(1)).join(' ')).join('L');
+  el('path', { d: dl + `L${x(XM)} ${y(0)}L${x(0)} ${y(0)}Z`, class: 'att-lr-area' }, svg);
+  el('path', { d: dl, class: 'att-lr-line' }, svg);
+  el('line', { x1: x(warm), x2: x(warm), y1: y(peak), y2: y(0), style: 'stroke:var(--purple-fg);stroke-dasharray:3 3' }, svg);
+  el('circle', { cx: x(warm), cy: y(peak), r: 5, class: 'att-lr-dot' }, svg);
+  el('text', { x: x(warm) + 12, y: y(peak) + 4, class: 's-lbl' }, svg, `峰值 ${(peak * 1e3).toFixed(2)}×10⁻³，第 ${warm} 步`);
+  el('text', { x: W - mr, y: y(f(XM)) - 10, 'text-anchor': 'end', class: 's-sub' }, svg, `第 40k 步：${(f(XM) * 1e3).toFixed(2)}×10⁻³`);
+}
+$('#lrWarm').addEventListener('input', drawLR);
+$('#lrD').addEventListener('change', drawLR);
+
+/* ---------- 启动 ---------- */
+renderHero(); drawRace(); drawDict(); renderMx(); renderScale(); renderHeads(); renderPerm(); drawPE(); buildArch(); renderMask(); renderDec(); drawLR();
+let rz = 0;
+addEventListener('resize', () => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => { renderHero(); drawPE(); }); });
+})();
+</script>
+<script src="../assets/toc.js"></script>
+</body>
+</html>
