@@ -26,6 +26,9 @@
     <li class="lv2"><a href="#s9a2" title="B · 学习率预热">B · 学习率预热</a></li>
     <li class="lv2"><a href="#s9a3" title="C · 翻译成绩">C · 翻译成绩</a></li>
     <li><a href="#s10" title="10 · 它为什么改变了一切">10 · 它为什么改变了一切</a></li>
+    <li class="lv2"><a href="#s10a1" title="A · 两个原因：能并行、结构通用">A · 两个原因：能并行、结构通用</a></li>
+    <li class="lv2"><a href="#s10a2" title="B · 从论文的解码器到 GPT">B · 从论文的解码器到 GPT</a></li>
+    <li class="lv2"><a href="#s10a3" title="C · 读 GPT 代码时会看到的不同">C · 读 GPT 代码时会看到的不同</a></li>
     <li><a href="#s11" title="11 · 现在去读原文">11 · 现在去读原文</a></li>
     <li class="lv2"><a href="#s11a1" title="A · 阅读顺序">A · 阅读顺序</a></li>
     <li class="lv2"><a href="#s11a2" title="B · 论文章节与本页对照">B · 论文章节与本页对照</a></li>
@@ -358,14 +361,52 @@ out = concat(heads, axis=-1) @ Wo           <span class="c"># (n, 512) @ (512, 5
 <!-- ══════ 10 ══════ -->
 <div class="card">
 <h2 id="s10"><span class="n">10</span>它为什么改变了一切</h2>
-<p class="cap">能并行、结构通用，拆开一半也能用。</p>
+<p class="cap">能并行、结构通用，拆开一半也能用。从翻译模型走到 GPT，中间还隔着好几篇论文。</p>
 
+<h3 id="s10a1"><span class="n">A</span>两个原因：能并行、结构通用</h3>
 <p>论文本身只做了翻译。它的影响来自两点：一是<b>能并行</b>，同样的时间里可以喂进多得多的数据、用上多得多的算力；二是<b>结构通用</b>，拆开一半也能用。</p>
 <ul class="pts">
   <li>只用编码器：BERT（2018），擅长理解类任务。</li>
   <li>只用解码器：GPT（2018）、GPT-2（2019）、GPT-3（2020，1750 亿参数）。今天的大语言模型基本都是这一路。</li>
   <li>把图片切成小块当成“词”：ViT（2020），把 Transformer 带进了计算机视觉。</li>
 </ul>
+<h3 id="s10a2"><span class="n">B</span>从论文的解码器到 GPT</h3>
+<p>“自回归”（一个词一个词生成，每次把已生成的词接回输入）不是后来才加的。论文 §3 就写明解码器是 auto-regressive 的，<a href="#s8">第 8 节</a>演示的遮罩和逐词生成就是它。这个思路本身还要更早：Bengio 2003 年的神经语言模型、Graves 2013 年用 RNN 生成序列、Sutskever 2014 年的 seq2seq 都是逐词预测，这篇论文的贡献是把自回归解码器从 RNN 换成了注意力。</p>
+<p>论文<b>没有</b>做的，是把这个解码器单独拿出来当通用模型用。对比一下两种用法：</p>
+
+<pre class="att-code"><span class="c"># 2017 论文：条件生成，必须先有一句原文</span>
+enc = encoder(src_tokens)                  <span class="c"># 读英文原句，只算一次</span>
+y = ["&lt;s&gt;"]
+while y[-1] != "&lt;EOS&gt;":
+    y.append(pick(decoder(y, enc)))        <span class="c"># 每一步都通过交叉注意力回头看 enc</span>
+
+<span class="c"># GPT：去掉编码器，没有“原文”，只有前文</span>
+y = prompt_tokens                          <span class="c"># 提示词本身就是前文</span>
+while y[-1] != "&lt;EOS&gt;":
+    y.append(pick(decoder(y)))             <span class="c"># 每层只剩遮罩自注意力 + FFN，没有交叉注意力</span></pre>
+
+<p>结构上，GPT 的一层就是<a href="#s7">图 1</a> 右边那一栏去掉中间的交叉注意力。训练目标也跟着变了：论文学的是“给定英文句子，生成德文句子”，要 450 万对人工翻译好的句子；GPT 学的是“给定前文，预测下一个词”，任何文本都能当训练数据，不需要标注。数据量的上限因此一下子打开了。</p>
+
+<p>下面这几篇论文把这条路一步步走通：</p>
+<table>
+  <thead><tr><th>年份</th><th>论文</th><th>在前一步基础上加了什么</th></tr></thead>
+  <tbody>
+    <tr><td>2017</td><td>Vaswani 等，<i>Attention Is All You Need</i></td><td>本文：编码器 + 自回归解码器，只做翻译</td></tr>
+    <tr><td>2018</td><td>Liu 等，<i>Generating Wikipedia by Summarizing Long Sequences</i></td><td>去掉编码器，只用解码器做长文本生成，效果反而更好</td></tr>
+    <tr><td>2018</td><td>Radford 等，<i>Improving Language Understanding by Generative Pre-Training</i>（GPT）</td><td>先在大量无标注文本上预测下一个词（预训练），再针对具体任务微调</td></tr>
+    <tr><td>2019</td><td>Radford 等，<i>Language Models are Unsupervised Multitask Learners</i>（GPT-2）</td><td>模型和数据加大后，不微调也能直接做多种任务（zero-shot）</td></tr>
+    <tr><td>2020</td><td>Brown 等，<i>Language Models are Few-Shot Learners</i>（GPT-3）</td><td>1750 亿参数；在提示里给几个例子就能做新任务（in-context learning）</td></tr>
+    <tr><td>2020</td><td>Kaplan 等，<i>Scaling Laws for Neural Language Models</i></td><td>损失随参数量、数据量、算力按幂律下降，给“堆规模”提供了依据</td></tr>
+    <tr><td>2022</td><td>Hoffmann 等，<i>Training Compute-Optimal Large Language Models</i>（Chinchilla）</td><td>修正配比：给定算力下，数据量要和参数量同步增长</td></tr>
+    <tr><td>2022</td><td>Ouyang 等，<i>Training language models to follow instructions with human feedback</i>（InstructGPT）</td><td>用人类反馈强化学习（RLHF）让模型听指令，成为对话助手的基础</td></tr>
+  </tbody>
+</table>
+
+<div class="formula">
+  <p><b>分工</b>：这篇论文提供了<b>机制</b>（因果遮罩 + 逐词生成）和<b>结构</b>（注意力 + FFN + 残差的层，可以无限往上叠）。“只用解码器、在海量无标注文本上预测下一个词、把规模做大、再对齐人类意图”这条路线，是上表里的后续论文建立起来的。读 GPT 类论文时，遮罩、多头、FFN 这些都不用再学，看它们改了什么就行。</p>
+</div>
+
+<h3 id="s10a3"><span class="n">C</span>读 GPT 代码时会看到的不同</h3>
 <p>如果你接下来要读 GPT 类模型的代码，会发现它和论文有几处不同。骨架没变，零件换了：</p>
 <table>
   <thead><tr><th>部件</th><th>2017 论文</th><th>今天常见做法</th></tr></thead>
